@@ -1,33 +1,34 @@
 import { Injectable } from '@nestjs/common';
+import { Model, Document } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
-export class GenericService<T> {
-  private readonly items: T[] = [];
+export class GenericService<T extends Document> {
+  constructor(@InjectModel('T') private readonly model: Model<T>) {}
 
+  // Tìm tất cả các mục
   async findAll(): Promise<T[]> {
-    return this.items;
+    return this.model.find().exec();
   }
 
-  async findOne(id: string): Promise<T> {
-    return this.items.find(item => (item as any).id === id);
+  // Tìm một mục theo ID
+  async findOne(id: string): Promise<T | null> {
+    return this.model.findById(id).exec();
   }
 
+  // Tạo một mục mới
   async create(createDto: Partial<T>): Promise<T> {
-    const newItem = { ...createDto, id: Date.now().toString() } as T;
-    this.items.push(newItem);
-    return newItem;
+    const createdItem = new this.model(createDto);
+    return createdItem.save();
   }
 
-  async update(id: string, updateDto: Partial<T>): Promise<T> {
-    const index = this.items.findIndex(item => (item as any).id === id);
-    if (index === -1) throw new Error('Item not found');
-    this.items[index] = { ...this.items[index], ...updateDto };
-    return this.items[index];
+  // Cập nhật một mục theo ID
+  async update(id: string, updateDto: Partial<T>): Promise<T | null> {
+    return this.model.findByIdAndUpdate(id, updateDto, { new: true }).exec();
   }
 
+  // Xóa một mục theo ID
   async delete(id: string): Promise<void> {
-    const index = this.items.findIndex(item => (item as any).id === id);
-    if (index === -1) throw new Error('Item not found');
-    this.items.splice(index, 1);
+    await this.model.findByIdAndDelete(id).exec();
   }
 }

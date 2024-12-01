@@ -1,10 +1,10 @@
-// Controller cơ sở có các thao tác CRUD
-// để cho các controller khác kế thừa
+import { Controller, Get, Post, Param, Body, Delete, Patch } from '@nestjs/common';
+import { GenericService } from './generic.service';
+import { Document } from 'mongoose';
 
-import { Get, Post, Param, Body, Delete, Patch } from '@nestjs/common';
-
-export abstract class GenericController<T> {
-  constructor(private readonly service: any) {}
+// Đảm bảo GenericController nhận vào service có kiểu kế thừa từ GenericService
+export abstract class GenericController<T extends Document> {
+  constructor(private readonly service: GenericService<T>) {}
 
   @Get()
   async findAll(): Promise<T[]> {
