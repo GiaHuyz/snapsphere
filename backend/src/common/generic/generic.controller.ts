@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Param, Body, Delete, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException } from '@nestjs/common';
 import { GenericService } from './generic.service';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 // Đảm bảo GenericController nhận vào service có kiểu kế thừa từ GenericService
 export abstract class GenericController<T extends Document> {
-  constructor(private readonly service: GenericService<T>) {}
+  constructor(private readonly service: GenericService<T>) { }
 
   @Get()
   async findAll(): Promise<T[]> {
@@ -13,7 +13,16 @@ export abstract class GenericController<T extends Document> {
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<T> {
-    return this.service.findOne(id);
+    // Kiểm tra nếu id không hợp lệ
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    const document = await this.service.findOne(id);
+    if (!document) {
+      throw new NotFoundException('Document not found');
+    }
+    return document;
   }
 
   @Post()
