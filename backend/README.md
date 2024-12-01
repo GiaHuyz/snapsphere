@@ -6,4 +6,18 @@ https://dev.to/robertoyamanaka/clerk-jwt-authentication-with-nestjs-passport-for
 
 - Have not done yet.
 
-** Create **
+## how to run backend
+
+```sh
+cd backend
+```
+
+```sh
+npm i
+```
+
+```sh
+npm run dev
+```
+
+open http://localhost:8000/api to view api document
