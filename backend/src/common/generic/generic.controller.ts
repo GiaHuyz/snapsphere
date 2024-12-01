@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException, Put } from '@nestjs/common';
 import { GenericService } from './generic.service';
 import { Document, Types } from 'mongoose';
 
@@ -30,10 +30,25 @@ export abstract class GenericController<T extends Document> {
     return this.service.create(createDto);
   }
 
+  @Put(':id')
+  async replace(@Param('id') id: string, @Body() replaceDto: Partial<T>): Promise<T> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid ID format');
+    }
+
+    // Cập nhật toàn bộ tài nguyên
+    const updatedDocument = await this.service.update(id, replaceDto);
+    if (!updatedDocument) {
+      throw new NotFoundException('Document not found');
+    }
+    return updatedDocument;
+  }
+
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateDto: Partial<T>): Promise<T> {
     return this.service.update(id, updateDto);
   }
+
 
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<void> {
