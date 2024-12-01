@@ -8,14 +8,16 @@ import { AppService } from './app.service'
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
 		MongooseModule.forRootAsync({
-            imports: [ConfigModule],
+			imports: [ConfigModule],
 			useFactory: (configService: ConfigService) => ({
 				uri: configService.get<string>('MONGODB_URI')
 			}),
-            inject: [ConfigService]
+			inject: [ConfigService]
 		})
 	],
 	controllers: [AppController],
 	providers: [AppService]
 })
-export class AppModule {}
+export class AppModule { }
+
+
