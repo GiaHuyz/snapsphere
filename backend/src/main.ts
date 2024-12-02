@@ -6,6 +6,8 @@ import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
+	// config global prefix
+	app.setGlobalPrefix('api')
 	// config swagger
 	const config = new DocumentBuilder()
   .setTitle('API Documentation')
@@ -20,7 +22,6 @@ async function bootstrap() {
   app.use(ClerkExpressWithAuth());
 	// start app
 	await app.listen(process.env.PORT ?? 8000)
-	log('[DEV]',`Server is running on http://localhost:${process.env.PORT || 8000}` )
 }
 bootstrap()
 
