@@ -1,10 +1,15 @@
-import { Body, Controller, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { GenericController } from '../common/generic/generic.controller';
 import { UserDocument } from './user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from '@/common/gaurd/auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users')
+@ApiBearerAuth()
+@UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController extends GenericController<UserDocument> {
   constructor(private readonly userService: UsersService) {
