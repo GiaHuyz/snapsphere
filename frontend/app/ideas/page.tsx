@@ -1,4 +1,5 @@
 import { MansoryLayout } from '@/components/mansory-layout'
+import { Pin } from '@/components/pin'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -81,6 +82,11 @@ const trendingItems = [
 		title: 'Seasonal Recipes',
 		image: 'https://plus.unsplash.com/premium_photo-1731624534286-adf5e9c78159?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
 		href: '/trending/recipes'
+	},
+    {
+		title: 'Seasonal Recipes 2',
+		image: 'https://plus.unsplash.com/premium_photo-1731624534286-adf5e9c78159?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+		href: '/trending/recipes'
 	}
 ]
 
@@ -124,15 +130,13 @@ export default function IdeasPage() {
 					<div className='relative'>
 						<MansoryLayout className='xl:columns-5'>
 							{trendingItems.map((item) => (
-								<Link key={item.title} href={item.href} className="overflow-hidden rounded-lg block">
-									<Image
-										src={item.image}
-										alt={item.title}
-										width={300}
-										height={400}
-										className="object-cover"
-									/>
-								</Link>
+								<Pin 
+                                    key={item.title}
+                                    id={item.title}
+                                    title={item.title}
+                                    image={item.image}
+                                    currentBoard="wuxia"
+                                />
 							))}
 						</MansoryLayout>
 					</div>

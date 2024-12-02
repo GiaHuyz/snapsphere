@@ -1,4 +1,5 @@
 import { Header } from '@/components/header'
+import { ThemeProvider } from '@/provider/theme-provider'
 import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
@@ -27,10 +28,12 @@ export default function RootLayout({
 }>) {
 	return (
 		<ClerkProvider>
-			<html lang="en">
+			<html lang="en" suppressHydrationWarning>
 				<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-					<Header />
-					{children}
+					<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+						<Header />
+						{children}
+					</ThemeProvider>
 				</body>
 			</html>
 		</ClerkProvider>

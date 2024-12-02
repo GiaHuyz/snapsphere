@@ -1,10 +1,11 @@
 'use client'
 
 import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs'
-import { Search } from 'lucide-react'
+import { Search, UserRoundPen } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { ModeToggle } from '@/components/mode-toggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Image from 'next/image'
@@ -18,12 +19,7 @@ export function Header() {
 			<div className="container flex h-[80px] items-center mx-auto p-5">
 				<div className="flex items-center space-x-4">
 					<Link href="/" className="flex items-center space-x-2 p-2 rounded-full hover:bg-slate-300">
-						<Image
-                            src="/logo.png"
-                            alt="logo"
-                            width={24}
-                            height={24}
-                        />
+						<Image src="/logo.png" alt="logo" width={24} height={24} />
 					</Link>
 					{isSignedIn && (
 						<Button
@@ -51,6 +47,7 @@ export function Header() {
 					</div>
 				</div>
 				<div className="flex items-center space-x-4">
+					<ModeToggle />
 					{!isSignedIn ? (
 						<>
 							<SignInButton mode="modal">
@@ -63,7 +60,13 @@ export function Header() {
 							</SignUpButton>
 						</>
 					) : (
-						<UserButton afterSignOutUrl="/ideas" />
+						<UserButton>
+							<UserButton.MenuItems>
+								<UserButton.Link label="Profile" labelIcon={<UserRoundPen size={16} />} href="/" />
+								<UserButton.Action label="manageAccount" />
+								<UserButton.Action label="signOut" />
+							</UserButton.MenuItems>
+						</UserButton>
 					)}
 				</div>
 			</div>
