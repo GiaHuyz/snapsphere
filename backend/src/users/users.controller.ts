@@ -4,7 +4,7 @@ import { GenericController } from '../common/generic/generic.controller';
 import { UserDocument } from './user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from '@/common/gaurd/auth.guard';
+import { AuthGuard } from '@/common/guard/auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('users')
