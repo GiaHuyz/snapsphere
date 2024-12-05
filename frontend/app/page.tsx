@@ -45,10 +45,8 @@ const images = [
 		height: 300
 	}
 ]
-// TODO: Trang chủ, hiển thị các ý tưởng nổi bật,
-// có thể dựa vào lịch sử duyệt web của người dùng để đề xuất ý tưởng phù hợp
 
-export default function IdeasPage() {
+export default function HomePage() {
 	return (
 		<div className="min-h-screen bg-background">
 			<main className="py-6">

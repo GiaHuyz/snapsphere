@@ -8,6 +8,13 @@ interface SaveButtonProps {
 }
 
 export function SaveButton({ className, variant = 'default', onClick }: SaveButtonProps) {
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault()
+        if (onClick) {
+            onClick()
+        }
+    }
+
 	return (
 		<Button
 			className={cn(
@@ -16,7 +23,7 @@ export function SaveButton({ className, variant = 'default', onClick }: SaveButt
 				variant === 'overlay' && 'h-8 bg-red-500 px-4 text-white hover:bg-red-600',
 				className
 			)}
-			onClick={onClick}
+			onClick={handleClick}
 		>
 			Save
 		</Button>
