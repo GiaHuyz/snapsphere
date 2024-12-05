@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CommonModule } from './common/common.module';
 import { UsersModule } from './users/users.module';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UsersModule } from './users/users.module';
     }),
     CommonModule,
     UsersModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
