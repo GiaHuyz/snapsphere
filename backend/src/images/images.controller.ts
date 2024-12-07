@@ -1,6 +1,6 @@
 import { AuthGuard } from '@/common/gaurd/auth.guard';
 import { Body, Controller, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ImageDocument } from './image.schema';
 import { GenericController } from '@/common/generic/generic.controller';
 import { ImagesService } from './images.service';
@@ -24,6 +24,7 @@ export class ImagesController extends GenericController<ImageDocument> {
 
   
   @Patch(':id')
+  @ApiOperation({ summary: 'Update the image\'s fields given' })
   async update(
     @Param('id') id: string,
     @Body() updateImageDto: CreateImageDto
