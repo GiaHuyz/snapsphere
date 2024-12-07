@@ -17,19 +17,19 @@ export class GenericService<T extends Document> {
     try {
       // Kiểm tra nếu ID không hợp lệ
       if (!this.isValidObjectId(id)) {
-        throw new BadRequestException('Invalid ID format');
+        throw new BadRequestException(['Invalid ID format']);
       }
 
       const document = await this.model.findById(id).exec();
       if (!document) {
-        throw new NotFoundException('Document not found');
+        throw new NotFoundException(['Document not found']);
       }
 
       return document;
     } catch (error) {
       // Nếu lỗi không phải từ NotFoundException hoặc BadRequestException, ném lỗi server
       if (!(error instanceof NotFoundException || error instanceof BadRequestException)) {
-        throw new InternalServerErrorException('An unexpected error occurred');
+        throw new InternalServerErrorException(['An unexpected error occurred']);
       }
       throw error;
     }
@@ -45,10 +45,10 @@ export class GenericService<T extends Document> {
   async update(id: string, updateDto: Partial<T>): Promise<T | null> {
     try {
       // Kiểm tra nếu ID không khớp
-      if(id !== updateDto._id) {
-        throw new BadRequestException('ID in the URL does not match the ID in the request body');
+      if (id !== updateDto._id) {
+        throw new BadRequestException(['ID in the URL does not match the ID in the request body']);
       }
-      
+
       // Sử dụng findOne để kiểm tra tài liệu
       const document = await this.findOne(id);
 
@@ -58,7 +58,7 @@ export class GenericService<T extends Document> {
         .exec();
 
       if (!updatedDocument) {
-        throw new InternalServerErrorException('Failed to update the document');
+        throw new InternalServerErrorException(['Failed to update the document']);
       }
 
       return updatedDocument;
@@ -69,7 +69,14 @@ export class GenericService<T extends Document> {
 
   // Xóa một mục theo ID
   async delete(id: string): Promise<void> {
-    await this.model.findByIdAndDelete(id).exec();
+
+    try {
+      // Sử dụng findOne để kiểm tra tài liệu
+      await this.findOne(id);
+      await this.model.findByIdAndDelete(id).exec();
+    } catch (error) {
+      throw error; // Ném lại lỗi từ findOne hoặc lỗi không mong đợi
+    }
   }
 
   // Helper method để kiểm tra ObjectId hợp lệ
