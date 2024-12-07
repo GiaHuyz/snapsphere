@@ -44,6 +44,11 @@ export class GenericService<T extends Document> {
   // Cập nhật một mục theo ID
   async update(id: string, updateDto: Partial<T>): Promise<T | null> {
     try {
+      // Kiểm tra nếu ID không khớp
+      if(id !== updateDto._id) {
+        throw new BadRequestException('ID in the URL does not match the ID in the request body');
+      }
+      
       // Sử dụng findOne để kiểm tra tài liệu
       const document = await this.findOne(id);
 
