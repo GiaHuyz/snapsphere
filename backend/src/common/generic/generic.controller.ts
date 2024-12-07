@@ -13,16 +13,7 @@ export abstract class GenericController<T extends Document> {
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<T> {
-    // Kiểm tra nếu id không hợp lệ
-    if (!Types.ObjectId.isValid(id)) {
-      throw new BadRequestException('Invalid ID format');
-    }
-
-    const document = await this.service.findOne(id);
-    if (!document) {
-      throw new NotFoundException('Document not found');
-    }
-    return document;
+    return await this.service.findOne(id);;
   }
 
   @Post()
