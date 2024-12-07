@@ -1,11 +1,13 @@
-import { Header } from '@/components/header'
+import { getBoards } from '@/actions/board-actions'
+import Header from '@/components/header'
+import { Toaster } from '@/components/ui/toaster'
+import { BoardProvider } from '@/provider/board-provider'
+import { ModalProvider } from '@/provider/modal-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { ClerkProvider } from '@clerk/nextjs'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
-import { Toaster } from '@/components/ui/toaster'
-import { ModalProvider } from '@/provider/modal-provider'
 
 const geistSans = localFont({
 	src: './fonts/GeistVF.woff',
@@ -20,25 +22,28 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
 	title: 'Snapsphere',
-	description: 'SnapSphere - AI-powered image sharing platform',
+	description: 'SnapSphere - AI-powered image sharing platform'
 }
 
-export default function RootLayout({
+export default async function RootLayout({
 	children
 }: Readonly<{
 	children: React.ReactNode
 }>) {
+	const boards = await getBoards()
 	return (
 		<ClerkProvider>
 			<html lang="en" suppressHydrationWarning>
-				<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-					<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-						<Header />
-						{children}
-                        <ModalProvider />
-                        <Toaster />
-					</ThemeProvider>
-				</body>
+				<BoardProvider boardPreviews={boards} boardsDropdown={boards}>
+					<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+						<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+							<Header />
+							<main>{children}</main>
+							<ModalProvider />
+							<Toaster />
+						</ThemeProvider>
+					</body>
+				</BoardProvider>
 			</html>
 		</ClerkProvider>
 	)

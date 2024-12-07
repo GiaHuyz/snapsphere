@@ -1,19 +1,28 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useClerk } from '@clerk/nextjs'
 
 interface SaveButtonProps {
 	className?: string
 	variant?: 'default' | 'overlay'
-    onClick?: () => void
+	onClick?: () => void
+	isLoggedIn?: boolean
 }
 
-export function SaveButton({ className, variant = 'default', onClick }: SaveButtonProps) {
-    const handleClick = (e: React.MouseEvent) => {
-        e.preventDefault()
-        if (onClick) {
-            onClick()
-        }
-    }
+export function SaveButton({ className, variant = 'default', onClick, isLoggedIn }: SaveButtonProps) {
+	const clerk = useClerk()
+
+	const handleClick = (e: React.MouseEvent) => {
+		e.preventDefault()
+		if (!isLoggedIn) {
+			clerk.openSignIn()
+		}
+		if (onClick) {
+			onClick()
+		}
+	}
 
 	return (
 		<Button

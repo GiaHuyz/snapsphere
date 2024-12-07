@@ -1,6 +1,6 @@
 'use client'
 
-import { BoardDropdown } from '@/components/board-dropdown'
+import BoardDropdown from '@/components/board-dropdown'
 import { SaveButton } from '@/components/save-to-board-button'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,7 +10,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { ChevronDown, Download, Eye, Flag, MoreHorizontal } from 'lucide-react'
+import { Download, Eye, Flag, MoreHorizontal } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -19,18 +19,14 @@ interface PinProps {
 	image: string
 	title: string
 	currentBoard?: string
-	boards?: {
-		id: string
-		name: string
-		image?: string
-	}[]
+	isLoggedIn?: boolean
 	suggestions?: {
 		id: string
 		name: string
 	}[]
 }
 
-export function Pin({ id, image, title, currentBoard = 'wuxia' }: PinProps) {
+export default function Pin({ id, image, title, isLoggedIn }: PinProps) {
 	return (
 		<div className="group relative mb-4 w-full overflow-hidden rounded-xl cursor-pointer">
 			{/* Main Image */}
@@ -41,18 +37,13 @@ export function Pin({ id, image, title, currentBoard = 'wuxia' }: PinProps) {
 				{/* Overlay Actions */}
 				<div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
 					{/* Top Actions */}
-					<div className="absolute left-4 right-4 top-4 flex items-center justify-between">
-						<BoardDropdown mode="save">
-							<Button
-								variant="secondary"
-								className={'h-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60'}
-								onClick={(e) => e.preventDefault()}
-							>
-								{currentBoard}
-								<ChevronDown className="ml-1 h-4 w-4" />
-							</Button>
-						</BoardDropdown>
-						<SaveButton variant="overlay" />
+					<div
+						className={`absolute left-4 right-4 top-4 flex items-center ${
+							isLoggedIn ? 'justify-between' : 'justify-end'
+						}`}
+					>
+						{isLoggedIn && <BoardDropdown mode="save" />}
+						<SaveButton variant="overlay" isLoggedIn={isLoggedIn} />
 					</div>
 
 					{/* Bottom Actions */}

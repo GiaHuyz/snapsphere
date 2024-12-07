@@ -1,6 +1,5 @@
 import MansoryLayout from '@/components/mansory-layout'
 import Pin from '@/components/pin'
-import { auth } from '@clerk/nextjs/server'
 
 const images = [
 	{
@@ -47,24 +46,12 @@ const images = [
 	}
 ]
 
-export default async function HomePage() {
-	const { userId } = await auth()
+export default function PinList() {
 	return (
-		<div className="min-h-screen bg-background">
-			<div className="py-6">
-				<MansoryLayout className="xl:columns-6">
-					{images.map((image) => (
-						<Pin
-							key={image.id}
-							id={image.id}
-							image={image.src}
-							title={image.alt}
-							currentBoard="wuxia"
-							isLoggedIn={!!userId}
-						/>
-					))}
-				</MansoryLayout>
-			</div>
-		</div>
+		<MansoryLayout className="xl:columns-6">
+			{images.map((image) => (
+				<Pin key={image.id} id={image.id} image={image.src} title={image.alt} currentBoard="wuxia" />
+			))}
+		</MansoryLayout>
 	)
 }

@@ -1,45 +1,9 @@
-import { BoardPreview } from '@/components/board-preview'
+import BoardPreviewList from '@/components/board-preview-list'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { clerkClient } from '@clerk/nextjs/server'
 import { Plus, Share } from 'lucide-react'
-
-interface Board {
-	id: string
-	title: string
-	pinCount: number
-	sectionCount: number
-	timeAgo: string
-	coverImages: string[]
-}
-
-const boards: Board[] = [
-	{
-		id: '1',
-		title: 'wuxia',
-		pinCount: 14,
-		sectionCount: 1,
-		timeAgo: '9h',
-		coverImages: ['https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg', 'https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg', 'https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg']
-	},
-	{
-		id: '2',
-		title: 'Chinese architecture',
-		pinCount: 1,
-		sectionCount: 1,
-		timeAgo: '1d',
-		coverImages: ['https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg', 'https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg', 'https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg']
-	},
-	{
-		id: '3',
-		title: 'Architecture',
-		pinCount: 2,
-		sectionCount: 1,
-		timeAgo: '2d',
-		coverImages: ['https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg', 'https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg', 'https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg']
-	}
-]
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
 	const { username } = await params
@@ -130,20 +94,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 				</TabsContent>
 
 				<TabsContent value="saved" className="mt-6">
-					<div className="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-6">
-						{boards.map((board) => (
-							<BoardPreview
-								key={board.id}
-								id={board.id}
-								title={board.title}
-								pinCount={board.pinCount}
-								sectionCount={board.sectionCount}
-								timeAgo={board.timeAgo}
-								coverImages={board.coverImages}
-								username={username}
-							/>
-						))}
-					</div>
+					<BoardPreviewList username={username} />
 				</TabsContent>
 			</Tabs>
 		</div>

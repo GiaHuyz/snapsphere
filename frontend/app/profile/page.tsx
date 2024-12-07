@@ -7,12 +7,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Spinner } from '@/components/loading-spinner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import usePreviewAvatarImage from '@/hooks/use-preview-image'
 import { useToast } from '@/hooks/use-toast'
+import { Loader2 } from 'lucide-react'
 
 const profileSchema = z.object({
 	firstName: z.string().min(2, {
@@ -104,7 +104,7 @@ export default function ProfilePage() {
 	if (!isLoaded) {
 		return (
 			<div className="flex items-center justify-center mt-60">
-				<Spinner className="w-10 h-10" />
+				<Loader2 className="w-10 h-10" />
 			</div>
 		)
 	}
@@ -261,7 +261,7 @@ export default function ProfilePage() {
 						<Button type="submit" disabled={isLoading || !isChangingForm}>
 							{isLoading ? (
 								<div className="flex items-center gap-2">
-									<Spinner className="w-4 h-4" />
+									<Loader2 className="w-4 h-4" />
 									Saving...
 								</div>
 							) : (

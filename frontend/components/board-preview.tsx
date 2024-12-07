@@ -11,13 +11,13 @@ interface BoardPreviewProps {
 	title: string
 	pinCount: number
 	sectionCount?: number
-	timeAgo: string
+	createAt: string
 	coverImages: string[]
 	username: string
 	className?: string
 }
 
-export function BoardPreview({ id, title, pinCount, sectionCount, timeAgo, coverImages, username, className }: BoardPreviewProps) {
+export default function BoardPreview({ id, title, pinCount, sectionCount, createAt, coverImages, username, className }: BoardPreviewProps) {
 	const onEdit = () => {
 		console.log('Edit board', id)
 	}
@@ -74,7 +74,7 @@ export function BoardPreview({ id, title, pinCount, sectionCount, timeAgo, cover
 				<p className="text-sm text-muted-foreground">
 					{pinCount} Pins
 					{sectionCount && sectionCount > 0 && ` · ${sectionCount} section`}
-					{timeAgo && ` · ${timeAgo}`}
+					{createAt && ` · ${createAt}`}
 				</p>
 			</div>
 		</div>

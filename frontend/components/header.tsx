@@ -5,22 +5,22 @@ import { LayoutDashboard, Search, UserRoundPen } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { ModeToggle } from '@/components/mode-toggle'
+import ModeToggle from '@/components/mode-toggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Image from 'next/image'
 import { useEffect } from 'react'
 
-export function Header() {
+export default function Header() {
 	const { isSignedIn, user } = useUser()
 	const pathname = usePathname()
 
-    // set default username
+	// set default username
 	useEffect(() => {
 		const updateUsername = async () => {
 			if (isSignedIn && user && !user.username) {
 				const username = user.emailAddresses[0].emailAddress.split('@')[0]
-				await user.update({ username: username })
+				await user.update({ username })
 			}
 		}
 
@@ -78,7 +78,7 @@ export function Header() {
 								<UserButton.Link
 									label="Board"
 									labelIcon={<LayoutDashboard size={16} />}
-									href={`/${user.username}`}
+									href={`/${user?.username}`}
 								/>
 								<UserButton.Link
 									label="Profile"

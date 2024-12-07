@@ -1,0 +1,80 @@
+{
+  "boards": [
+    {
+      "id": "1",
+      "title": "wuxia",
+      "pinCount": 14,
+      "sectionCount": 1,
+      "createAt": "9h",
+      "coverImages": [
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg",
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg",
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg"
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Chinese architecture",
+      "pinCount": 1,
+      "sectionCount": 1,
+      "createAt": "1d",
+      "coverImages": [
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg",
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg",
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg"
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Architecture",
+      "pinCount": 2,
+      "sectionCount": 1,
+      "createAt": "2d",
+      "coverImages": [
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg",
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg",
+        "https://i.pinimg.com/222x/5e/7b/55/5e7b55769f733bef97cad152dc880cc1.jpg"
+      ]
+    },
+    {
+      "id": "b1eb",
+      "title": "asdsad",
+      "secret": false,
+      "image": "",
+      "pinCount": 0,
+      "sectionCount": 0,
+      "coverImages": [],
+      "createAt": "2024-12-06T13:50:31.823Z"
+    },
+    {
+      "id": "0307",
+      "title": "xcxzc",
+      "secret": false,
+      "image": "",
+      "pinCount": 0,
+      "sectionCount": 0,
+      "coverImages": [],
+      "createAt": "2024-12-06T15:47:54.245Z"
+    },
+    {
+      "id": "8761",
+      "title": "fsdfsdfsd",
+      "secret": false,
+      "image": "",
+      "pinCount": 0,
+      "sectionCount": 0,
+      "coverImages": [],
+      "createAt": "2024-12-07T05:44:32.415Z"
+    },
+    {
+      "id": "fb9b",
+      "title": "fsdfdsdfs",
+      "secret": false,
+      "image": "",
+      "pinCount": 0,
+      "sectionCount": 0,
+      "coverImages": [],
+      "createAt": "2024-12-07T13:22:03.880Z"
+    }
+  ]
+}
