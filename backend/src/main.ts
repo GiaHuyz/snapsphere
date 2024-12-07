@@ -3,6 +3,7 @@ import { AppModule } from './app.module'
 import { log } from 'console'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
@@ -20,6 +21,14 @@ async function bootstrap() {
 	log('[DEV]',`Swagger is running on http://localhost:${process.env.PORT || 8000}/api`)
 	// config clerk
   app.use(ClerkExpressWithAuth());
+	// Kích hoạt global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Loại bỏ các thuộc tính không khai báo trong DTO
+      forbidNonWhitelisted: true, // Ném lỗi nếu có thuộc tính không hợp lệ
+      transform: true, // Tự động chuyển đổi dữ liệu (ví dụ: string thành số)
+    }),
+  );
 	// start app
 	await app.listen(process.env.PORT ?? 8000)
 }
