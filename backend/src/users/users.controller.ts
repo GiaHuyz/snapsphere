@@ -21,9 +21,4 @@ export class UsersController extends GenericController<UserDocument> {
     return this.userService.create(createUserDto as any);
   }
 
-
-  @Put(':id')
-  async replace(@Param('id') id: string, @Body() replaceDto: UpdateUserDto): Promise<UserDocument> {
-    return super.replace(id, replaceDto as any);
-  }
 }
