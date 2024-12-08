@@ -1,7 +1,6 @@
-
 # Database Design for AI-powered Image Sharing Platform
 
-## 1. Table: `users`
+## 1. Table: `users` (Clerk - Not in database)
 Stores information about users.
 
 | **Field**        | **Type**         | **Description**                                |
@@ -19,16 +18,22 @@ Stores information about users.
 ## 2. Table: `images`
 Stores information about images uploaded by users.
 
-| **Field**        | **Type**         | **Description**                                |
+| **Field**        | **Type**         | **Description**                                 |
 |-------------------|------------------|------------------------------------------------|
 | `image_id`        | ObjectId         | Primary key for the image.                     |
 | `user_id`         | ObjectId         | ID of the user who uploaded the image.         |
-| `url`             | String           | Storage URL of the image (S3 or Cloudinary).   |
+| `collection_id`   | ObjectId         | ID of the collection to which the image belongs.|
+| `position`        | Number           | Position of the image within the collection.    | 
+| `title`           | String           | Title of the image.                            |
+| `url`             | String           | Storage URL of the image (Cloudinary).         |
+| `link`            | String          | A url associated with the image, added by the user.|
 | `description`     | String           | Description of the image.                      |
 | `tags`            | Array of String  | List of tags associated with the image.        |
-| `theme`           | String           | Theme/category of the image (e.g., Travel).    |
+| `category`        | String           | category of the image (e.g., Travel).          |
 | `is_public`       | Boolean          | Whether the image is publicly visible.         |
+| `is_allowed_comment`   | Boolean     | Whether comments are allowed for the image.    |
 | `created_at`      | Date             | Date the image was uploaded.                   |
+| `updated_at`      | Date             | Date the image was last updated.               |
 
 ---
 
@@ -41,27 +46,51 @@ Stores information about user-created image collections.
 | `user_id`         | ObjectId         | ID of the user who owns the collection.        |
 | `name`            | String           | Name of the collection.                        |
 | `description`     | String           | Short description of the collection.           |
-| `image_ids`       | Array of ObjectId| List of image IDs included in the collection.  |
 | `created_at`      | Date             | Date the collection was created.               |
 | `updated_at`      | Date             | Date the collection was last updated.          |
 
 ---
 
-## 4. Table: `interactions`
-Stores information about user interactions with images.
+## 4. Table: `likes`
+Stores information about likes on images.
 
 | **Field**        | **Type**         | **Description**                                |
 |-------------------|------------------|------------------------------------------------|
-| `interaction_id`  | ObjectId         | Primary key for the interaction.               |
-| `user_id`         | ObjectId         | ID of the user performing the interaction.     |
-| `image_id`        | ObjectId         | ID of the image being interacted with.         |
-| `type`            | String           | Type of interaction (e.g., like, comment).     |
-| `content`         | String           | Content of the comment (if applicable).        |
-| `created_at`      | Date             | Date the interaction was created.              |
+| `like_id`         | ObjectId         | Primary key for the like.                      |
+| `user_id`         | ObjectId         | ID of the user who liked the image.            |
+| `image_id`        | ObjectId         | ID of the liked image.                         |
+| `created_at`      | Date             | Date the like was created.                     |
 
 ---
 
-## 5. Table: `reports`
+## 5. Table: `comments`
+Stores information about comments on images.
+
+| **Field**        | **Type**         | **Description**                                |
+|-------------------|------------------|------------------------------------------------|
+| `comment_id`      | ObjectId         | Primary key for the comment.                   |
+| `user_id`         | ObjectId         | ID of the user who commented on the image.     |
+| `image_id`        | ObjectId         | ID of the commented image.                     |
+| `parent_id`       | ObjectId         | ID of the parent comment (if any).             |
+| `content`         | String           | Content of the comment.                        |
+| `created_at`      | Date             | Date the comment was created.                  |
+| `updated_at`      | Date             | Date the comment was last updated.             |
+
+---
+
+## 6. Table: `follows`
+Stores information about follows between users.
+
+| **Field**        | **Type**         | **Description**                                |
+|-------------------|------------------|------------------------------------------------|
+| `follow_id`       | ObjectId         | Primary key for the follow.                    |
+| `follower_id`     | ObjectId         | ID of the follower.                            |
+| `followee_id`     | ObjectId         | ID of the followee.                            |
+| `created_at`      | Date             | Date the follow was created.                   |
+
+---
+
+## 7. Table: `reports`
 Stores information about reported images for violations.
 
 | **Field**        | **Type**         | **Description**                                |
@@ -70,16 +99,5 @@ Stores information about reported images for violations.
 | `user_id`         | ObjectId         | ID of the user submitting the report.          |
 | `image_id`        | ObjectId         | ID of the reported image.                      |
 | `reason`          | String           | Reason for reporting the image.                |
-| `created_at`      | Date             | Date the report was created.                   |
 | `status`          | String           | Status of the report (e.g., pending, resolved).|
-
----
-
-## Redis Cache
-Used for caching search and recommendation data to improve system performance.
-
-- **Key**: `search:{query}`  
-  - **Value**: List of image IDs matching the search query.  
-
-- **Key**: `recommendations:{user_id}`  
-  - **Value**: List of recommended image IDs for the user.  
+| `created_at`      | Date             | Date the report was created.                   |

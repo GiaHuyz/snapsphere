@@ -6,20 +6,20 @@ import { Input } from '@/components/ui/input'
 import { Expand, Heart, MoreHorizontal, Share2 } from 'lucide-react'
 import Image from 'next/image'
 
-export default function ImageDetailPage() {
+export default function PinDetails() {
 	return (
 		<div className="min-h-screen">
 			<div className="flex items-center justify-center py-8">
-				<div className="grid w-full max-w-5xl grid-cols-1 gap-4 rounded-lg bg-white p-4 shadow-lg lg:grid-cols-[1fr,400px]">
+				<div className="grid w-full max-w-5xl grid-cols-1 gap-4 rounded-2xl bg-white p-4 shadow-2xl lg:grid-cols-[500px,1fr]">
 					{/* Left: Image Section */}
 					<div className="relative">
 						<div className="relative w-full overflow-hidden rounded-lg">
 							<Image
-								src="https://images.unsplash.com/photo-1732468170768-4ae7fe38376b?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+								src="https://plus.unsplash.com/premium_photo-1731624534286-adf5e9c78159?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
 								alt="Detailed landscape artwork"
-								width={1200}
-								height={800}
-								className="h-auto w-full object-contain"
+								width={500}
+								height={500}
+								className="h-auto w-full max-h-[685px] object-cover"
 								priority
 							/>
 							<Button
@@ -86,12 +86,12 @@ export default function ImageDetailPage() {
 						{/* Comment Input */}
 						<div className="pt-4">
 							<div className="flex items-center gap-2">
-								<Avatar className="h-8 w-8">
+								<Avatar className="size-12">
 									<AvatarImage src="/placeholder.svg?height=32&width=32" alt="Current user" />
 									<AvatarFallback>U</AvatarFallback>
 								</Avatar>
 								<div className="relative flex-1">
-									<Input placeholder="Add a comment" className="rounded-full pr-20" />
+									<Input placeholder="Add a comment" className="rounded-full pr-20 min-h-12" />
 									<div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1">
 										<Button size="icon" variant="ghost" className="h-8 w-8">
 											😊

@@ -1,18 +1,31 @@
 'use client'
 
 import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs'
-import { Search, UserRoundPen } from 'lucide-react'
+import { LayoutDashboard, Search, UserRoundPen } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { ModeToggle } from '@/components/mode-toggle'
+import ModeToggle from '@/components/mode-toggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Image from 'next/image'
+import { useEffect } from 'react'
 
-export function Header() {
-	const { isSignedIn } = useUser()
+export default function Header() {
+	const { isSignedIn, user } = useUser()
 	const pathname = usePathname()
+
+	// set default username
+	useEffect(() => {
+		const updateUsername = async () => {
+			if (isSignedIn && user && !user.username) {
+				const username = user.emailAddresses[0].emailAddress.split('@')[0]
+				await user.update({ username })
+			}
+		}
+
+		updateUsername()
+	}, [isSignedIn, user])
 
 	return (
 		<div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -62,7 +75,16 @@ export function Header() {
 					) : (
 						<UserButton>
 							<UserButton.MenuItems>
-								<UserButton.Link label="Profile" labelIcon={<UserRoundPen size={16} />} href="/" />
+								<UserButton.Link
+									label="Board"
+									labelIcon={<LayoutDashboard size={16} />}
+									href={`/${user?.username}`}
+								/>
+								<UserButton.Link
+									label="Profile"
+									labelIcon={<UserRoundPen size={16} />}
+									href="/profile"
+								/>
 								<UserButton.Action label="manageAccount" />
 								<UserButton.Action label="signOut" />
 							</UserButton.MenuItems>
