@@ -6,6 +6,8 @@ import { AppService } from './app.service'
 import { CommonModule } from './common/common.module'
 import { ImagesModule } from './images/images.module'
 import { UsersModule } from './users/users.module'
+import { APP_GUARD } from '@nestjs/core'
+import { AuthGuard } from '@/common/guard/auth.guard'
 
 @Module({
 	imports: [
@@ -22,6 +24,9 @@ import { UsersModule } from './users/users.module'
 		ImagesModule
 	],
 	controllers: [AppController],
-	providers: [AppService]
+	providers: [AppService, {
+        provide: APP_GUARD,
+        useClass: AuthGuard
+    }]
 })
 export class AppModule {}

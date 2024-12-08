@@ -1,5 +1,5 @@
 import { AppModule } from '@/app.module'
-import { ClerkExpressWithAuth } from '@clerk/clerk-sdk-node'
+import { clerkMiddleware } from '@clerk/express'
 import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
@@ -20,7 +20,7 @@ async function bootstrap() {
 	SwaggerModule.setup('api', app, document)
 	log('[DEV]', `Swagger is running on http://localhost:${process.env.PORT || 8000}/api`)
 	// config clerk
-	app.use(ClerkExpressWithAuth())
+	app.use(clerkMiddleware())
 	// Kích hoạt global validation pipe
 	app.useGlobalPipes(
 		new ValidationPipe({
