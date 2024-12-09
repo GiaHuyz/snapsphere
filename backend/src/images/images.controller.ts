@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CreateImageDto } from './dto/create-image.dto'
 import { ImageDocument } from './image.schema'
 import { ImagesService } from './images.service'
+import { UpdateImageDto } from './dto/update-image.dto'
 
 @ApiTags('images')
 @ApiBearerAuth()
@@ -21,7 +22,7 @@ export class ImagesController extends GenericController<ImageDocument> {
 
 	@Patch(':id')
 	@ApiOperation({ summary: "Update the image's fields given" })
-	async update(@Param('id') id: string, @Body() updateImageDto: CreateImageDto): Promise<ImageDocument> {
+	async update(@Param('id') id: string, @Body() updateImageDto: UpdateImageDto): Promise<ImageDocument> {
 		return this.imagesService.update(id, updateImageDto as any)
 	}
 }
