@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException, Put } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException, Put, Query } from '@nestjs/common';
 import { GenericService } from './generic.service';
 import { Document, Types } from 'mongoose';
 
@@ -7,8 +7,8 @@ export abstract class GenericController<T extends Document> {
   constructor(private readonly service: GenericService<T>) { }
 
   @Get()
-  async findAll(): Promise<T[]> {
-    return this.service.findAll();
+  async findAll(@Query() query: any = {}): Promise<T[]> {
+    return this.service.findAll(query);
   }
 
   @Get(':id')
