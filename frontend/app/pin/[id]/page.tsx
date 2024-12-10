@@ -1,10 +1,9 @@
-'use client'
-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Expand, Heart, MoreHorizontal, Share2 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function PinDetails() {
 	return (
@@ -60,16 +59,18 @@ export default function PinDetails() {
 
 						{/* User Info */}
 						<div className="flex items-center justify-between py-4">
-							<div className="flex items-center gap-2">
-								<Avatar>
-									<AvatarImage src="/placeholder.svg?height=40&width=40" alt="Mùa Hoa" />
-									<AvatarFallback>MH</AvatarFallback>
-								</Avatar>
-								<div>
-									<h2 className="font-medium">Mùa Hoa</h2>
-									<p className="text-sm text-muted-foreground">1k followers</p>
+							<Link href={`/giahuy957z`}>
+								<div className="flex items-center gap-2">
+									<Avatar>
+										<AvatarImage src="/placeholder.svg?height=40&width=40" alt="Mùa Hoa" />
+										<AvatarFallback>MH</AvatarFallback>
+									</Avatar>
+									<div>
+										<h2 className="font-medium">Mùa Hoa</h2>
+										<p className="text-sm text-muted-foreground">1k followers</p>
+									</div>
 								</div>
-							</div>
+							</Link>
 							<Button variant="outline" className="rounded-full">
 								Follow
 							</Button>

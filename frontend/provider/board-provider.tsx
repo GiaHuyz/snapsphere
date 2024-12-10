@@ -1,28 +1,28 @@
 'use client'
 
-import { BoardProps, createBoardStore } from '@/stores/board-store'
+import { BoardDropdownProps, createBoardDropdownStore } from '@/stores/board-dropdown-store'
 import { createContext, useContext, useRef } from 'react'
 import { useStore } from 'zustand'
 
-type BoardStoreApi = ReturnType<typeof createBoardStore>
-type BoardProviderProps = React.PropsWithChildren<BoardProps>
+type BoardDropdownStoreApi = ReturnType<typeof createBoardDropdownStore>
+type BoardDropdownProviderProps = React.PropsWithChildren<BoardDropdownProps>
 
-const BoardStoreContext = createContext<BoardStoreApi | null>(null)
+const BoardDropdownStoreContext = createContext<BoardDropdownStoreApi | null>(null)
 
-export const BoardProvider = ({ children, ...props }: BoardProviderProps) => {
-	const storeRef = useRef<BoardStoreApi>()
+export const BoardDropdownProvider = ({ children, ...props }: BoardDropdownProviderProps) => {
+	const storeRef = useRef<BoardDropdownStoreApi>()
 
 	if (!storeRef.current) {
-		storeRef.current = createBoardStore(props)
+		storeRef.current = createBoardDropdownStore(props)
 	}
 
-	return <BoardStoreContext.Provider value={storeRef.current}>{children}</BoardStoreContext.Provider>
+	return <BoardDropdownStoreContext.Provider value={storeRef.current}>{children}</BoardDropdownStoreContext.Provider>
 }
 
-export const useBoardStore = () => {
-	const boardStoreContext = useContext(BoardStoreContext)
-	if (!boardStoreContext) {
-		throw new Error('useBoardStore must be used within a BoardProvider')
+export const useBoardDropdownStore = () => {
+	const boardDropdownStoreContext = useContext(BoardDropdownStoreContext)
+	if (!boardDropdownStoreContext) {
+		throw new Error('useBoardDropdownStore must be used within a BoardDropdownProvider')
 	}
-	return useStore(boardStoreContext, (state) => state)
+	return useStore(boardDropdownStoreContext, (state) => state)
 }

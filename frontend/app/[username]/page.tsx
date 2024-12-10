@@ -1,7 +1,9 @@
+import { getBoardsByUsernameAction } from '@/actions/board-actions'
 import BoardPreviewList from '@/components/board-preview-list'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { isActionError } from '@/lib/errors'
 import { clerkClient } from '@clerk/nextjs/server'
 import { Plus, Share } from 'lucide-react'
 
@@ -25,6 +27,18 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 				<div className="text-center">
 					<h2 className="text-2xl font-semibold mb-2">User Not Found</h2>
 					<p className="text-muted-foreground">The requested user profile does not exist.</p>
+				</div>
+			</div>
+		)
+	}
+
+	const boards = await getBoardsByUsernameAction(user.id)
+
+	if (isActionError(boards)) {
+		return (
+			<div className="flex items-center justify-center mt-20">
+				<div className="text-center">
+					<h2 className="text-2xl font-semibold mb-2">{boards.error}</h2>
 				</div>
 			</div>
 		)
@@ -94,7 +108,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 				</TabsContent>
 
 				<TabsContent value="saved" className="mt-6">
-					<BoardPreviewList username={username} />
+					<BoardPreviewList username={username} initBoards={boards} />
 				</TabsContent>
 			</Tabs>
 		</div>

@@ -45,7 +45,9 @@ Stores information about user-created image collections.
 | `collection_id`   | ObjectId         | Primary key for the collection.                |
 | `user_id`         | ObjectId         | ID of the user who owns the collection.        |
 | `name`            | String           | Name of the collection.                        |
+| `image_count`     | Number           | Number of images in the collection.            |
 | `description`     | String           | Short description of the collection.           |
+| `secret`       | Boolean          | Whether the collection is publicly visible.    |
 | `created_at`      | Date             | Date the collection was created.               |
 | `updated_at`      | Date             | Date the collection was last updated.          |
 

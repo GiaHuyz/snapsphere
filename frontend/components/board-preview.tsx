@@ -1,29 +1,42 @@
 'use client'
 
+import { Board } from '@/actions/board-actions'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
+import { formatTime } from '@/lib/format-time'
 import { Pencil } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 interface BoardPreviewProps {
-	id: string
+	_id: string
 	title: string
+    description: string
+	secret: boolean
 	pinCount: number
 	sectionCount?: number
-	createAt: string
+	createdAt: string
 	coverImages: string[]
 	username: string
-	className?: string
+    setBoards: (boards: Board[]) => void
 }
 
-export default function BoardPreview({ id, title, pinCount, sectionCount, createAt, coverImages, username, className }: BoardPreviewProps) {
-	const onEdit = () => {
-		console.log('Edit board', id)
-	}
+export default function BoardPreview({
+	_id,
+	title,
+    description,
+	secret,
+	pinCount = 0,
+	sectionCount,
+	createdAt,
+	coverImages,
+	username,
+    setBoards
+}: BoardPreviewProps) {
+	const { onOpen: onOpenEdit } = useEditBoardModal()
 
 	return (
-		<div className={cn('space-y-2', className)}>
+		<div className='space-y-2'>
 			<Link
 				href={`/${username}/${title.toLowerCase()}`}
 				className="group relative block overflow-hidden rounded-xl"
@@ -60,7 +73,12 @@ export default function BoardPreview({ id, title, pinCount, sectionCount, create
 						className="opacity-0 absolute bottom-2 right-2 h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 group-hover:opacity-100"
 						onClick={(e) => {
 							e.preventDefault()
-							onEdit()
+							onOpenEdit(_id, {
+                                title,
+                                description,
+                                coverImage: coverImages[0],
+                                secret 
+                            }, setBoards)
 						}}
 					>
 						<Pencil className="h-4 w-4" />
@@ -74,7 +92,7 @@ export default function BoardPreview({ id, title, pinCount, sectionCount, create
 				<p className="text-sm text-muted-foreground">
 					{pinCount} Pins
 					{sectionCount && sectionCount > 0 && ` · ${sectionCount} section`}
-					{createAt && ` · ${createAt}`}
+					{` · ${formatTime(createdAt)}`}
 				</p>
 			</div>
 		</div>

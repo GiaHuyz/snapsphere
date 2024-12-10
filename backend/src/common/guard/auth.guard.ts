@@ -5,7 +5,6 @@ import { Reflector } from '@nestjs/core'
 export class AuthGuard implements CanActivate {
     constructor(private reflector: Reflector) {}
 
-
 	canActivate(context: ExecutionContext): boolean {
         const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
             context.getHandler(),

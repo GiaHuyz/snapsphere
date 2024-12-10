@@ -1,13 +1,14 @@
-import { getBoards } from '@/actions/board-actions'
+import { Board, getBoardsByUsernameAction } from '@/actions/board-actions'
 import Header from '@/components/header'
-import { Toaster } from '@/components/ui/toaster'
-import { BoardProvider } from '@/provider/board-provider'
 import { ModalProvider } from '@/provider/modal-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { ClerkProvider } from '@clerk/nextjs'
+import { clerkClient, currentUser } from '@clerk/nextjs/server'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
+import { Toaster } from 'sonner'
 import './globals.css'
+import { BoardDropdownProvider } from '@/provider/board-provider'
 
 const geistSans = localFont({
 	src: './fonts/GeistVF.woff',
@@ -30,20 +31,33 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode
 }>) {
-	const boards = await getBoards()
+	const user = await currentUser()
+
+	if (user && !user.username) {
+		let username = user.emailAddresses[0].emailAddress.split('@')[0]
+
+		if (/^\d+$/.test(username)) {
+			username = 'user_' + username
+		}
+
+		;(await clerkClient()).users.updateUser(user.id, { username })
+	}
+
+	const boards = await getBoardsByUsernameAction(user?.id as string)
+
 	return (
 		<ClerkProvider>
 			<html lang="en" suppressHydrationWarning>
-				<BoardProvider boardPreviews={boards} boardsDropdown={boards}>
-					<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+				<BoardDropdownProvider boardsDropdown={boards as Board[]}>
+					<body className={`${geistSans.variable} ${geistMono.variable} antialiased}`}>
 						<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-							<Header />
+							<Header user={JSON.parse(JSON.stringify(user))} />
 							<main>{children}</main>
 							<ModalProvider />
-							<Toaster />
+							<Toaster position="top-center" richColors duration={3000} />
 						</ThemeProvider>
 					</body>
-				</BoardProvider>
+				</BoardDropdownProvider>
 			</html>
 		</ClerkProvider>
 	)
