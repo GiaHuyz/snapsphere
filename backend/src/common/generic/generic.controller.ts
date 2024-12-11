@@ -24,9 +24,7 @@ export abstract class GenericController<T extends Document> {
     return this.service.baseUpdate(id, updateDto);
   }
 
-
-  @Delete(':id')
-  async delete(@Param('id') id: string): Promise<void> {
-    return this.service.delete(id);
+  async baseDelete(@Param('id') id: string): Promise<void> {
+    return this.service.baseDelete(id);
   }
 }

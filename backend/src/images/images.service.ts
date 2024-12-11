@@ -60,4 +60,19 @@ export class ImagesService extends GenericService<ImageDocument> {
     // truyền callback function vào hàm baseUpdate
     return super.baseUpdate(id, updateDto, [checkOwnership]);
   }
+
+  async delete(id: string, userId: string): Promise<void> {
+    //------
+    // Tạo callback function để kiểm tra xem user có quyền xóa không
+    //------
+    const checkOwnership = (image: ImageDocument) => {
+      // chủ sở hữu mới được xóa
+      if (image.user_id !== userId) {
+        throw new UnauthorizedException(['You are not the owner of this image']);
+      }
+    }
+
+    // truyền callback function vào hàm baseDelete
+    return super.baseDelete(id, [checkOwnership]);
+  }
 }

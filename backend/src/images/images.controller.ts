@@ -31,7 +31,7 @@ export class ImagesController extends GenericController<ImageDocument> {
 	async create(
 		@Body() createImageDto: CreateImageDto,
 		@UserId() userId: string): Promise<ImageDocument> {
-		log('[DEV]', '[ImagesController.create]', `user with id: ${userId} create an image` )
+		log('[DEV]', '[ImagesController.create]', `user with id: ${userId} create an image`)
 		return this.imagesService.create({ ...createImageDto, user_id: userId })
 	}
 
@@ -41,15 +41,18 @@ export class ImagesController extends GenericController<ImageDocument> {
 		@Param('id') id: string,
 		@Body() updateImageDto: UpdateImageDto,
 		@UserId() userId: string
-	): Promise<ImageDocument> {			
+	): Promise<ImageDocument> {
 
 		return this.imagesService.update(id, updateImageDto as any, userId)
 	}
 
 	@Delete(':id')
 	@ApiOperation({ summary: 'Delete an image' })
-	async delete(@Param('id') id: string): Promise<void> {
-		return super.delete(id);
+	async delete(
+		@Param('id') id: string,
+		@UserId() userId: string
+	): Promise<void> {
+		return this.imagesService.delete(id, userId);
 	}
 
 }
