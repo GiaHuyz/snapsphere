@@ -6,14 +6,12 @@ import { Document, Types } from 'mongoose';
 export abstract class GenericController<T extends Document> {
   constructor(private readonly service: GenericService<T>) { }
 
-  @Get()
-  async findAll(@Query() query: any = {}): Promise<T[]> {
+  async baseFindAll(@Query() query: any = {}): Promise<T[]> {
     return this.service.findAll(query);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<T> {
-    return await this.service.findOne(id);;
+  async baseFindOne(@Param('id') id: string): Promise<T> {
+    return await this.service.baseFindOne(id);;
   }
 
   async baseCreate(@Body() createDto: Partial<T>): Promise<T> {

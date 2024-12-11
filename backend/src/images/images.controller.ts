@@ -19,10 +19,20 @@ export class ImagesController extends GenericController<ImageDocument> {
 		super(imagesService)
 	}
 
+	@Get(':id')
+	@ApiOperation({ summary: 'Get an image by ID', description: 'Only owner can view their private images' })
+	async findOne(
+		@Param('id') id: string,
+		@UserId() userId: string
+	): Promise<ImageDocument> {
+	
+		return this.imagesService.baseFindOne(id)
+	}
+
 	@Public() // TODO: chỉ cho phép lấy private image nếu là chủ sở hữu
 	@Get()
 	@ApiOperation({ summary: 'Get all images' })
-	async findAll(@Query() query: GetImagesDto): Promise<ImageDocument[]> {
+	async baseFindAll(@Query() query: GetImagesDto): Promise<ImageDocument[]> {
 		return this.imagesService.findAll(query)
 	}
 

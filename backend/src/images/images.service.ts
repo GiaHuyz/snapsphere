@@ -11,6 +11,19 @@ export class ImagesService extends GenericService<ImageDocument> {
     super(imageModel);
   }
 
+  async findOne(id: string, userId: string): Promise<ImageDocument> {
+    const checkCanView = (image: ImageDocument) => {
+      const isPublic = image.is_public;
+      const isOwner = image.user_id === userId;
+      const isCanView = isPublic || isOwner;
+      if (!isCanView) {
+        throw new UnauthorizedException(['You are not the owner of this image']);
+      }
+    }
+    // truyền callback function vào hàm baseDelete
+    return super.baseFindOne(id, [checkCanView]);
+  }
+
   async findAll(query: GetImagesDto): Promise<ImageDocument[]> {
     const filters: Record<string, any> = {};
 

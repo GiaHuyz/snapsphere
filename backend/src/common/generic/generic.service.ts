@@ -15,7 +15,9 @@ export class GenericService<T extends Document> {
   }
 
   // Tìm một mục theo ID
-  async findOne(id: string): Promise<T> {
+  async baseFindOne(
+    id: string, 
+    additionalConditions?: Array<(document: T) => void>): Promise<T> {
     try {
       // Kiểm tra nếu ID không hợp lệ
       if (!this.isValidObjectId(id)) {
@@ -23,8 +25,16 @@ export class GenericService<T extends Document> {
       }
 
       const document = await this.model.findById(id).exec();
+
       if (!document) {
         throw new NotFoundException(['Document not found']);
+      }
+
+      // Gọi từng callback để kiểm tra điều kiện
+      if (additionalConditions) {
+        for (const condition of additionalConditions) {
+          condition(document); // Thực thi từng điều kiện
+        }
       }
 
       return document;
@@ -61,7 +71,7 @@ export class GenericService<T extends Document> {
   ): Promise<T | null> {
     try {
       // Sử dụng findOne để kiểm tra tài liệu
-      const document = await this.findOne(id);
+      const document = await this.baseFindOne(id);
 
       // Gọi từng callback để kiểm tra điều kiện
       if (additionalConditions) {
@@ -101,7 +111,7 @@ export class GenericService<T extends Document> {
   ): Promise<void> {
     try {
       // Sử dụng findOne để kiểm tra tài liệu
-      const document = await this.findOne(id);
+      const document = await this.baseFindOne(id);
   
       // Gọi từng callback để kiểm tra điều kiện
       if (additionalConditions) {
