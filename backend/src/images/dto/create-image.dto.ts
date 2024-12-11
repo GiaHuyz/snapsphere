@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class CreateImageDto {
   @ApiProperty({ description: 'Chủ sở hữu của hình ảnh', example: '1234567890' })
@@ -33,4 +34,10 @@ export class CreateImageDto {
   @IsBoolean()
   @IsOptional()
   is_public?: boolean;
+
+  // TODO: Thêm kiểm tra collection_id có tồn tại không
+  @ApiProperty({ description: 'ID của Collection chứa hình ảnh', example: '1234567890' })
+  @IsString()
+  @IsNotEmpty({ message: 'Collection ID không được để trống' })
+  collection_id: Types.ObjectId;
 }

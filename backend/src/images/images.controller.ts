@@ -24,7 +24,7 @@ export class ImagesController extends GenericController<ImageDocument> {
 
 	@Post()
 	async create(@Body() createImageDto: CreateImageDto): Promise<ImageDocument> {
-		return this.imagesService.create(createImageDto as any)
+		return super.create(createImageDto)
 	}
 
 	@Public()

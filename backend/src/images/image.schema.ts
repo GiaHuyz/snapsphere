@@ -1,6 +1,6 @@
 // image.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 @Schema({ timestamps: true }) // Thêm timestamp để tự động tạo createdAt và updatedAt
 export class Image {
@@ -25,6 +25,9 @@ export class Image {
 
   @Prop() // Số lượt xem
   views?: number;
+
+  @Prop({ type: Types.ObjectId, ref: 'Collection', required: true }) // ID của Collection chứa hình ảnh này
+  collection_id: Types.ObjectId;
 }
 
 // Tạo schema Mongoose
