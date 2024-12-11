@@ -47,17 +47,19 @@ export class GenericService<T extends Document> {
   async baseUpdate(
     id: string,
     updateDto: Partial<T>,
-    additionalCondition?: (document: T) => void // Callback kiểm tra điều kiện
+    additionalConditions?: Array<(document: T) => void> // Mảng callback kiểm tra điều kiện
   ): Promise<T | null> {
     try {
       // Sử dụng findOne để kiểm tra tài liệu
       const document = await this.findOne(id);
 
-      // Kiểm tra điều kiện bổ sung nếu có
-      if (additionalCondition) {
-        additionalCondition(document);
+      // Gọi từng callback để kiểm tra điều kiện
+      if (additionalConditions) {
+        for (const condition of additionalConditions) {
+          condition(document); // Thực thi từng điều kiện
+        }
       }
-      
+
       // Cập nhật tài liệu và trả về tài liệu đã được cập nhật
       const updatedDocument = await this.model
         .findByIdAndUpdate(document._id, updateDto, { new: true })

@@ -50,7 +50,7 @@ export class ImagesService extends GenericService<ImageDocument> {
     //------
     // Tạo callback function để kiểm tra xem user có quyền update không
     //------
-    const canUpdate = (image: ImageDocument) => {
+    const checkOwnership = (image: ImageDocument) => {
       // chủ sở hữu mới được update
       if (image.user_id !== userId) {
         throw new UnauthorizedException(['You are not the owner of this image']);
@@ -58,6 +58,6 @@ export class ImagesService extends GenericService<ImageDocument> {
     }
 
     // truyền callback function vào hàm baseUpdate
-    return super.baseUpdate(id, updateDto, canUpdate)
+    return super.baseUpdate(id, updateDto, [checkOwnership]);
   }
 }
