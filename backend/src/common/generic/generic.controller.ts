@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException, Put, Query, Req } from '@nestjs/common';
 import { GenericService } from './generic.service';
 import { Document, Types } from 'mongoose';
 
@@ -6,29 +6,23 @@ import { Document, Types } from 'mongoose';
 export abstract class GenericController<T extends Document> {
   constructor(private readonly service: GenericService<T>) { }
 
-  @Get()
-  async findAll(@Query() query: any = {}): Promise<T[]> {
+  async baseFindAll(@Query() query: any = {}): Promise<T[]> {
     return this.service.findAll(query);
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<T> {
-    return await this.service.findOne(id);;
+  async baseFindOne(@Param('id') id: string): Promise<T> {
+    return await this.service.baseFindOne(id);;
   }
 
-  @Post()
-  async create(@Body() createDto: Partial<T>): Promise<T> {
+  async baseCreate(@Body() createDto: Partial<T>): Promise<T> {
     return this.service.create(createDto);
   }
 
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDto: Partial<T>): Promise<T> {
-    return this.service.update(id, updateDto);
+  async baseUpdate(@Param('id') id: string, @Body() updateDto: Partial<T>): Promise<T> {
+    return this.service.baseUpdate(id, updateDto);
   }
 
-
-  @Delete(':id')
-  async delete(@Param('id') id: string): Promise<void> {
-    return this.service.delete(id);
+  async baseDelete(@Param('id') id: string): Promise<void> {
+    return this.service.baseDelete(id);
   }
 }
