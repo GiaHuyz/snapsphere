@@ -1,79 +1,60 @@
 'use server'
 
-import { auth } from '@clerk/nextjs/server'
+import { createBoardData } from '@/components/modals/create-board-modal'
+import { EditBoardData } from '@/components/modals/edit-board-modal'
+import createServerAction from '@/lib/create-server-action'
+import { getErrorMessage } from '@/lib/errors'
+import { HttpRequest } from '@/lib/http-request'
 
 export interface Board {
-	id: string
+	_id: string
 	title: string
+	description: string
+	secret: boolean
 	pinCount: number
-	sectionCount: number
-	createAt: string
+	createdAt: string
 	coverImages: string[]
 }
 
-export interface CreateBoard {
-	title: string
-	secret: boolean
-	image?: string
-}
-
-export async function createBoard(data: CreateBoard) {
-	const { userId } = await auth()
-
-	if (!userId) {
-		throw new Error('Unauthorized')
-	}
-
+export const createBoardAction = createServerAction<createBoardData, Board>(async (data) => {
 	try {
-		const response = await fetch('http://localhost:8000/boards', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				...data,
-				pinCount: 0,
-				sectionCount: 0,
-				coverImages: [],
-				createAt: new Date().toISOString()
+		const newBoard = await HttpRequest.post<Board>('/collections', data)
+		return newBoard
+	} catch (error) {
+		return { error: getErrorMessage(error) }
+	}
+})
+
+export const editBoardAction = createServerAction<EditBoardData, Board>(async (data, boardId) => {
+	try {
+		const updatedBoard = await HttpRequest.patch<Board>(`/collections/${boardId}`, data)
+		return updatedBoard
+	} catch (error) {
+		return { error: getErrorMessage(error) }
+	}
+})
+
+export const deleteBoardAction = createServerAction<string, void>(async (id) => {
+	try {
+		await HttpRequest.delete(`/collections/${id}`)
+	} catch (error) {
+		return { error: getErrorMessage(error) }
+	}
+})
+
+export const getBoardsByUsernameAction = createServerAction<string, Board[]>(
+	async (userId) => {
+		try {
+			const boards = await HttpRequest.get<Board[]>(`/collections/user/${userId}`, {
+				cache: 'force-cache'
 			})
-		})
-
-		if (response.ok) {
-			// revalidateTag('boards')
-			return { success: true, newBoard: await response.json() }
-		} else {
-			return { success: false, error: 'Failed to create board' }
-		}
-	} catch (error) {
-		console.error('Error creating board:', error)
-		return { success: false, error: 'Failed to create board' }
-	}
-}
-
-export async function getBoards(): Promise<Board[]> {
-	const { userId } = await auth()
-
-	if (!userId) {
-		return []
-	}
-
-	try {
-		const response = await fetch('http://localhost:8000/boards', {
-            method: 'GET',
-            cache: 'force-cache',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			next: {
-				tags: ['boards']
+			return boards
+		} catch (error) {
+			if (error instanceof Error && error.message === 'Unauthorized') {
+				return []
 			}
-		})
-		const boards = await response.json()
-        console.log('ok')
-		return boards
-	} catch (error) {
-		console.error('Error fetching boards:', error)
-		throw new Error('Failed to fetch boards')
-	}
-}
+			return { error: getErrorMessage(error) }
+		}
+	},
+	{ requireAuth: false }
+)

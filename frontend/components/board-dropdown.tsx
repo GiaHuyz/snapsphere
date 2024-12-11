@@ -12,11 +12,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
-import { useBoardStore } from '@/provider/board-provider'
 import { ChevronDown, Plus, Search } from 'lucide-react'
 import Image from 'next/image'
 import * as React from 'react'
 import { SaveButton } from './save-to-board-button'
+import { useBoardDropdownStore } from '@/provider/board-provider'
 
 interface Suggestion {
 	id: string
@@ -31,7 +31,7 @@ interface BoardDropdownProps {
 
 export default function BoardDropdown({ mode, onChange, children }: BoardDropdownProps) {
 	const { onOpen, setImage } = useCreateBoardModal()
-	const { boardsDropdown } = useBoardStore()
+	const { boardsDropdown } = useBoardDropdownStore()
 
 	const defaultSuggestions: Suggestion[] = [
 		{ id: '3', name: 'Asian landscape' },
@@ -77,7 +77,7 @@ export default function BoardDropdown({ mode, onChange, children }: BoardDropdow
 					<DropdownMenuLabel>All boards</DropdownMenuLabel>
 					{boardsDropdown.map((board) => (
 						<DropdownMenuItem
-							key={board.id}
+							key={board._id}
 							className="relative flex items-center gap-2 p-2 cursor-pointer group"
 							onClick={() => handleSelect(board)}
 						>

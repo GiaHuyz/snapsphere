@@ -1,27 +1,27 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { HydratedDocument } from 'mongoose'
 
-@Schema({ timestamps: true }) // Sử dụng timestamps để tự động tạo createdAt và updatedAt
+export type CollectionDocument = HydratedDocument<Collection>
+
+@Schema({ timestamps: true })
 export class Collection {
-  
-  @Prop({ type: Types.ObjectId, required: true, unique: true })
-  collection_id: Types.ObjectId;
+	@Prop({ required: true })
+	user_id: string
 
-  @Prop({ type: Types.ObjectId, required: true })
-  user_id: Types.ObjectId; // ID của người sở hữu collection
+	@Prop({ required: true })
+	title: string
 
-  @Prop({ required: true })
-  name: string; // Tên của collection
+	@Prop({ default: '' })
+	description: string
 
-  @Prop({ required: true })
-  description: string; // Mô tả ngắn gọn của collection
+	@Prop({ required: true })
+	secret: boolean
 
-  @Prop({ type: Date, default: Date.now })
-  created_at: Date; // Ngày tạo collection
-
-  @Prop({ type: Date, default: Date.now })
-  updated_at: Date; // Ngày cập nhật collection
+	@Prop({
+		default: [],
+		validate: { validator: (value: string[]) => value.length <= 3, message: 'You can add up to 3 cover images' }
+	})
+	coverImages: string[]
 }
 
-export type CollectionDocument = Collection & Document;
-export const CollectionSchema = SchemaFactory.createForClass(Collection);
+export const CollectionSchema = SchemaFactory.createForClass(Collection)

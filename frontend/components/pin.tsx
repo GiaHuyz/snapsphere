@@ -31,7 +31,7 @@ export default function Pin({ id, image, title, isLoggedIn }: PinProps) {
 		<div className="group relative mb-4 w-full overflow-hidden rounded-xl cursor-pointer">
 			{/* Main Image */}
 
-			<Image src={image} alt={title} width={300} height={300} className="object-cover" />
+			<Image src={image} alt={title} width={300} height={300} className="object-cover w-full" />
 
 			<Link href={`/pin/${id}`}>
 				{/* Overlay Actions */}

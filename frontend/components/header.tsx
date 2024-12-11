@@ -1,31 +1,18 @@
 'use client'
 
-import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs'
-import { LayoutDashboard, Search, UserRoundPen } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-
 import ModeToggle from '@/components/mode-toggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
+import { User } from '@clerk/nextjs/server'
+import { LayoutDashboard, Search, UserRoundPen } from 'lucide-react'
 import Image from 'next/image'
-import { useEffect } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
-export default function Header() {
-	const { isSignedIn, user } = useUser()
+export default function Header({ user }: { user: User }) {
+	const isSignedIn = !!user
 	const pathname = usePathname()
-
-	// set default username
-	useEffect(() => {
-		const updateUsername = async () => {
-			if (isSignedIn && user && !user.username) {
-				const username = user.emailAddresses[0].emailAddress.split('@')[0]
-				await user.update({ username })
-			}
-		}
-
-		updateUsername()
-	}, [isSignedIn, user])
 
 	return (
 		<div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

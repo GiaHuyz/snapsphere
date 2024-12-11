@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { log } from 'console'
+import * as cookieParser from 'cookie-parser'
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
@@ -21,6 +22,7 @@ async function bootstrap() {
 	log('[DEV]', `Swagger is running on http://localhost:${process.env.PORT || 8000}/api`)
 	// config clerk
 	app.use(clerkMiddleware())
+    app.use(cookieParser())
 	// Kích hoạt global validation pipe
 	app.useGlobalPipes(
 		new ValidationPipe({

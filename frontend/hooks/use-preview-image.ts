@@ -1,7 +1,7 @@
 'use client'
 
-import { toast } from '@/hooks/use-toast'
 import { ChangeEvent, useState } from 'react'
+import { toast } from 'sonner'
 
 const usePreviewAvatarImage = () => {
 	const [previewImage, setPreviewImage] = useState<string | null>(null)
@@ -11,11 +11,7 @@ const usePreviewAvatarImage = () => {
 		if (file && file.type.startsWith('image')) {
 			const maxSize = 10 * 1024 * 1024 // 10 MB in bytes
 			if (file.size > maxSize) {
-				toast({
-					title: 'Image too large',
-					description: 'Please select an image file that is less than 10 MB in size.',
-					variant: 'destructive'
-				})
+				toast.error('File size too large. Please select an image less than 10 MB in size.')
 				return
 			}
 
@@ -25,11 +21,7 @@ const usePreviewAvatarImage = () => {
 			}
 			reader.readAsDataURL(file)
 		} else {
-			toast({
-				title: 'Invalid file type',
-				description: 'Please select an image file',
-				variant: 'destructive'
-			})
+			toast.error('Please select an image file.')
 		}
 	}
 
