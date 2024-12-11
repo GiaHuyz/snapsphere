@@ -17,7 +17,7 @@ export class UsersController extends GenericController<UserDocument> {
   }
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto): Promise<UserDocument> {
+  async baseCreate(@Body() createUserDto: CreateUserDto): Promise<UserDocument> {
     return this.userService.create(createUserDto as any);
   }
 

@@ -3,10 +3,6 @@ import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, IsUrl } from 'cla
 import { Types } from 'mongoose';
 
 export class CreateImageDto {
-  @ApiProperty({ description: 'Chủ sở hữu của hình ảnh', example: '1234567890' })
-  @IsString()
-  @IsNotEmpty({ message: 'User ID không được để trống' })
-  user_id: string;
 
   @ApiProperty({ description: 'Đường dẫn đến hình ảnh', example: 'https://example.com/image.jpg' })
   @IsString()

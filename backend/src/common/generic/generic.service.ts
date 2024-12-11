@@ -44,11 +44,20 @@ export class GenericService<T extends Document> {
   }
 
   // Cập nhật một mục theo ID
-  async update(id: string, updateDto: Partial<T>): Promise<T | null> {
+  async baseUpdate(
+    id: string,
+    updateDto: Partial<T>,
+    additionalCondition?: (document: T) => void // Callback kiểm tra điều kiện
+  ): Promise<T | null> {
     try {
       // Sử dụng findOne để kiểm tra tài liệu
       const document = await this.findOne(id);
 
+      // Kiểm tra điều kiện bổ sung nếu có
+      if (additionalCondition) {
+        additionalCondition(document);
+      }
+      
       // Cập nhật tài liệu và trả về tài liệu đã được cập nhật
       const updatedDocument = await this.model
         .findByIdAndUpdate(document._id, updateDto, { new: true })

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException, Put, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Delete, Patch, NotFoundException, BadRequestException, Put, Query, Req } from '@nestjs/common';
 import { GenericService } from './generic.service';
 import { Document, Types } from 'mongoose';
 
@@ -16,14 +16,12 @@ export abstract class GenericController<T extends Document> {
     return await this.service.findOne(id);;
   }
 
-  @Post()
-  async create(@Body() createDto: Partial<T>): Promise<T> {
+  async baseCreate(@Body() createDto: Partial<T>): Promise<T> {
     return this.service.create(createDto);
   }
 
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateDto: Partial<T>): Promise<T> {
-    return this.service.update(id, updateDto);
+  async baseUpdate(@Param('id') id: string, @Body() updateDto: Partial<T>): Promise<T> {
+    return this.service.baseUpdate(id, updateDto);
   }
 
 
