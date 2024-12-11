@@ -8,10 +8,10 @@ export class Collection {
 	@Prop({ required: true })
 	user_id: string
 
-	@Prop({ required: true })
+	@Prop({ required: true, maxlength: 50, trim: true })
 	title: string
 
-	@Prop({ default: '' })
+	@Prop({ default: '', maxlength: 160, trim: true })
 	description: string
 
 	@Prop({ required: true })
@@ -25,3 +25,4 @@ export class Collection {
 }
 
 export const CollectionSchema = SchemaFactory.createForClass(Collection)
+CollectionSchema.index({ user_id: 1, title: 1 })

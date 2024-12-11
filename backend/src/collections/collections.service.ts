@@ -1,10 +1,10 @@
 import { Collection, CollectionDocument } from '@/collections/collection.schema'
 import { CreateCollectionDto } from '@/collections/dto/create-collection.dto'
 import { UpdateCollectionDto } from '@/collections/dto/update-collection.dto'
-import { clerkClient } from '@clerk/express'
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
+import { title } from 'process'
 
 @Injectable()
 export class CollectionsService {
@@ -12,6 +12,16 @@ export class CollectionsService {
 
 	async create(userId: string, createCollectionDto: CreateCollectionDto): Promise<CollectionDocument> {
 		const { coverImage, ...rest } = createCollectionDto
+
+		const existsCollection = await this.collectionModel.findOne({
+            user_id: userId,
+            title: { $regex: new RegExp(`^${rest.title}$`, 'i') }
+        })
+        
+        if (existsCollection) {
+            throw new BadRequestException('Title already exists')
+        }
+
 		const data = {
 			...rest,
 			coverImages: coverImage ? [coverImage] : []
@@ -23,14 +33,23 @@ export class CollectionsService {
 		const { coverImage, ...rest } = updateCollectionDto
 		const collection = await this.collectionModel.findById(id)
 
-		if (collection.user_id !== userId) {
-			// cannot not update other user's collection
-			throw new ForbiddenException("Cannot update other user's collection")
-		}
-
 		if (!collection) {
 			throw new NotFoundException('Collection not found')
 		}
+
+		if (collection.user_id !== userId) {
+			throw new ForbiddenException("Cannot update other user's collection")
+		}
+
+        if(rest.title) {
+            const existsCollection = await this.collectionModel.findOne({
+                _id: { $ne: collection._id },
+                title: { $regex: new RegExp(`^${rest.title}$`, 'i') }
+            })
+            if (existsCollection) {
+                throw new BadRequestException('Title already exists')
+            }
+        }
 
 		// if coverImage exists then swap coverImage to the first position of coverImages
 		const coverImages = collection.coverImages

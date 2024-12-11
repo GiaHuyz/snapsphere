@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 
 const createPinSchema = z.object({
 	title: z.string().min(1, 'Title is required'),
-	description: z.string(),
+	description: z.string().optional().or(z.literal('')),
 	link: z.string().url().optional().or(z.literal('')),
 	boardId: z.string(),
 	allowComments: z.boolean().default(true)

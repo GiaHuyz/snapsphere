@@ -29,14 +29,14 @@ import { z } from 'zod'
 
 export const editBoardSchema = z.object({
 	title: z.string().min(1, 'Board name is required').max(50, 'Board name must be 50 characters or less'),
-	description: z.string().optional(),
+	description: z.string().max(160, 'Description must be 160 characters or less').optional(),
 	secret: z.boolean()
 })
 
 export type EditBoardData = z.infer<typeof editBoardSchema>
 
 export function EditBoardModal() {
-	const { isOpen, onClose, boardId, boardData, setBoards } = useEditBoardModal()
+	const { isOpen, onClose, boardId, boardData, mutateBoardsFn } = useEditBoardModal()
 	const [isLoading, setIsLoading] = useState(false)
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
@@ -65,20 +65,20 @@ export function EditBoardModal() {
 		if (!boardId) return
 
 		setIsLoading(true)
-        const res = await editBoardAction(data, boardId)
+		const res = await editBoardAction(data, boardId)
 
-        if(isActionError(res)) {
-            return toast.error(res.error)
-        } else {
-            // Update local state
-            const updatedBoards = boardsDropdown.map((board) => (board._id === boardId ? { ...board, ...data } : board))
-            setBoardsDropdown(updatedBoards)
-            setBoards(updatedBoards)
-            toast.success('Board updated successfully')
-        }
+		if (isActionError(res)) {
+			toast.error(res.error)
+		} else {
+			// Update local state
+			const updatedBoards = boardsDropdown.map((board) => (board._id === boardId ? { ...board, ...data } : board))
+			setBoardsDropdown(updatedBoards)
+			mutateBoardsFn(updatedBoards)
+			toast.success('Board updated successfully')
+			onClose()
+		}
 
-        onClose()
-        setIsLoading(false)
+		setIsLoading(false)
 	}
 
 	const onDelete = async () => {
@@ -88,18 +88,18 @@ export function EditBoardModal() {
 		const res = await deleteBoardAction(boardId)
 
 		if (isActionError(res)) {
-			return toast.error(res.error)
+			toast.error(res.error)
 		} else {
 			// Update state
 			const filteredBoards = boardsDropdown.filter((board) => board._id !== boardId)
 			setBoardsDropdown(filteredBoards)
-            setBoards(filteredBoards)
+			mutateBoardsFn(filteredBoards)
 
 			toast.success('Board deleted successfully')
+			onClose()
 		}
 
 		setShowDeleteAlert(false)
-		onClose()
 		setIsLoading(false)
 	}
 
@@ -196,7 +196,7 @@ export function EditBoardModal() {
 								>
 									Delete
 								</Button>
-								<Button type="submit" disabled={isLoading}>
+								<Button type="submit" disabled={isLoading || !form.formState.isDirty}>
 									{isLoading ? (
 										<>
 											<Loader2 className="mr-2 h-4 w-4 animate-spin" />

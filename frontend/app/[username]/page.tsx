@@ -2,10 +2,13 @@ import { getBoardsByUsernameAction } from '@/actions/board-actions'
 import BoardPreviewList from '@/components/board-preview-list'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { isActionError } from '@/lib/errors'
 import { clerkClient } from '@clerk/nextjs/server'
-import { Plus, Share } from 'lucide-react'
+import { DropdownMenu } from '@radix-ui/react-dropdown-menu'
+import { Plus, Settings2, Share } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
 	const { username } = await params
@@ -47,8 +50,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 	return (
 		<div className="min-h-screen bg-background pb-8">
 			{/* Profile Header */}
-			<div className="flex flex-col items-center space-y-4 py-8">
-				<Avatar className="h-32 w-32">
+			<div className="flex flex-col items-center space-y-3 py-3">
+				<Avatar className="h-28 w-28">
 					<AvatarImage src={user.imageUrl} alt={username} />
 					<AvatarFallback>GH</AvatarFallback>
 				</Avatar>
@@ -96,18 +99,50 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 
 				<TabsContent value="created" className="mt-6">
 					<div className="max-w-[200px] mx-auto">
-						<button className="group relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-dashed border-muted hover:border-muted-foreground">
-							<div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-								<div className="rounded-full bg-muted p-4 group-hover:bg-muted-foreground/20">
-									<Plus className="h-6 w-6 text-muted-foreground" />
+						<Link href={`/create`}>
+							<button className="group relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-dashed border-muted hover:border-muted-foreground">
+								<div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+									<div className="rounded-full bg-muted p-4 group-hover:bg-muted-foreground/20">
+										<Plus className="h-6 w-6 text-muted-foreground" />
+									</div>
+									<span className="text-sm font-medium">Create pin</span>
 								</div>
-								<span className="text-sm font-medium">Create board</span>
-							</div>
-						</button>
+							</button>
+						</Link>
 					</div>
 				</TabsContent>
 
-				<TabsContent value="saved" className="mt-6">
+				<TabsContent value="saved" className="mt-2">
+					<div className="flex justify-between items-center">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button className="rounded-full">
+									<Settings2 className="h-4 w-4" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align='start'>
+								<DropdownMenuItem className='cursor-pointer'>
+									Share
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button className="rounded-full">
+									<Plus />
+								</Button>
+							</DropdownMenuTrigger>
+                            <DropdownMenuContent align='end'>
+                                <DropdownMenuItem className='cursor-pointer'>
+                                        Create Pin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className='cursor-pointer'>
+                                        Create Board
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+						</DropdownMenu>
+					</div>
 					<BoardPreviewList username={username} initBoards={boards} />
 				</TabsContent>
 			</Tabs>

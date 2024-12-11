@@ -10,20 +10,21 @@ interface EditBoardStore {
 		coverImage?: string
 		secret: boolean
 	} | null
-    setBoards: (boards: Board[]) => void
+    mutateBoardsFn: (boards: Board[]) => void
 	onOpen: (
 		boardId: string,
-		data: { title: string; description?: string; coverImage?: string; secret: boolean },
-		setBoards: (boards: Board[]) => void
+		data: { title: string; description?: string; coverImage?: string; secret: boolean }
 	) => void
 	onClose: () => void
+    setMutateBoardsFn: (mutateBoardsFn: (boards: Board[]) => void) => void
 }
 
 export const useEditBoardModal = create<EditBoardStore>((set) => ({
 	isOpen: false,
 	boardId: null,
 	boardData: null,
-	setBoards: () => {},
-	onOpen: (boardId, data, setBoards) => set({ isOpen: true, boardId, boardData: data, setBoards }),
+	mutateBoardsFn: () => {},
+	onOpen: (boardId, data) => set({ isOpen: true, boardId, boardData: data }),
 	onClose: () => set({ isOpen: false, boardId: null, boardData: null }),
+	setMutateBoardsFn: (mutateBoardsFn) => set({ mutateBoardsFn }),
 }))

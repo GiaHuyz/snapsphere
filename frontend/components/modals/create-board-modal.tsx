@@ -20,7 +20,7 @@ export const createBoardSchema = z.object({
 	title: z.string().min(1, 'Board name is required').max(50, 'Board name must be 50 characters or less'),
 	secret: z.boolean().default(false),
 	coverImage: z.string().optional(),
-	description: z.string().optional()
+	description: z.string().max(160, 'Description must be 160 characters or less').optional()
 })
 
 export type createBoardData = z.infer<typeof createBoardSchema>
@@ -48,10 +48,10 @@ export function CreateBoardModal() {
 		} else {
 			toast.success('Board created')
 			setBoardsDropdown([...boardsDropdown, newBoard])
+            onClose()
+            form.reset()
 		}
 
-		onClose()
-		form.reset()
 		setIsLoading(false)
 	}
 
