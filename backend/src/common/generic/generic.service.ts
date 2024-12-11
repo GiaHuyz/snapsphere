@@ -16,35 +16,27 @@ export class GenericService<T extends Document> {
 
   // Tìm một mục theo ID
   async baseFindOne(
-    id: string, 
+    id: string,
     additionalConditions?: Array<(document: T) => void>): Promise<T> {
-    try {
-      // Kiểm tra nếu ID không hợp lệ
-      if (!this.isValidObjectId(id)) {
-        throw new BadRequestException(['Invalid ID format']);
-      }
-
-      const document = await this.model.findById(id).exec();
-
-      if (!document) {
-        throw new NotFoundException(['Document not found']);
-      }
-
-      // Gọi từng callback để kiểm tra điều kiện
-      if (additionalConditions) {
-        for (const condition of additionalConditions) {
-          condition(document); // Thực thi từng điều kiện
-        }
-      }
-
-      return document;
-    } catch (error) {
-      // Nếu lỗi không phải từ NotFoundException hoặc BadRequestException, ném lỗi server
-      if (!(error instanceof NotFoundException || error instanceof BadRequestException)) {
-        throw new InternalServerErrorException(['An unexpected error occurred']);
-      }
-      throw error;
+    // Kiểm tra nếu ID không hợp lệ
+    if (!this.isValidObjectId(id)) {
+      throw new BadRequestException(['Invalid ID format']);
     }
+
+    const document = await this.model.findById(id).exec();
+
+    if (!document) {
+      throw new NotFoundException(['Document not found']);
+    }
+
+    // Gọi từng callback để kiểm tra điều kiện
+    if (additionalConditions) {
+      for (const condition of additionalConditions) {
+        condition(document); // Thực thi từng điều kiện
+      }
+    }
+
+    return document;
   }
 
   // Tạo một mục mới
@@ -112,14 +104,14 @@ export class GenericService<T extends Document> {
     try {
       // Sử dụng findOne để kiểm tra tài liệu
       const document = await this.baseFindOne(id);
-  
+
       // Gọi từng callback để kiểm tra điều kiện
       if (additionalConditions) {
         for (const condition of additionalConditions) {
           condition(document); // Thực thi từng điều kiện
         }
       }
-  
+
       // Xóa tài liệu sau khi kiểm tra điều kiện
       await this.model.findByIdAndDelete(id).exec();
     } catch (error) {

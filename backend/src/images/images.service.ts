@@ -12,12 +12,13 @@ export class ImagesService extends GenericService<ImageDocument> {
   }
 
   async findOne(id: string, userId: string): Promise<ImageDocument> {
+    
     const checkCanView = (image: ImageDocument) => {
       const isPublic = image.is_public;
       const isOwner = image.user_id === userId;
       const isCanView = isPublic || isOwner;
       if (!isCanView) {
-        throw new UnauthorizedException(['You are not the owner of this image']);
+        throw new UnauthorizedException(['This image is private']);
       }
     }
     // truyền callback function vào hàm baseDelete

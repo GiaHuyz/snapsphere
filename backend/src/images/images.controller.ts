@@ -26,7 +26,8 @@ export class ImagesController extends GenericController<ImageDocument> {
 		@UserId() userId: string
 	): Promise<ImageDocument> {
 	
-		return this.imagesService.baseFindOne(id)
+		console.log('userId', userId);	
+		return this.imagesService.findOne(id, userId);
 	}
 
 	@Public() // TODO: chỉ cho phép lấy private image nếu là chủ sở hữu
