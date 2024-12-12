@@ -1,14 +1,16 @@
+import { AuthGuard } from '@/common/guard/auth.guard'
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { APP_GUARD } from '@nestjs/core'
 import { MongooseModule } from '@nestjs/mongoose'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
+import { BoardsModule } from './boards/boards.module'
 import { CommonModule } from './common/common.module'
 import { ImagesModule } from './images/images.module'
+import { PinsModule } from './pins/pins.module'
 import { UsersModule } from './users/users.module'
-import { APP_GUARD } from '@nestjs/core'
-import { AuthGuard } from '@/common/guard/auth.guard'
-import { CollectionsModule } from './collections/collections.module';
+import { BoardPinModule } from './board-pin/board-pin.module';
 
 @Module({
 	imports: [
@@ -23,12 +25,17 @@ import { CollectionsModule } from './collections/collections.module';
 		CommonModule,
 		UsersModule,
 		ImagesModule,
-		CollectionsModule
+		BoardsModule,
+		PinsModule,
+		BoardPinModule
 	],
 	controllers: [AppController],
-	providers: [AppService, {
-        provide: APP_GUARD,
-        useClass: AuthGuard
-    }]
+	providers: [
+		AppService,
+		{
+			provide: APP_GUARD,
+			useClass: AuthGuard
+		}
+	]
 })
 export class AppModule {}

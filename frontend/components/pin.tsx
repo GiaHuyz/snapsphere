@@ -1,5 +1,6 @@
 'use client'
 
+import { Pin as PinType } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
 import { SaveButton } from '@/components/save-to-board-button'
 import { Button } from '@/components/ui/button'
@@ -10,40 +11,36 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { useBoardDropdownStore } from '@/provider/board-provider'
+import { useUser } from '@clerk/nextjs'
 import { Download, Eye, Flag, MoreHorizontal } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 interface PinProps {
-	id: string
-	image: string
-	title: string
-	currentBoard?: string
-	isLoggedIn?: boolean
-	suggestions?: {
-		id: string
-		name: string
-	}[]
+	pin: PinType
 }
 
-export default function Pin({ id, image, title, isLoggedIn }: PinProps) {
+export default function Pin({ pin }: PinProps) {
+	const { isSignedIn } = useUser()
+	const { boardsDropdown } = useBoardDropdownStore()
 	return (
 		<div className="group relative mb-4 w-full overflow-hidden rounded-xl cursor-pointer">
 			{/* Main Image */}
 
-			<Image src={image} alt={title} width={300} height={300} className="object-cover w-full" />
+			<Image src={pin.url} alt={pin.title || 'Pin Image'} width={300} height={300} className="object-cover w-full" />
 
-			<Link href={`/pin/${id}`}>
+			<Link href={`/pin/${pin._id}`}>
 				{/* Overlay Actions */}
 				<div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
 					{/* Top Actions */}
 					<div
 						className={`absolute left-4 right-4 top-4 flex items-center ${
-							isLoggedIn ? 'justify-between' : 'justify-end'
+							isSignedIn ? 'justify-between' : 'justify-end'
 						}`}
 					>
-						{isLoggedIn && <BoardDropdown mode="save" />}
-						<SaveButton variant="overlay" isLoggedIn={isLoggedIn} />
+						{isSignedIn && <BoardDropdown mode="save" pinId={pin._id} />}
+						<SaveButton variant="overlay" isLoggedIn={isSignedIn} pinId={pin._id} boardId={boardsDropdown[0]?._id} />
 					</div>
 
 					{/* Bottom Actions */}

@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 
-export type CollectionDocument = HydratedDocument<Collection>
+export type BoardDocument = HydratedDocument<Board>
 
 @Schema({ timestamps: true })
-export class Collection {
+export class Board {
 	@Prop({ required: true })
 	user_id: string
 
@@ -24,5 +24,5 @@ export class Collection {
 	coverImages: string[]
 }
 
-export const CollectionSchema = SchemaFactory.createForClass(Collection)
-CollectionSchema.index({ user_id: 1, title: 1 })
+export const BoardSchema = SchemaFactory.createForClass(Board)
+BoardSchema.index({ user_id: 1, title: 1 })

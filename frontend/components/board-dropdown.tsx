@@ -12,11 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
+import { useBoardDropdownStore } from '@/provider/board-provider'
+import { useUser } from '@clerk/nextjs'
 import { ChevronDown, Plus, Search } from 'lucide-react'
 import Image from 'next/image'
 import * as React from 'react'
 import { SaveButton } from './save-to-board-button'
-import { useBoardDropdownStore } from '@/provider/board-provider'
 
 interface Suggestion {
 	id: string
@@ -25,13 +26,15 @@ interface Suggestion {
 
 interface BoardDropdownProps {
 	mode: 'select' | 'save'
+    pinId?: string
 	onChange?: (board: Board) => void
 	children?: React.ReactNode
 }
 
-export default function BoardDropdown({ mode, onChange, children }: BoardDropdownProps) {
+export default function BoardDropdown({ mode, onChange, pinId, children }: BoardDropdownProps) {
 	const { onOpen, setImage } = useCreateBoardModal()
 	const { boardsDropdown } = useBoardDropdownStore()
+	const { isSignedIn } = useUser()
 
 	const defaultSuggestions: Suggestion[] = [
 		{ id: '3', name: 'Asian landscape' },
@@ -97,7 +100,7 @@ export default function BoardDropdown({ mode, onChange, children }: BoardDropdow
 							</div>
 							{mode === 'save' && (
 								<div className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-									<SaveButton />
+									<SaveButton isLoggedIn={isSignedIn} pinId={pinId!} boardId={board._id} />
 								</div>
 							)}
 						</DropdownMenuItem>

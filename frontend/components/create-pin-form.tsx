@@ -3,19 +3,21 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronDown, CircleX, Pencil, TriangleAlert, Upload } from 'lucide-react'
 import NextImage from 'next/image'
-import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Board } from '@/actions/board-actions'
+import { createPin } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
+import { LoaderButton } from '@/components/loading-button'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { isActionError } from '@/lib/errors'
 import { toast } from 'sonner'
 
 const createPinSchema = z.object({
@@ -29,7 +31,6 @@ const createPinSchema = z.object({
 type CreatePinFormValues = z.infer<typeof createPinSchema>
 
 export default function CreatePinForm() {
-	const router = useRouter()
 	const [isLoading, setIsLoading] = useState(false)
 	const [imageFile, setImageFile] = useState<File | null>(null)
 	const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -57,7 +58,7 @@ export default function CreatePinForm() {
 
 			const image = new Image()
 
-			image.onload = () => {
+			image.onload = async () => {
 				if (image.width < 200 || image.height < 300) {
 					toast.error('Image too small. Please upload an image with a minimum size of 200x300.')
 					setErrorUpload('Image too small. Please upload an image with a minimum size of 200x300.')
@@ -83,28 +84,42 @@ export default function CreatePinForm() {
 	})
 
 	async function onSubmit(data: CreatePinFormValues) {
-		if (!imageFile) {
-			toast.error('Please upload an image')
+        if (!selectedBoard) {
+            form.setError('boardId', { message: 'Please select a board' })
 			return
 		}
-
-		try {
-			setIsLoading(true)
-
-			// TODO: Implement the actual API call to create the pin
-			console.log('Creating pin:', { ...data, imageFile })
-
-			// Simulating API call
-			await new Promise((resolve) => setTimeout(resolve, 2000))
-
-			toast.success('Pin created successfully!')
-
-			router.push('/')
-		} catch (error) {
-			toast.error('Failed to create pin. Please try again.')
-		} finally {
-			setIsLoading(false)
+        
+		if (!imageFile) {
+            toast.error('Please upload an image')
+			return
 		}
+        
+        setIsLoading(true)
+		const formData = new FormData()
+		formData.append('title', data.title)
+		formData.append('board_id', data.boardId)
+		formData.append('isAllowedComment', data.allowComments.toString())
+		formData.append('image', imageFile)
+
+		if (data.description) {
+			formData.append('description', data.description)
+		}
+		if (data.link) {
+			formData.append('link', data.link)
+		}
+
+		const res = await createPin(formData)
+
+		if (isActionError(res)) {
+			toast.error(res.error)
+		} else {
+			toast.success('Pin created successfully')
+			form.reset()
+			setImageFile(null)
+			setImagePreview(null)
+		}
+
+		setIsLoading(false)
 	}
 
 	const handleBoardChange = (board: Board) => {
@@ -114,7 +129,7 @@ export default function CreatePinForm() {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" encType="multipart/form-data">
 				<div className="grid gap-8 md:grid-cols-[350px,1fr]">
 					{/* Left: Image Upload */}
 					<div className="space-y-4">
@@ -288,9 +303,13 @@ export default function CreatePinForm() {
 					</div>
 				</div>
 				<div className="flex justify-end">
-					<Button type="submit" disabled={isLoading} className="rounded-full bg-red-500 hover:bg-red-600">
-						{isLoading ? 'Creating...' : 'Publish'}
-					</Button>
+					<LoaderButton
+						type="submit"
+						isLoading={isLoading}
+						className="rounded-full bg-red-500 hover:bg-red-600"
+					>
+						Publish
+					</LoaderButton>
 				</div>
 			</form>
 		</Form>

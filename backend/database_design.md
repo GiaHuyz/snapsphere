@@ -22,7 +22,6 @@ Stores information about images uploaded by users.
 |-------------------|------------------|------------------------------------------------|
 | `image_id`        | ObjectId         | Primary key for the image.                     |
 | `user_id`         | ObjectId         | ID of the user who uploaded the image.         |
-| `collection_id`   | ObjectId         | ID of the collection to which the image belongs.|
 | `position`        | Number           | Position of the image within the collection.    | 
 | `title`           | String           | Title of the image.                            |
 | `url`             | String           | Storage URL of the image (Cloudinary).         |
@@ -37,15 +36,14 @@ Stores information about images uploaded by users.
 
 ---
 
-## 3. Table: `collections`
+## 3. Table: `boards`
 Stores information about user-created image collections.
 
 | **Field**        | **Type**         | **Description**                                |
 |-------------------|------------------|------------------------------------------------|
-| `collection_id`   | ObjectId         | Primary key for the collection.                |
-| `user_id`         | ObjectId         | ID of the user who owns the collection.        |
-| `name`            | String           | Name of the collection.                        |
-| `image_count`     | Number           | Number of images in the collection.            |
+| `board_id`        | ObjectId         | Primary key for the board.                     |
+| `user_id`         | ObjectId         | ID of the user who owns the board.             |
+| `name`            | String           | Name of the board.                             |
 | `description`     | String           | Short description of the collection.           |
 | `secret`       | Boolean          | Whether the collection is publicly visible.    |
 | `created_at`      | Date             | Date the collection was created.               |

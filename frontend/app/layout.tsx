@@ -1,5 +1,7 @@
 import { Board, getBoardsByUsernameAction } from '@/actions/board-actions'
 import Header from '@/components/header'
+import { isActionError } from '@/lib/errors'
+import { BoardDropdownProvider } from '@/provider/board-provider'
 import { ModalProvider } from '@/provider/modal-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { ClerkProvider } from '@clerk/nextjs'
@@ -8,7 +10,6 @@ import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import { Toaster } from 'sonner'
 import './globals.css'
-import { BoardDropdownProvider } from '@/provider/board-provider'
 
 const geistSans = localFont({
 	src: './fonts/GeistVF.woff',
@@ -32,23 +33,31 @@ export default async function RootLayout({
 	children: React.ReactNode
 }>) {
 	const user = await currentUser()
-
-	if (user && !user.username) {
-		let username = user.emailAddresses[0].emailAddress.split('@')[0]
-
-		if (/^\d+$/.test(username)) {
-			username = 'user_' + username
+    let boards: Board[] = []
+    
+	if (user) {
+        if (!user.username) {
+            let username = user.emailAddresses[0].emailAddress.split('@')[0]
+            
+			if (/^\d+$/.test(username)) {
+                username = 'user_' + username
+			}
+            
+			;(await clerkClient()).users.updateUser(user.id, { username })
 		}
-
-		;(await clerkClient()).users.updateUser(user.id, { username })
+        
+        const res = await getBoardsByUsernameAction(user.id)
+        console.log(res)
+        
+        if(!isActionError(res)) {
+            boards = res
+        }
 	}
-
-	const boards = await getBoardsByUsernameAction(user?.id as string)
 
 	return (
 		<ClerkProvider>
 			<html lang="en" suppressHydrationWarning>
-				<BoardDropdownProvider boardsDropdown={boards as Board[]}>
+				<BoardDropdownProvider boardsDropdown={boards}>
 					<body className={`${geistSans.variable} ${geistMono.variable} antialiased}`}>
 						<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
 							<Header user={JSON.parse(JSON.stringify(user))} />

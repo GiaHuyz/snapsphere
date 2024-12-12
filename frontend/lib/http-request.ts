@@ -2,10 +2,10 @@
 import { cookies } from "next/headers"
 
 export class HttpRequest {
-	private static async getHeaders(): Promise<Record<string, string>> {
+	private static async getHeaders(isFormData = false): Promise<Record<string, string>> {
 		const cookieStore = await cookies()
 		return {
-			'Content-Type': 'application/json',
+			...(isFormData ? {} : { 'Content-Type': 'application/json' }),
 			Cookie: cookieStore.toString()
 		}
 	}
@@ -22,7 +22,8 @@ export class HttpRequest {
 	}
 
 	private static async request<T>(endpoint: string, method: string, body?: any, options?: RequestInit): Promise<T> {
-		const headers = await this.getHeaders()
+		const isFormData = body instanceof FormData
+		const headers = await this.getHeaders(isFormData)
 
         if (!body) {
             delete headers['Content-Type']
@@ -31,7 +32,7 @@ export class HttpRequest {
 		const response = await fetch(this.buildUrl(endpoint), {
 			method,
 			headers,
-			body: body ? JSON.stringify(body) : undefined,
+			body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
 			...options
 		})
 		return this.handleResponse<T>(response)
@@ -55,15 +56,19 @@ export class HttpRequest {
 		return this.request<T>(endpoint, 'GET', undefined, options)
 	}
 
-	static async post<T>(endpoint: string, body: any, options?: RequestInit): Promise<T> {
+	static async post<T>(endpoint: string, body?: any, options?: RequestInit): Promise<T> {
 		return this.request<T>(endpoint, 'POST', body, options)
 	}
 
-	static async patch<T>(endpoint: string, body: any, options?: RequestInit): Promise<T> {
+	static async put<T>(endpoint: string, body?: any, options?: RequestInit): Promise<T> {
+		return this.request<T>(endpoint, 'PUT', body, options)
+	}
+
+	static async patch<T>(endpoint: string, body?: any, options?: RequestInit): Promise<T> {
 		return this.request<T>(endpoint, 'PATCH', body, options)
 	}
 
-	static async delete(endpoint: string, options?: RequestInit): Promise<void> {
-		return this.request(endpoint, 'DELETE', undefined, options)
+	static async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
+		return this.request<T>(endpoint, 'DELETE', undefined, options)
 	}
 }

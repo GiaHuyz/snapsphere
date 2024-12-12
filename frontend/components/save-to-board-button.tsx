@@ -1,26 +1,34 @@
 'use client'
 
+import { savePinToBoardAction } from '@/actions/pin-actions'
 import { Button } from '@/components/ui/button'
+import { isActionError } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { useClerk } from '@clerk/nextjs'
+import { toast } from 'sonner'
 
 interface SaveButtonProps {
 	className?: string
+	pinId: string
+	boardId: string
 	variant?: 'default' | 'overlay'
-	onClick?: () => void
 	isLoggedIn?: boolean
 }
 
-export function SaveButton({ className, variant = 'default', onClick, isLoggedIn }: SaveButtonProps) {
+export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, boardId }: SaveButtonProps) {
 	const clerk = useClerk()
 
-	const handleClick = (e: React.MouseEvent) => {
+	const handleClick = async (e: React.MouseEvent) => {
 		e.preventDefault()
 		if (!isLoggedIn) {
-			clerk.openSignIn()
+			return clerk.openSignIn()
 		}
-		if (onClick) {
-			onClick()
+
+		const res = await savePinToBoardAction({ pinId, boardId })
+		if (isActionError(res)) {
+			toast.error(res.error)
+		} else {
+			toast.success('Pin saved successfully')
 		}
 	}
 

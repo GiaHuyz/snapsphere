@@ -1,5 +1,7 @@
 import { getBoardsByUsernameAction } from '@/actions/board-actions'
+import { getAllPinsUserAction, Pin } from '@/actions/pin-actions'
 import BoardPreviewList from '@/components/board-preview-list'
+import PinList from '@/components/pin-list'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -36,6 +38,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 	}
 
 	const boards = await getBoardsByUsernameAction(user.id)
+    const pins = await getAllPinsUserAction()
 
 	if (isActionError(boards)) {
 		return (
@@ -98,7 +101,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 				</div>
 
 				<TabsContent value="created" className="mt-6">
-					<div className="max-w-[200px] mx-auto">
+					{/* <div className="max-w-[200px] mx-auto">
 						<Link href={`/create`}>
 							<button className="group relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-dashed border-muted hover:border-muted-foreground">
 								<div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
@@ -109,7 +112,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 								</div>
 							</button>
 						</Link>
-					</div>
+					</div> */}
+                    <PinList pins={pins as Pin[]} ></PinList>
 				</TabsContent>
 
 				<TabsContent value="saved" className="mt-2">

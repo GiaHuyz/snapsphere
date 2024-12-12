@@ -1,6 +1,7 @@
 'use client'
 
 import { deleteBoardAction, editBoardAction } from '@/actions/board-actions'
+import { LoaderButton } from '@/components/loading-button'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -20,7 +21,7 @@ import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
 import { isActionError } from '@/lib/errors'
 import { useBoardDropdownStore } from '@/provider/board-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Pencil } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -196,16 +197,9 @@ export function EditBoardModal() {
 								>
 									Delete
 								</Button>
-								<Button type="submit" disabled={isLoading || !form.formState.isDirty}>
-									{isLoading ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											Saving...
-										</>
-									) : (
-										'Save'
-									)}
-								</Button>
+								<LoaderButton type="submit" isLoading={isLoading} disabled={!form.formState.isDirty}>
+									Save
+								</LoaderButton>
 							</DialogFooter>
 						</form>
 					</Form>
