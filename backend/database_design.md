@@ -49,6 +49,16 @@ Stores information about user-created image collections.
 | `created_at`      | Date             | Date the collection was created.               |
 | `updated_at`      | Date             | Date the collection was last updated.          |
 
+
+## 4. Table: `boardpins`
+Stores information about images associated with a board.
+
+| **Field**        | **Type**         | **Description**                                |
+|-------------------|------------------|------------------------------------------------|
+| `boardpin_id`     | ObjectId         | Primary key for the boardpin.                  |
+| `board_id`        | ObjectId         | ID of the board associated with the pin.       |
+| `pin_id`          | ObjectId         | ID of the pin associated with the board.       |
+
 ---
 
 ## 4. Table: `likes`

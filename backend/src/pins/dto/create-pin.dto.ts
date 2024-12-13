@@ -33,7 +33,7 @@ export class CreatePinDto {
 		}
 		return mongoose.Types.ObjectId.createFromHexString(value)
 	})
-	board_id: ObjectId
+	board_id: mongoose.Types.ObjectId
 
     @ApiProperty()
 	@IsNotEmpty()

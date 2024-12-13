@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument } from 'mongoose'
+import mongoose, { HydratedDocument, mongo } from 'mongoose'
 
 export type BoardDocument = HydratedDocument<Board>
 
@@ -17,11 +17,11 @@ export class Board {
 	@Prop({ required: true })
 	secret: boolean
 
-	@Prop({
-		default: [],
-		validate: { validator: (value: string[]) => value.length <= 3, message: 'You can add up to 3 cover images' }
-	})
-	coverImages: string[]
+	@Prop({ default: 0 })
+	pinCount: number
+
+	@Prop({ type: [{ pin_id: mongoose.Types.ObjectId, url: String }] })
+	coverImages: Array<{ pin_id: mongoose.Types.ObjectId; url: string }>
 }
 
 export const BoardSchema = SchemaFactory.createForClass(Board)

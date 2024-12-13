@@ -25,7 +25,7 @@ interface SavePinDto {
 export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (data) => {
 	try {
 		const res = await HttpRequest.post<Pin>('/pins/save-to-board', data)
-		revalidateTag('board')
+		revalidateTag('boards')
 		return res
 	} catch (error) {
 		return { error: getErrorMessage(error) }
@@ -34,7 +34,7 @@ export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (d
 
 export const getAllPinsUserAction = createServerAction<void, Pin[]>(async () => {
 	try {
-		const res = await HttpRequest.get<Pin[]>('/pins')
+		const res = await HttpRequest.get<Pin[]>('/pins', {next: {tags: ['pins']}})
 		return res
 	} catch (error) {
 		return { error: getErrorMessage(error) }
@@ -48,4 +48,14 @@ export const createPin = createServerAction<FormData, Pin>(async (data: FormData
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}
+})
+
+export const deletePinAction = createServerAction<string, void>(async (id) => {
+    try {
+        await HttpRequest.delete(`/pins/${id}`)
+        revalidateTag('boards')
+        revalidateTag('pins')
+    } catch (error) {
+        return { error: getErrorMessage(error) }
+    }
 })

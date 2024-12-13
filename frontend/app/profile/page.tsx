@@ -1,9 +1,6 @@
 import { ProfileForm } from '@/components/profile-form'
-import { currentUser } from '@clerk/nextjs/server'
 
 export default async function ProfilePage() {
-	const user = await currentUser()
-
 	return (
 		<div className="container max-w-2xl py-8 px-5 mx-auto">
 			<div className="space-y-6">
@@ -14,7 +11,7 @@ export default async function ProfilePage() {
 						your profile.
 					</p>
 				</div>
-				<ProfileForm initUser={JSON.parse(JSON.stringify(user))} />
+				<ProfileForm />
 			</div>
 		</div>
 	)

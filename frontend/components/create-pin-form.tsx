@@ -263,7 +263,7 @@ export default function CreatePinForm() {
 															{selectedBoard.coverImages?.[0] && (
 																<div className="h-7 w-7 overflow-hidden rounded-md">
 																	<NextImage
-																		src={selectedBoard.coverImages[0]}
+																		src={selectedBoard.coverImages[0].url}
 																		alt={selectedBoard.title}
 																		width={24}
 																		height={24}

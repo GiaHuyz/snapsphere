@@ -11,7 +11,7 @@ export class SavePinDto {
         }
         return mongoose.Types.ObjectId.createFromHexString(value)
     })
-    pinId: ObjectId
+    pinId: mongoose.Types.ObjectId
 
     @IsNotEmpty()
     @Transform(({ value }) => {
@@ -20,5 +20,5 @@ export class SavePinDto {
         }
         return mongoose.Types.ObjectId.createFromHexString(value)
     })
-    boardId: ObjectId
+    boardId: mongoose.Types.ObjectId
 }

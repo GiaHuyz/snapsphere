@@ -2,16 +2,19 @@ import { create } from 'zustand'
 
 interface UseCreateBoardModalStore {
 	isOpen: boolean
-	image: string
+	pin: {
+		_id?: string
+		url: string
+	} | null
 	onOpen: () => void
 	onClose: () => void
-	setImage: (image: string) => void
+	setPin: (pin: { _id?: string; url: string }) => void
 }
 
 export const useCreateBoardModal = create<UseCreateBoardModalStore>((set) => ({
 	isOpen: false,
-	image: '',
+	pin: null,
 	onOpen: () => set({ isOpen: true }),
 	onClose: () => set({ isOpen: false }),
-	setImage: (image: string) => set({ image })
+	setPin: (pin) => set({ pin })
 }))

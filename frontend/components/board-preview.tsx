@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
 import { formatTime } from '@/lib/format-time'
-import { useUser } from '@clerk/nextjs'
+import { useUserStore } from '@/provider/user-provider'
 import { Pencil } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -16,7 +16,10 @@ interface BoardPreviewProps {
 	pinCount: number
 	sectionCount?: number
 	createdAt: string
-	coverImages: string[]
+	coverImages: {
+		pin_id: string
+		url: string
+	}[]
 	username: string
 }
 
@@ -32,7 +35,7 @@ export default function BoardPreview({
 	username
 }: BoardPreviewProps) {
 	const { onOpen: onOpenEdit } = useEditBoardModal()
-	const { user } = useUser()
+	const { user } = useUserStore()
 
 	return (
 		<div className="space-y-2">
@@ -43,7 +46,7 @@ export default function BoardPreview({
 				<div className="group relative grid h-40 grid-cols-3 gap-[1.25px]">
 					{/* Main Image */}
 					<div className="relative col-span-2 overflow-hidden bg-slate-300">
-						{coverImages[0] && <Image src={coverImages[0]} alt={title} fill className="object-cover" />}
+						{coverImages[0] && <Image src={coverImages[0].url} alt={title} fill className="object-cover" />}
 					</div>
 
 					{/* Secondary Images Column */}
@@ -57,7 +60,7 @@ export default function BoardPreview({
 						{coverImages.slice(1).map((image, index) => (
 							<div key={index} className="relative overflow-hidden">
 								<Image
-									src={image}
+									src={image.url}
 									alt={`${title} preview ${index + 2}`}
 									fill
 									className="object-cover"
@@ -75,7 +78,7 @@ export default function BoardPreview({
 							onOpenEdit(_id, {
 								title,
 								description,
-								coverImage: coverImages[0],
+								coverImage: coverImages[0].url,
 								secret
 							})
 						}}

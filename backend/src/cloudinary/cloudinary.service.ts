@@ -28,7 +28,7 @@ export class CloudinaryService {
 	}
 
 	private getPublicId(url: string): string {
-		return url.split('/').slice(-2).join('/')
+		return url.split('/').slice(-2).join('/').split('.')[0]
 	}
 
 	private async compressImage(file: Express.Multer.File): Promise<Buffer> {

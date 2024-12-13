@@ -13,11 +13,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { useBoardDropdownStore } from '@/provider/board-provider'
-import { useUser } from '@clerk/nextjs'
 import { ChevronDown, Plus, Search } from 'lucide-react'
 import Image from 'next/image'
 import * as React from 'react'
 import { SaveButton } from './save-to-board-button'
+import { useUserStore } from '@/provider/user-provider'
 
 interface Suggestion {
 	id: string
@@ -32,9 +32,9 @@ interface BoardDropdownProps {
 }
 
 export default function BoardDropdown({ mode, onChange, pinId, children }: BoardDropdownProps) {
-	const { onOpen, setImage } = useCreateBoardModal()
+	const { onOpen, setPin } = useCreateBoardModal()
 	const { boardsDropdown } = useBoardDropdownStore()
-	const { isSignedIn } = useUser()
+	const { isSignedIn } = useUserStore()
 
 	const defaultSuggestions: Suggestion[] = [
 		{ id: '3', name: 'Asian landscape' },
@@ -88,7 +88,7 @@ export default function BoardDropdown({ mode, onChange, pinId, children }: Board
 								{board.coverImages[0] && (
 									<div className="h-12 w-12 overflow-hidden rounded-lg">
 										<Image
-											src={board.coverImages[0]}
+											src={board.coverImages[0].url}
 											alt={board.title}
 											width={48}
 											height={48}
@@ -132,13 +132,14 @@ export default function BoardDropdown({ mode, onChange, pinId, children }: Board
 				<DropdownMenuItem
 					className="flex items-center gap-2 p-2 cursor-pointer"
 					onClick={() => {
-						setImage(
-							`${
+                        setPin({
+                            _id: pinId,
+							url: `${
 								mode === 'save'
 									? 'https://plus.unsplash.com/premium_photo-1731624534286-adf5e9c78159?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
 									: ''
-							}`
-						)
+							}`,
+						})
 						onOpen()
 					}}
 				>

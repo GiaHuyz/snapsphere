@@ -11,9 +11,10 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
 import { useBoardDropdownStore } from '@/provider/board-provider'
-import { useUser } from '@clerk/nextjs'
-import { Download, Eye, Flag, MoreHorizontal } from 'lucide-react'
+import { useUserStore } from '@/provider/user-provider'
+import { Download, Eye, Flag, MoreHorizontal, Pencil } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -22,13 +23,26 @@ interface PinProps {
 }
 
 export default function Pin({ pin }: PinProps) {
-	const { isSignedIn } = useUser()
+	const { isSignedIn } = useUserStore()
 	const { boardsDropdown } = useBoardDropdownStore()
+	const { onOpen } = useEditPinModal()
+
+	const handleEdit = (e: React.MouseEvent) => {
+		e.preventDefault()
+		onOpen(pin)
+	}
+
 	return (
 		<div className="group relative mb-4 w-full overflow-hidden rounded-xl cursor-pointer">
 			{/* Main Image */}
 
-			<Image src={pin.url} alt={pin.title || 'Pin Image'} width={300} height={300} className="object-cover w-full" />
+			<Image
+				src={pin.url}
+				alt={pin.title || 'Pin Image'}
+				width={300}
+				height={300}
+				className="object-cover w-full"
+			/>
 
 			<Link href={`/pin/${pin._id}`}>
 				{/* Overlay Actions */}
@@ -40,7 +54,12 @@ export default function Pin({ pin }: PinProps) {
 						}`}
 					>
 						{isSignedIn && <BoardDropdown mode="save" pinId={pin._id} />}
-						<SaveButton variant="overlay" isLoggedIn={isSignedIn} pinId={pin._id} boardId={boardsDropdown[0]?._id} />
+						<SaveButton
+							variant="overlay"
+							isLoggedIn={isSignedIn}
+							pinId={pin._id}
+							boardId={boardsDropdown[0]?._id}
+						/>
 					</div>
 
 					{/* Bottom Actions */}
@@ -49,9 +68,9 @@ export default function Pin({ pin }: PinProps) {
 							size="icon"
 							variant="secondary"
 							className="h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
-							onClick={(e) => e.preventDefault()}
+							onClick={handleEdit}
 						>
-							<Download className="h-4 w-4" />
+							<Pencil className="h-4 w-4" />
 						</Button>
 						<DropdownMenu modal={false}>
 							<DropdownMenuTrigger asChild>

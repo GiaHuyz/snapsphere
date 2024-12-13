@@ -19,14 +19,14 @@ import { z } from 'zod'
 export const createBoardSchema = z.object({
 	title: z.string().min(1, 'Board name is required').max(50, 'Board name must be 50 characters or less'),
 	secret: z.boolean().default(false),
-	coverImage: z.string().optional(),
+	coverImageId: z.string().optional(),
 	description: z.string().max(160, 'Description must be 160 characters or less').optional()
 })
 
 export type createBoardData = z.infer<typeof createBoardSchema>
 
 export function CreateBoardModal() {
-	const { isOpen, onClose, image } = useCreateBoardModal()
+	const { isOpen, onClose, pin } = useCreateBoardModal()
 	const [isLoading, setIsLoading] = useState(false)
 	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
 
@@ -41,7 +41,7 @@ export function CreateBoardModal() {
 
 	const onSubmit = async (data: createBoardData) => {
 		setIsLoading(true)
-		const newBoard = await createBoardAction({ ...data, coverImage: image })
+		const newBoard = await createBoardAction({ ...data, coverImageId: pin?._id })
 
 		if (isActionError(newBoard)) {
 			toast.error(newBoard.error)
@@ -58,18 +58,18 @@ export function CreateBoardModal() {
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent
-				className={`w-11/12 rounded-2xl ${image ? 'sm:max-w-[720px]' : 'sm:max-w-[480px]'} sm:rounded-2xl`}
+				className={`w-11/12 rounded-2xl ${pin?.url ? 'sm:max-w-[720px]' : 'sm:max-w-[480px]'} sm:rounded-2xl`}
 			>
 				<DialogHeader>
 					<DialogTitle className="text-center text-2xl">Create Board</DialogTitle>
 				</DialogHeader>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)}>
-						<div className={`grid gap-4 py-4 ${image ? 'grid-cols-[240px,1fr]' : ''}`}>
-							{image && (
+						<div className={`grid gap-4 py-4 ${pin?.url ? 'grid-cols-[240px,1fr]' : ''}`}>
+							{pin?.url && (
 								<div>
 									<Image
-										src={image}
+										src={pin?.url}
 										alt="Board cover"
 										width={200}
 										height={150}
@@ -77,7 +77,7 @@ export function CreateBoardModal() {
 									/>
 								</div>
 							)}
-							<div className={image ? 'grid-cols-1' : ''}>
+							<div className={pin?.url ? 'grid-cols-1' : ''}>
 								<FormField
 									control={form.control}
 									name="title"

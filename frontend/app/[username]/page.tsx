@@ -38,13 +38,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 	}
 
 	const boards = await getBoardsByUsernameAction(user.id)
-    const pins = await getAllPinsUserAction()
+	const pins = await getAllPinsUserAction()
 
-	if (isActionError(boards)) {
+	if (isActionError(boards) || isActionError(pins)) {
 		return (
 			<div className="flex items-center justify-center mt-20">
 				<div className="text-center">
-					<h2 className="text-2xl font-semibold mb-2">{boards.error}</h2>
+					<h2 className="text-2xl font-semibold mb-2">Something went wrong</h2>
 				</div>
 			</div>
 		)
@@ -101,19 +101,21 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 				</div>
 
 				<TabsContent value="created" className="mt-6">
-					{/* <div className="max-w-[200px] mx-auto">
-						<Link href={`/create`}>
-							<button className="group relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-dashed border-muted hover:border-muted-foreground">
-								<div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-									<div className="rounded-full bg-muted p-4 group-hover:bg-muted-foreground/20">
-										<Plus className="h-6 w-6 text-muted-foreground" />
+					{pins.length === 0 && (
+						<div className="max-w-[200px] mx-auto">
+							<Link href={`/create`}>
+								<button className="group relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-dashed border-muted hover:border-muted-foreground">
+									<div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+										<div className="rounded-full bg-muted p-4 group-hover:bg-muted-foreground/20">
+											<Plus className="h-6 w-6 text-muted-foreground" />
+										</div>
+										<span className="text-sm font-medium">Create pin</span>
 									</div>
-									<span className="text-sm font-medium">Create pin</span>
-								</div>
-							</button>
-						</Link>
-					</div> */}
-                    <PinList pins={pins as Pin[]} ></PinList>
+								</button>
+							</Link>
+						</div>
+					)}
+					<PinList pins={pins as Pin[]}></PinList>
 				</TabsContent>
 
 				<TabsContent value="saved" className="mt-2">
@@ -124,10 +126,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 									<Settings2 className="h-4 w-4" />
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align='start'>
-								<DropdownMenuItem className='cursor-pointer'>
-									Share
-								</DropdownMenuItem>
+							<DropdownMenuContent align="start">
+								<DropdownMenuItem className="cursor-pointer">Share</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 
@@ -137,14 +137,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 									<Plus />
 								</Button>
 							</DropdownMenuTrigger>
-                            <DropdownMenuContent align='end'>
-                                <DropdownMenuItem className='cursor-pointer'>
-                                        Create Pin
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className='cursor-pointer'>
-                                        Create Board
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem className="cursor-pointer">Create Pin</DropdownMenuItem>
+								<DropdownMenuItem className="cursor-pointer">Create Board</DropdownMenuItem>
+							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
 					<BoardPreviewList username={username} initBoards={boards} />

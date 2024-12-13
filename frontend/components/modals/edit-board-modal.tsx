@@ -107,7 +107,7 @@ export function EditBoardModal() {
 	return (
 		<>
 			<Dialog open={isOpen} onOpenChange={onClose}>
-				<DialogContent className="w-11/12 rounded-2xl sm:max-w-[540px] sm:rounded-2xl">
+				<DialogContent className="w-11/12 rounded-2xl sm:max-w-[540px] sm:rounded-2xl max-h-[calc(100vh-64px)] overflow-y-auto">
 					<DialogHeader>
 						<DialogTitle className="text-center text-2xl">Edit board</DialogTitle>
 					</DialogHeader>

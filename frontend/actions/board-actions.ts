@@ -13,7 +13,10 @@ export interface Board {
 	secret: boolean
 	pinCount: number
 	createdAt: string
-	coverImages: string[]
+	coverImages: {
+		pin_id: string
+		url: string
+	}[]
 }
 
 export const createBoardAction = createServerAction<createBoardData, Board>(async (data) => {
@@ -47,7 +50,7 @@ export const getBoardsByUsernameAction = createServerAction<string, Board[]>(
 		try {
 			const boards = await HttpRequest.get<Board[]>(`/boards/user/${userId}`, {
 				cache: 'force-cache',
-				next: { tags: ['board'] }
+				next: { tags: ['boards'] }
 			})
 			return boards
 		} catch (error) {

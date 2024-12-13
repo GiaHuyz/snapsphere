@@ -1,16 +1,20 @@
 import { Board, BoardDocument } from '@/boards/board.schema'
 import { CreateBoardDto } from '@/boards/dto/create-board.dto'
 import { UpdateBoardDto } from '@/boards/dto/update-board.dto'
+import { Pin, PinDocument } from '@/pins/pin.schema'
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, PipelineStage } from 'mongoose'
+import { Model } from 'mongoose'
 
 @Injectable()
 export class BoardsService {
-	constructor(@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>) {}
+	constructor(
+		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
+		@InjectModel(Pin.name) private readonly pinModel: Model<PinDocument>
+	) {}
 
 	async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {
-		const { coverImage, ...rest } = createBoardDto
+		const { coverImageId, ...rest } = createBoardDto
 
 		const existsBoard = await this.boardModel.findOne({
 			user_id: userId,
@@ -21,15 +25,25 @@ export class BoardsService {
 			throw new BadRequestException('Title already exists')
 		}
 
-		const data = {
-			...rest,
-			coverImages: coverImage ? [coverImage] : []
+		let data: any = { ...rest }
+
+		let pinUrl = null
+		if (coverImageId) {
+			pinUrl = await this.pinModel.findById(coverImageId).select('url')
+			if (!pinUrl) {
+				throw new BadRequestException('Cover image not found')
+			}
+			data = {
+				...rest,
+				coverImages: [{ pin_id: coverImageId, url: pinUrl.url }]
+			}
 		}
+
 		return this.boardModel.create({ ...data, user_id: userId })
 	}
 
 	async update(id: string, userId: string, updateBoardDto: UpdateBoardDto): Promise<BoardDocument> {
-		const { coverImage, ...rest } = updateBoardDto
+		const { coverImageId, ...rest } = updateBoardDto
 		const board = await this.boardModel.findById(id)
 
 		if (!board) {
@@ -50,14 +64,15 @@ export class BoardsService {
 			}
 		}
 
-		// if coverImage exists then swap coverImage to the first position of coverImages
 		const coverImages = board.coverImages
-		if (coverImage) {
-			if (coverImages.includes(coverImage)) {
-				coverImages.splice(coverImages.indexOf(coverImage), 1)
-				coverImages.unshift(coverImage)
-			} else {
-				coverImages.splice(0, 0, coverImage)
+		if (coverImageId && coverImageId !== coverImages[0].pin_id) {
+			const pin = await this.pinModel.findById(coverImageId).select('url')
+			if (!pin) {
+				throw new BadRequestException('Cover image not found')
+			}
+			if (coverImages.includes({ pin_id: coverImageId, url: pin.url })) {
+				coverImages.splice(coverImages.indexOf({ pin_id: coverImageId, url: pin.url }), 1)
+				coverImages.unshift({ pin_id: coverImageId, url: pin.url })
 			}
 		}
 
@@ -85,35 +100,10 @@ export class BoardsService {
 	}
 
 	async findAllByUserId(loginedUserId: string, userId: string): Promise<BoardDocument[]> {
-		const aggregatePipeline: PipelineStage[] = [
-			{ $match: { user_id: userId } },
-			{
-				$lookup: {
-					from: 'boardpins',
-					localField: '_id',
-					foreignField: 'board_id',
-					as: 'boardpins'
-				}
-			},
-			{ $addFields: { pinCount: { $size: '$boardpins' } } },
-			{
-				$project: {
-					_id: 1,
-					user_id: 1,
-					title: 1,
-					description: 1,
-					pinCount: 1,
-					secret: 1,
-					coverImages: 1,
-					createdAt: 1
-				}
-			}
-		]
+		if (loginedUserId !== userId) {
+			return this.boardModel.find({ user_id: userId, secret: false })
+		}
 
-        if(loginedUserId !== userId) {
-            aggregatePipeline.push({ $match: { secret: false } })
-        }
-
-		return await this.boardModel.aggregate(aggregatePipeline)
+		return await this.boardModel.find({ user_id: userId })
 	}
 }
