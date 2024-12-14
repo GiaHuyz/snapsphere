@@ -14,6 +14,11 @@
   - [x] check user authenticated
   - [x] check the image size
   - [x] validate fields
+- update pin
+  - [x] check user authenticated
+  - [x] check owner ship
+  - [x] upload new image, delete old image
+  - [x] validate fields    
 
 **Board**
 > a collection of pins

@@ -8,6 +8,8 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service'
 import { CreatePinDto } from './dto/create-pin.dto'
 import { Pin, PinDocument } from './pin.schema'
 import { GenericService } from '@/common/generic/generic.service'
+import { UpdatePinDto } from './dto/update-pin.dto'
+import { checkOwnership } from '@/common/utils/check-owner-ship.util'
 
 @Injectable()
 export class PinsService extends GenericService<PinDocument> {
@@ -18,7 +20,7 @@ export class PinsService extends GenericService<PinDocument> {
 		super(pinModel);
 	}
 
-	
+
 	/**
 	 * Creates a new pin.
 	 * 
@@ -42,5 +44,34 @@ export class PinsService extends GenericService<PinDocument> {
 		});
 
 		return newPin;
+	}
+
+	async update(
+		id: string,
+		updatedPinDto: UpdatePinDto,
+		userId: string,
+		image?: Express.Multer.File): Promise<PinDocument> {
+
+		// check if the pin exists
+		const pin = await super.baseFindOne(id);
+
+		// check if the user is the owner of the pin
+		checkOwnership(pin, userId);
+
+		// if the user wants to update the image
+		if (image) {
+			// delete the old image from Cloudinary
+			await this.cloudinaryService.deleteFile(pin.url);
+
+			// upload the new image to Cloudinary
+			const uploadedImage = await this.cloudinaryService.uploadFile(image, userId);
+
+			// update the pin with the new image
+			pin.url = uploadedImage.secure_url;
+		}
+
+		// update the pin with the new data
+		pin.set(updatedPinDto);
+		return await pin.save();
 	}
 }
