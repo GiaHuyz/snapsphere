@@ -32,14 +32,17 @@ export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (d
 	}
 })
 
-export const getAllPinsUserAction = createServerAction<void, Pin[]>(async () => {
-	try {
-		const res = await HttpRequest.get<Pin[]>('/pins', {next: {tags: ['pins']}})
-		return res
-	} catch (error) {
-		return { error: getErrorMessage(error) }
-	}
-})
+export const getAllPinsUserAction = createServerAction<string, Pin[]>(
+	async (userId) => {
+		try {
+			const res = await HttpRequest.get<Pin[]>(`/pins/users/${userId}`, { next: { tags: ['pins'] } })
+			return res
+		} catch (error) {
+			return { error: getErrorMessage(error) }
+		}
+	},
+	{ requireAuth: false }
+)
 
 export const createPin = createServerAction<FormData, Pin>(async (data: FormData) => {
 	try {
@@ -51,11 +54,11 @@ export const createPin = createServerAction<FormData, Pin>(async (data: FormData
 })
 
 export const deletePinAction = createServerAction<string, void>(async (id) => {
-    try {
-        await HttpRequest.delete(`/pins/${id}`)
-        revalidateTag('boards')
-        revalidateTag('pins')
-    } catch (error) {
-        return { error: getErrorMessage(error) }
-    }
+	try {
+		await HttpRequest.delete(`/pins/${id}`)
+		revalidateTag('boards')
+		revalidateTag('pins')
+	} catch (error) {
+		return { error: getErrorMessage(error) }
+	}
 })

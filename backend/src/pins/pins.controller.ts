@@ -51,9 +51,9 @@ export class PinsController {
 		return this.pinsService.deletePin(id, userId)
 	}
 
-	@Get()
+	@Get('users/:id')
 	@Public()
-	findAllPinsByUserId(@UserId() userId: string) {
+	findAllPinsByUserId(@Param('id') userId: string) {
 		return this.pinsService.findAllPinsByUserId(userId)
 	}
 }

@@ -1,6 +1,6 @@
 import { ProfileForm } from '@/components/profile-form'
 
-export default async function ProfilePage() {
+export default async function EditProfilePage() {
 	return (
 		<div className="container max-w-2xl py-8 px-5 mx-auto">
 			<div className="space-y-6">

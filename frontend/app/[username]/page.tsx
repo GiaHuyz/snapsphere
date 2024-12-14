@@ -38,7 +38,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 	}
 
 	const boards = await getBoardsByUsernameAction(user.id)
-	const pins = await getAllPinsUserAction()
+	const pins = await getAllPinsUserAction(user.id)
 
 	if (isActionError(boards) || isActionError(pins)) {
 		return (
