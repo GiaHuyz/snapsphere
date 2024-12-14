@@ -20,6 +20,7 @@ export class BoardsController {
 		return this.boardsService.findAll({});
 	}
 
+	// TODO: test hàm này
 	@Post()
 	async create(
 		@UserId() userId: string,
