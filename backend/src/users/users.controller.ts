@@ -27,7 +27,7 @@ export class UsersController {
   @Get('me')
   @ApiOperation({ summary: 'Get current user', description: 'Only for authenticated user' })
   async getCurrentUser(@UserId() userId: string): Promise<any> {
-    const user = clerkClient.users.getUser(userId); 
+    const user = await clerkClient.users.getUser(userId); 
     log('[DEV]',"[UsersController.getCurrentUser]", user);
     return user;
   }
