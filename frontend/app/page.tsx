@@ -63,7 +63,7 @@ export default async function HomePage() {
 						// 	currentBoard="wuxia"
 						// 	isLoggedIn={!!userId}
 						// />
-						<div>abc</div>
+						<div key={image.id}>abc</div>
 					))}
 				</MansoryLayout>
 			</div>

@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserDocument } from './user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
 import { AuthGuard } from '@/common/guard/auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { clerkClient } from '@clerk/express';
 import { Public } from '@/decorators/public';
+import { UserId } from '@/decorators/userId';
+import { log } from 'console';
 
 
 @ApiTags('users')
@@ -26,9 +26,10 @@ export class UsersController {
   
   @Get('me')
   @ApiOperation({ summary: 'Get current user', description: 'Only for authenticated user' })
-  async getCurrentUser(@Req() req): Promise<any> {
-    const user = req.user; 
+  async getCurrentUser(@UserId() userId: string): Promise<any> {
+    const user = clerkClient.users.getUser(userId); 
+    log('[DEV]',"[UsersController.getCurrentUser]", user);
     return user;
   }
-  
+
 }
