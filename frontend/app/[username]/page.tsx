@@ -1,5 +1,5 @@
 import { getBoardsByUsernameAction } from '@/actions/board-actions'
-import { getAllPinsUserAction, Pin } from '@/actions/pin-actions'
+import { getAllPinsUserAction } from '@/actions/pin-actions'
 import BoardPreviewList from '@/components/board-preview-list'
 import PinList from '@/components/pin-list'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -15,16 +15,9 @@ import Link from 'next/link'
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
 	const { username } = await params
 
-	const fetchUser = async () => {
-		const { data } = await (
-			await clerkClient()
-		).users.getUserList({
-			username: [username]
-		})
-		return data[0]
-	}
-
-	const user = await fetchUser()
+	const {
+		data: [user]
+	} = await (await clerkClient()).users.getUserList({ username: [username] })
 
 	if (!user) {
 		return (
@@ -115,7 +108,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 							</Link>
 						</div>
 					)}
-					<PinList pins={pins as Pin[]}></PinList>
+					<PinList initPins={pins}></PinList>
 				</TabsContent>
 
 				<TabsContent value="saved" className="mt-2">

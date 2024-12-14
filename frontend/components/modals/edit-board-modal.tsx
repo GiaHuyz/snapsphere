@@ -36,7 +36,7 @@ export const editBoardSchema = z.object({
 
 export type EditBoardData = z.infer<typeof editBoardSchema>
 
-export function EditBoardModal() {
+export default function EditBoardModal() {
 	const { isOpen, onClose, boardId, boardData, mutateBoardsFn } = useEditBoardModal()
 	const [isLoading, setIsLoading] = useState(false)
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
@@ -188,16 +188,17 @@ export function EditBoardModal() {
 									/>
 								</div>
 							</div>
-							<DialogFooter className="gap-2 sm:gap-0">
-								<Button
+							<DialogFooter className="gap-2 sm:gap-0 sm:justify-between">
+								<LoaderButton
 									type="button"
 									variant="destructive"
 									onClick={() => setShowDeleteAlert(true)}
-									disabled={isLoading}
+									isLoading={isLoading}
+                                    className='rounded-full'
 								>
 									Delete
-								</Button>
-								<LoaderButton type="submit" isLoading={isLoading} disabled={!form.formState.isDirty}>
+								</LoaderButton>
+								<LoaderButton type="submit" isLoading={isLoading} disabled={!form.formState.isDirty} className='rounded-full'>
 									Save
 								</LoaderButton>
 							</DialogFooter>

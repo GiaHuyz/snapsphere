@@ -53,7 +53,7 @@ export default async function HomePage() {
 		<div className="min-h-screen bg-background">
 			<div className="py-6">
 				<MansoryLayout className="xl:columns-6">
-					{images.map((image) => (
+					{/* {images.map((image) => (
 						<Pin
 							key={image.id}
 							id={image.id}
@@ -62,7 +62,7 @@ export default async function HomePage() {
 							currentBoard="wuxia"
 							isLoggedIn={!!userId}
 						/>
-					))}
+					))} */}
 				</MansoryLayout>
 			</div>
 		</div>

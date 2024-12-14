@@ -78,7 +78,7 @@ export default function BoardPreview({
 							onOpenEdit(_id, {
 								title,
 								description,
-								coverImage: coverImages[0].url,
+								coverImage: coverImages[0]?.url,
 								secret
 							})
 						}}

@@ -25,7 +25,7 @@ export const createBoardSchema = z.object({
 
 export type createBoardData = z.infer<typeof createBoardSchema>
 
-export function CreateBoardModal() {
+export default function CreateBoardModal() {
 	const { isOpen, onClose, pin } = useCreateBoardModal()
 	const [isLoading, setIsLoading] = useState(false)
 	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()

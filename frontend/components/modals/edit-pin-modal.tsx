@@ -6,9 +6,20 @@ import NextImage from 'next/image'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-
 import { Board } from '@/actions/board-actions'
+import { deletePinAction } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
+import { LoaderButton } from '@/components/loading-button'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -18,31 +29,30 @@ import { Textarea } from '@/components/ui/textarea'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
 import { isActionError } from '@/lib/errors'
 import { toast } from 'sonner'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { deletePinAction } from '@/actions/pin-actions'
 
 const editPinSchema = z.object({
 	title: z.string().min(1, 'Title is required'),
 	description: z.string().optional(),
-	link: z.string().url().optional().or(z.literal('')),
+	referenceLink: z.string().url().optional().or(z.literal('')),
 	boardId: z.string(),
 	allowComments: z.boolean().default(true)
 })
 
 type EditPinFormValues = z.infer<typeof editPinSchema>
 
-export function EditPinModal() {
+export default function EditPinModal() {
 	const { isOpen, onClose, pin } = useEditPinModal()
 	const [isLoading, setIsLoading] = useState(false)
-    const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const [selectedBoard, setSelectedBoard] = useState<Board | null>(null)
+	const [formValues, setFormValues] = useState<EditPinFormValues | null>(null)
 
 	const form = useForm<EditPinFormValues>({
 		resolver: zodResolver(editPinSchema),
 		defaultValues: {
 			title: '',
 			description: '',
-			link: '',
+			referenceLink: '',
 			boardId: '',
 			allowComments: true
 		}
@@ -50,14 +60,30 @@ export function EditPinModal() {
 
 	useEffect(() => {
 		if (pin) {
-			form.reset({
+			const initialValues = {
 				title: pin.title,
 				description: pin.description,
-				link: pin.link,
-				allowComments: pin.isAllowedComment
-			})
+				referenceLink: pin.referenceLink,
+				allowComments: pin.isAllowedComment,
+                boardId: ''
+			}
+			setFormValues(initialValues)
+            setSelectedBoard(null)
+			form.reset(initialValues)
 		}
 	}, [pin, form])
+
+	const hasChanges = () => {
+		if (!formValues || !pin) return false
+		const currentValues = form.getValues()
+		return (
+			currentValues.title !== formValues.title ||
+			currentValues.description !== formValues.description ||
+			currentValues.referenceLink !== formValues.referenceLink ||
+			currentValues.allowComments !== formValues.allowComments ||
+			currentValues.boardId !== formValues.boardId
+		)
+	}
 
 	async function onSubmit(data: EditPinFormValues) {
 		// if (!pin) return
@@ -72,6 +98,7 @@ export function EditPinModal() {
 		// 	onClose()
 		// }
 		setIsLoading(false)
+        console.log(data)
 	}
 
 	const handleBoardChange = (board: Board) => {
@@ -79,7 +106,7 @@ export function EditPinModal() {
 		form.setValue('boardId', board._id)
 	}
 
-    const onDelete = async () => {
+	const onDelete = async () => {
 		setIsLoading(true)
 		const res = await deletePinAction(pin!._id)
 
@@ -155,7 +182,7 @@ export function EditPinModal() {
 
 									<FormField
 										control={form.control}
-										name="link"
+										name="referenceLink"
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Link</FormLabel>
@@ -232,21 +259,22 @@ export function EditPinModal() {
 								</div>
 							</div>
 							<DialogFooter className="flex gap-2 justify-between sm:justify-between">
-								<Button
+								<LoaderButton
 									type="button"
-                                    className='rounded-full'
+									className="rounded-full bg-red-500 hover:bg-red-600"
 									onClick={() => setShowDeleteAlert(true)}
-									disabled={isLoading}
+									isLoading={isLoading}
 								>
 									Delete
-								</Button>
-								<Button
+								</LoaderButton>
+								<LoaderButton
 									type="submit"
-									disabled={isLoading || !form.formState.isDirty}
-									className="rounded-full bg-red-500 hover:bg-red-600"
+									disabled={!hasChanges()}
+									className="rounded-full"
+									isLoading={isLoading}
 								>
-									{isLoading ? 'Updating...' : 'Update'}
-								</Button>
+									Update
+								</LoaderButton>
 							</DialogFooter>
 						</form>
 					</Form>

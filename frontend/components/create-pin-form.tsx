@@ -21,10 +21,10 @@ import { isActionError } from '@/lib/errors'
 import { toast } from 'sonner'
 
 const createPinSchema = z.object({
-	title: z.string().min(1, 'Title is required'),
+	title: z.string().min(1, 'Title is required').optional().or(z.literal('')),
 	description: z.string().optional().or(z.literal('')),
 	link: z.string().url().optional().or(z.literal('')),
-	boardId: z.string(),
+	boardId: z.string().optional().or(z.literal('')),
 	allowComments: z.boolean().default(true)
 })
 
@@ -84,29 +84,27 @@ export default function CreatePinForm() {
 	})
 
 	async function onSubmit(data: CreatePinFormValues) {
-        if (!selectedBoard) {
-            form.setError('boardId', { message: 'Please select a board' })
-			return
-		}
-        
 		if (!imageFile) {
-            toast.error('Please upload an image')
+			toast.error('Please upload an image')
 			return
 		}
-        
-        setIsLoading(true)
-		const formData = new FormData()
-		formData.append('title', data.title)
-		formData.append('board_id', data.boardId)
-		formData.append('isAllowedComment', data.allowComments.toString())
-		formData.append('image', imageFile)
 
+		setIsLoading(true)
+		const formData = new FormData()
+		if (data.title) {
+            formData.append('title', data.title)
+		}
+		if (data.boardId) {
+			formData.append('board_id', data.boardId)
+		}
 		if (data.description) {
-			formData.append('description', data.description)
+            formData.append('description', data.description)
 		}
 		if (data.link) {
-			formData.append('link', data.link)
+            formData.append('link', data.link)
 		}
+        formData.append('isAllowedComment', data.allowComments.toString())
+        formData.append('image', imageFile)
 
 		const res = await createPin(formData)
 

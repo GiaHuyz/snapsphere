@@ -10,10 +10,10 @@ type LoaderButtonProps = ButtonProps & {
 }
 
 export const LoaderButton = forwardRef<HTMLButtonElement, LoaderButtonProps>(
-	({ isLoading, disabled, icon: Icon, children }, ref) => {
+	({ isLoading, disabled, icon: Icon, children, ...props }, ref) => {
 		if (isLoading) {
 			return (
-				<Button ref={ref} disabled={isLoading}>
+				<Button ref={ref} disabled={isLoading} {...props}>
 					<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 					{children}
 				</Button>
@@ -21,7 +21,7 @@ export const LoaderButton = forwardRef<HTMLButtonElement, LoaderButtonProps>(
 		}
 
 		return (
-			<Button ref={ref} disabled={isLoading || disabled}>
+			<Button ref={ref} disabled={isLoading || disabled} {...props}>
 				{Icon ? (
 					<>
 						<Icon size={18} className="mr-3" />
