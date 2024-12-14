@@ -19,6 +19,10 @@
   - [x] check owner ship
   - [x] upload new image, delete old image
   - [x] validate fields    
+- delete pin
+  - [x] check pin exist 
+  - [x] check ownership
+  - [x] remove image from cloudiary
 
 **Board**
 > a collection of pins

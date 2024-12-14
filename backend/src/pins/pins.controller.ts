@@ -80,4 +80,9 @@ export class PinsController extends GenericController<PinDocument> {
 		return await this.pinsService.update(id, updatePinDto, userId, image);
 	}
 
+	@ApiOperation({ summary: 'Delete a pin by ID' })
+	@Delete(':id')
+	async delete(@Param('id') id: string, @UserId() userId: string): Promise<void> {
+		return await this.pinsService.delete(id, userId);
+	}
 }

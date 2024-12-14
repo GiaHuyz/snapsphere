@@ -46,6 +46,18 @@ export class PinsService extends GenericService<PinDocument> {
 		return newPin;
 	}
 
+	/**
+	 * Updates a pin with the given data.
+	 *
+	 * @param {string} id - The ID of the pin to update.
+	 * @param {UpdatePinDto} updatedPinDto - The data to update the pin with.
+	 * @param {string} userId - The ID of the user performing the update.
+	 * @param {Express.Multer.File} [image] - An optional new image file to update the pin with.
+	 * @returns {Promise<PinDocument>} - The updated pin document.
+	 *
+	 * @throws {Error} If the pin does not exist.
+	 * @throws {Error} If the user is not the owner of the pin.
+	 */
 	async update(
 		id: string,
 		updatedPinDto: UpdatePinDto,
@@ -73,5 +85,19 @@ export class PinsService extends GenericService<PinDocument> {
 		// update the pin with the new data
 		pin.set(updatedPinDto);
 		return await pin.save();
+	}
+
+	async delete(id: string, userId: string): Promise<void> {
+		// check if the pin exists
+		const pin = await super.baseFindOne(id);
+
+		// check if the user is the owner of the pin
+		checkOwnership(pin, userId);
+
+		// delete the image from Cloudinary
+		await this.cloudinaryService.deleteFile(pin.url);
+
+		// delete the pin from the database
+		await this.pinModel.findByIdAndDelete(id);
 	}
 }
