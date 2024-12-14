@@ -3,8 +3,8 @@ import { UsersService } from './users.service';
 import { AuthGuard } from '@/common/guard/auth.guard';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { clerkClient } from '@clerk/express';
-import { Public } from '@/decorators/public';
-import { UserId } from '@/decorators/userId';
+import { Public } from '@/common/decorators/public';
+import { UserId } from '@/common/decorators/userId';
 import { log } from 'console';
 
 

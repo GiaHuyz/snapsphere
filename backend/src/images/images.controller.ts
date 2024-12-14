@@ -6,10 +6,10 @@ import { ImageDocument } from './image.schema'
 import { ImagesService } from './images.service'
 import { UpdateImageDto } from './dto/update-image.dto'
 import { GetImagesDto } from './dto/get-image.dto'
-import { Public } from '@/decorators/public'
+import { Public } from '@/common/decorators/public'
 import { log } from 'console'
 import { AuthGuard } from '@/common/guard/auth.guard'
-import { UserId } from '@/decorators/userId'
+import { UserId } from '@/common/decorators/userId'
 
 @ApiTags('images')
 @UseGuards(AuthGuard) // Áp dụng Guard
