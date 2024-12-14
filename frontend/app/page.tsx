@@ -54,14 +54,16 @@ export default async function HomePage() {
 			<div className="py-6">
 				<MansoryLayout className="xl:columns-6">
 					{images.map((image) => (
-						<Pin
-							key={image.id}
-							id={image.id}
-							image={image.src}
-							title={image.alt}
-							currentBoard="wuxia"
-							isLoggedIn={!!userId}
-						/>
+						// TODO: sửa lại chỗ này dùm
+						// <Pin
+						// 	key={image.id}
+						// 	id={image.id}
+						// 	image={image.src}
+						// 	title={image.alt}
+						// 	currentBoard="wuxia"
+						// 	isLoggedIn={!!userId}
+						// />
+						<div>abc</div>
 					))}
 				</MansoryLayout>
 			</div>
