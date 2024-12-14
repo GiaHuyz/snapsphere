@@ -18,11 +18,15 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { isValidObjectId } from 'mongoose'
 import { CreatePinDto } from './dto/create-pin.dto'
 import { PinsService } from './pins.service'
+import { GenericController } from '@/common/generic/generic.controller'
+import { PinDocument } from './pin.schema'
 
 @ApiTags('Pins')
 @Controller('pins')
-export class PinsController {
-	constructor(private readonly pinsService: PinsService) { }
+export class PinsController extends GenericController<PinDocument> {
+	constructor(private readonly pinsService: PinsService) {
+		super(pinsService)
+	}
 
 	@ApiBody({ type: CreatePinDto })
 	@ApiOperation({
@@ -35,32 +39,8 @@ export class PinsController {
 	async create(
 		@UserId() userId: string,
 		@UploadedFile() image: Express.Multer.File,
-		@Body() createPinDto: CreatePinDto) {	
+		@Body() createPinDto: CreatePinDto) {
 		return await this.pinsService.create(userId, createPinDto, image)
 	}
 
-	@Post('save-to-board')
-	savePinToBoard(@UserId() userId: string, @Body() savePinDto: SavePinDto) {
-		return this.pinsService.savePinToBoard(userId, savePinDto)
-	}
-
-	@Delete(':id')
-	delete(@UserId() userId: string, @Param('id') id: string, @Query('boardId') boardId?: string) {
-		if (!isValidObjectId(id)) {
-			throw new UnprocessableEntityException('Invalid ID format')
-		}
-		if (boardId) {
-			if (!isValidObjectId(boardId)) {
-				throw new UnprocessableEntityException('Invalid ID format')
-			}
-			return this.pinsService.deleteFromBoard(id, userId, boardId)
-		}
-		return this.pinsService.deletePin(id, userId)
-	}
-
-	@Get('users/:id')
-	@Public()
-	findAllPinsByUserId(@Param('id') userId: string) {
-		return this.pinsService.findAllPinsByUserId(userId)
-	}
 }

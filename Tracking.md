@@ -1,12 +1,12 @@
 **Auth**
+> call clerk in client
 
-- [x] Login
-- [x] Sign up
+**Pin**
+> use pin instead of image
+- [x] create pin
+  - check user authenticated
+  - check the image size
+  - validate fields
 
-**Images**
-- [x] Get with filter
-- [ ] Create (not binding user_id yet)
-- [ ] Update (not check the owner yet)
-- [ ] Delete (not check the owner yet)
-
-**Collections**
+**Board**
+> a collection of pins

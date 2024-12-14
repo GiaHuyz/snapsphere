@@ -15,7 +15,7 @@ export abstract class GenericController<T extends Document> {
   }
 
   async baseCreate(@Body() createDto: Partial<T>): Promise<T> {
-    return this.service.create(createDto);
+    return this.service.baseCreate(createDto);
   }
 
   async baseUpdate(@Param('id') id: string, @Body() updateDto: Partial<T>): Promise<T> {

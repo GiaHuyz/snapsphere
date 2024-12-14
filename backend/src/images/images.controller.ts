@@ -43,7 +43,7 @@ export class ImagesController extends GenericController<ImageDocument> {
 		@Body() createImageDto: CreateImageDto,
 		@UserId() userId: string): Promise<ImageDocument> {
 		log('[DEV]', '[ImagesController.create]', `user with id: ${userId} create an image`)
-		return this.imagesService.create({ ...createImageDto, user_id: userId })
+		return this.imagesService.baseCreate({ ...createImageDto, user_id: userId })
 	}
 
 	@Patch(':id')

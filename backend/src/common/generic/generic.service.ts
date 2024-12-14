@@ -40,7 +40,7 @@ export class GenericService<T extends Document> {
   }
 
   // Tạo một mục mới
-  async create(createDto: Partial<T>): Promise<T> {
+  async baseCreate(createDto: Partial<T>): Promise<T> {
     const createdItem = new this.model(createDto);
     return createdItem.save();
   }
