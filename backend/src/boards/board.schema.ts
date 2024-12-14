@@ -20,9 +20,11 @@ export class Board { // the collection of pins
 	@Prop({ default: 0 })
 	pinCount: number // number of pins in the board
 
-	@Prop({ type: [{ pin_id: mongoose.Types.ObjectId, url: String }] })
-	coverImages: Array<{ pin_id: mongoose.Types.ObjectId; url: string }> // cover images of the board
+	@Prop({ type: Array<mongoose.Types.ObjectId>, required: false, default: [] })
+	coverImages: Array<mongoose.Types.ObjectId> // cover images of the board
 }
 
 export const BoardSchema = SchemaFactory.createForClass(Board)
-BoardSchema.index({ user_id: 1, title: 1 })
+// TODO: mấy cái index này làm gì vậy?
+// mấy cột này có unique đâu mà index?
+BoardSchema.index({ user_id: 1, title: 1 }) 

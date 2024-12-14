@@ -8,7 +8,7 @@ export class GenericService<T extends Document> {
   constructor(@InjectModel('T') private readonly model: Model<T>) { }
 
   // Tìm tất cả các mục
-  async findAll(
+  async baseFindAll(
     query: any
   ): Promise<T[]> {
     return this.model.find(query).exec();

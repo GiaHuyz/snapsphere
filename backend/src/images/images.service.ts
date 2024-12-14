@@ -25,7 +25,7 @@ export class ImagesService extends GenericService<ImageDocument> {
     return super.baseFindOne(id, [checkCanView]);
   }
 
-  async findAll(query: GetImagesDto): Promise<ImageDocument[]> {
+  async baseFindAll(query: GetImagesDto): Promise<ImageDocument[]> {
     const filters: Record<string, any> = {};
 
     // Ánh xạ user_id
@@ -54,7 +54,7 @@ export class ImagesService extends GenericService<ImageDocument> {
     }
 
     // Truy vấn MongoDB với các filters
-    return super.findAll(filters);
+    return super.baseFindAll(filters);
   }
 
   async update(

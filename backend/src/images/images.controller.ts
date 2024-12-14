@@ -34,7 +34,7 @@ export class ImagesController extends GenericController<ImageDocument> {
 	@Get()
 	@ApiOperation({ summary: 'Get all images' })
 	async baseFindAll(@Query() query: GetImagesDto): Promise<ImageDocument[]> {
-		return this.imagesService.findAll(query)
+		return this.imagesService.baseFindAll(query)
 	}
 
 	@Post("create")

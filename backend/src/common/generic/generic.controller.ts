@@ -7,7 +7,7 @@ export abstract class GenericController<T extends Document> {
   constructor(private readonly service: GenericService<T>) { }
 
   async baseFindAll(@Query() query: any = {}): Promise<T[]> {
-    return this.service.findAll(query);
+    return this.service.baseFindAll(query);
   }
 
   async baseFindOne(@Param('id') id: string): Promise<T> {

@@ -11,12 +11,13 @@ import { BoardsService } from './boards.service'
 @ApiBearerAuth()
 @Controller('boards')
 export class BoardsController {
-	constructor(private readonly boardsService: BoardsService) {}
+	constructor(private readonly boardsService: BoardsService) { }
 
+	// TODO: hàm này cần phải thêm filter
+	@Get()
 	@Public()
-	@Get('/user/:id')
-	async findAllByUserId(@UserId() loginedUserId: string, @Param('id') userId: string): Promise<BoardDocument[]> {
-		return this.boardsService.findAllByUserId(loginedUserId, userId)
+	async findAll(): Promise<BoardDocument[]> {
+		return this.boardsService.findAll({});
 	}
 
 	@Post()
@@ -27,17 +28,17 @@ export class BoardsController {
 		return this.boardsService.create(userId, createBoardDto)
 	}
 
-	@Patch(':id')
-	async update(
-		@Param('id') id: string,
-		@UserId() userId: string,
-		@Body() updateBoardDto: UpdateBoardDto
-	): Promise<BoardDocument> {
-		return this.boardsService.update(id, userId, updateBoardDto)
-	}
+	// @Patch(':id')
+	// async update(
+	// 	@Param('id') id: string,
+	// 	@UserId() userId: string,
+	// 	@Body() updateBoardDto: UpdateBoardDto
+	// ): Promise<BoardDocument> {
+	// 	return this.boardsService.update(id, userId, updateBoardDto)
+	// }
 
-	@Delete(':id')
-	async delete(@UserId() userId: string, @Param('id') id: string): Promise<void> {
-		return this.boardsService.delete(id, userId)
-	}
+	// @Delete(':id')
+	// async delete(@UserId() userId: string, @Param('id') id: string): Promise<void> {
+	// 	return this.boardsService.delete(id, userId)
+	// }
 }
