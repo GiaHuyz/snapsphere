@@ -1,24 +1,35 @@
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { GenericController } from '../common/generic/generic.controller';
-import { UserDocument } from './user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@/common/guard/auth.guard';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { clerkClient } from '@clerk/express';
+import { Public } from '@/common/decorators/public';
+import { UserId } from '@/common/decorators/userId';
+import { log } from 'console';
+
 
 @ApiTags('users')
 @ApiBearerAuth()
 @UseGuards(AuthGuard)
 @Controller('users')
-export class UsersController extends GenericController<UserDocument> {
-  constructor(private readonly userService: UsersService) {
-    super(userService);
+export class UsersController {
+  constructor(private readonly userService: UsersService) { }
+  
+  // TODO: mapping user từ Clerk sang UserDocument, thêm filter để lọc user
+  @Public()
+  @ApiOperation({ summary: 'Get user list' })
+  @Get()
+  async findAll(): Promise<any> {
+    const users = clerkClient.users.getUserList();
+    return users;
   }
-
-  @Post()
-  async baseCreate(@Body() createUserDto: CreateUserDto): Promise<UserDocument> {
-    return this.userService.create(createUserDto as any);
+  
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user', description: 'Only for authenticated user' })
+  async getCurrentUser(@UserId() userId: string): Promise<any> {
+    const user = await clerkClient.users.getUser(userId); 
+    log('[DEV]',"[UsersController.getCurrentUser]", user);
+    return user;
   }
 
 }

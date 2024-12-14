@@ -5,8 +5,7 @@ import { User, UserDocument } from './user.schema';
 import { GenericService } from '../common/generic/generic.service';
 
 @Injectable()
-export class UsersService extends GenericService<UserDocument> {
+export class UsersService {
   constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {
-    super(userModel);
   }
 }
