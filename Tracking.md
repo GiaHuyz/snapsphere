@@ -3,10 +3,17 @@
 
 **Pin**
 > use pin instead of image
-- [x] create pin
-  - check user authenticated
-  - check the image size
-  - validate fields
+-  get one
+  - [x] check id format
+  - [x] check pin exist
+  - [ ] prevent user from getting other's private pin  
+- get all
+  - [ ] add filter
+  - [ ] filter private pin from other user
+- create pin
+  - [x] check user authenticated
+  - [x] check the image size
+  - [x] validate fields
 
 **Board**
 > a collection of pins

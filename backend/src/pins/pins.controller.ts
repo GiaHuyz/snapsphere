@@ -28,6 +28,22 @@ export class PinsController extends GenericController<PinDocument> {
 		super(pinsService)
 	}
 
+	// TODO: add filter for this endpoint
+	@ApiOperation({ summary: 'Get all pins' })
+	@Public()
+	@Get()
+	async findAll(@Query() query: any = {}): Promise<PinDocument[]> {
+		// TODO: only owner can view their private pins
+		return super.baseFindAll(query);
+	}
+
+	@ApiOperation({ summary: 'Get a pin by ID' })
+	@Public()
+	@Get(':id')
+	async findOne(@Param('id') id: string): Promise<PinDocument> {
+		return super.baseFindOne(id);
+	}
+
 	@ApiBody({ type: CreatePinDto })
 	@ApiOperation({
 		summary: 'Create a new pin (image)',
