@@ -11,7 +11,7 @@ export interface Pin {
 	url: string
 	title: string
 	description: string
-	link: string
+	referenceLink: string
 	isAllowedComment: boolean
 	createdAt: Date
 	updatedAt: Date

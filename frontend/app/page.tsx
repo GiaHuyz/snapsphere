@@ -53,18 +53,16 @@ export default async function HomePage() {
 		<div className="min-h-screen bg-background">
 			<div className="py-6">
 				<MansoryLayout className="xl:columns-6">
-					{images.map((image) => (
-						// TODO: sửa lại chỗ này dùm
-						// <Pin
-						// 	key={image.id}
-						// 	id={image.id}
-						// 	image={image.src}
-						// 	title={image.alt}
-						// 	currentBoard="wuxia"
-						// 	isLoggedIn={!!userId}
-						// />
-						<div key={image.id}>abc</div>
-					))}
+					{/* {images.map((image) => (
+						<Pin
+							key={image.id}
+							id={image.id}
+							image={image.src}
+							title={image.alt}
+							currentBoard="wuxia"
+							isLoggedIn={!!userId}
+						/>
+					))} */}
 				</MansoryLayout>
 			</div>
 		</div>
