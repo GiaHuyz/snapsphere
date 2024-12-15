@@ -46,10 +46,10 @@ export class BoardsService extends GenericService<BoardDocument> {
 
 		// check pin exist
 		const document = await this.baseFindOne(id);
-		
+
 		// check ownership
 		checkOwnership(document, userId);
-		
+
 		// update board with new data
 		document.set({
 			...updateBoardDto,
@@ -59,28 +59,17 @@ export class BoardsService extends GenericService<BoardDocument> {
 		return this.boardModel.findByIdAndUpdate(id, document, { new: true });
 	}
 
-	// async delete(id: string, userId: string): Promise<void> {
-	// 	const board = await this.boardModel.findById(id)
+	async delete(id: string, userId: string): Promise<void> {
+		// check if board exists
+		const board = await this.baseFindOne(id);
 
-	// 	// cannot not update other user's board
-	// 	if (board.user_id !== userId) {
-	// 		throw new ForbiddenException("Cannot delete other user's board")
-	// 	}
+		// check ownership
+		checkOwnership(board, userId);
 
-	// 	if (!board) {
-	// 		throw new NotFoundException('Board not found')
-	// 	}
-
-	// 	await this.boardModel.findByIdAndDelete(id)
-	// }
-
-	// async findAllByUserId(loginedUserId: string, userId: string): Promise<BoardDocument[]> {
-	// 	if (loginedUserId !== userId) {
-	// 		return this.boardModel.find({ user_id: userId, secret: false })
-	// 	}
-
-	// 	return await this.boardModel.find({ user_id: userId })
-	// }
+		// delete board
+		// TODO: delete all pins in this board or not?
+		await this.boardModel.findByIdAndDelete(id)
+	}
 
 	private async checkPinsCoverExist(coverImageIds: Array<mongoose.Types.ObjectId>): Promise<void> {
 		for (const coverImageId of coverImageIds) {

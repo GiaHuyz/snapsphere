@@ -26,6 +26,8 @@
 
 **Board**
 > a collection of pins
+- get
+  - [ ] need update!!
 - create board
   - [x] check authenticated
   - [x] validate fields
@@ -36,4 +38,7 @@
   - [x] validate fields
   - [x] check pin cover exist 
   - [ ] Add cover image to board
-
+- delete board
+  - [x] check authenticated
+  - [x] check ownership
+  - [ ] delete relative data  

@@ -20,7 +20,7 @@ export class BoardsController {
 		return this.boardsService.findAll({});
 	}
 
-	
+
 	@Post()
 	async create(
 		@UserId() userId: string,
@@ -38,8 +38,11 @@ export class BoardsController {
 		return this.boardsService.update(id, userId, updateBoardDto)
 	}
 
-	// @Delete(':id')
-	// async delete(@UserId() userId: string, @Param('id') id: string): Promise<void> {
-	// 	return this.boardsService.delete(id, userId)
-	// }
+	@Delete(':id')
+	async delete(
+		@UserId() userId: string,
+		@Param('id') id: string
+	): Promise<void> {
+		return this.boardsService.delete(id, userId)
+	}
 }
