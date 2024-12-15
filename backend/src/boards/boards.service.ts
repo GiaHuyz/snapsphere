@@ -31,35 +31,7 @@ export class BoardsService extends GenericService<BoardDocument> {
 		return this.boardModel.create({ ...createBoardDto, user_id: userId })
 	}
 
-	// async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {
-	// 	const { coverImageId, ...rest } = createBoardDto
-
-	// 	const existsBoard = await this.boardModel.findOne({
-	// 		user_id: userId,
-	// 		title: { $regex: new RegExp(`^${rest.title}$`, 'i') }
-	// 	})
-
-	// 	if (existsBoard) {
-	// 		throw new BadRequestException('Title already exists')
-	// 	}
-
-	// 	let data: any = { ...rest }
-
-	// 	let pinUrl = null
-	// 	if (coverImageId) {
-	// 		pinUrl = await this.pinModel.findById(coverImageId).select('url')
-	// 		if (!pinUrl) {
-	// 			throw new BadRequestException('Cover image not found')
-	// 		}
-	// 		data = {
-	// 			...rest,
-	// 			coverImages: [{ pin_id: coverImageId, url: pinUrl.url }]
-	// 		}
-	// 	}
-
-	// 	return this.boardModel.create({ ...data, user_id: userId })
-	// }
-
+	
 	// async update(id: string, userId: string, updateBoardDto: UpdateBoardDto): Promise<BoardDocument> {
 	// 	const { coverImageId, ...rest } = updateBoardDto
 	// 	const board = await this.boardModel.findById(id)

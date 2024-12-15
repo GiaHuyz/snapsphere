@@ -26,3 +26,8 @@
 
 **Board**
 > a collection of pins
+- create board
+  - [x] check authenticated
+  - [x] validate fields
+  - [x] check pin cover exist
+
