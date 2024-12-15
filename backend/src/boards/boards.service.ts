@@ -38,13 +38,25 @@ export class BoardsService extends GenericService<BoardDocument> {
 	}
 
 	async update(id: string, userId: string, updateBoardDto: UpdateBoardDto): Promise<BoardDocument> {
-
+		// check if coverImageId exists
 		const { coverImageIds } = updateBoardDto;
 		if (coverImageIds.length > 0) {
 			this.checkPinsCoverExist(coverImageIds);
 		}
 
-		return super.baseUpdate(id, updateBoardDto, [document => { checkOwnership(document, userId) }]);
+		// check pin exist
+		const document = await this.baseFindOne(id);
+		
+		// check ownership
+		checkOwnership(document, userId);
+		
+		// update board with new data
+		document.set({
+			...updateBoardDto,
+			coverImages: coverImageIds
+		})
+		// save and return updated board
+		return this.boardModel.findByIdAndUpdate(id, document, { new: true });
 	}
 
 	// async delete(id: string, userId: string): Promise<void> {
