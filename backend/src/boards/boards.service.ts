@@ -1,10 +1,12 @@
 import { Board, BoardDocument } from '@/boards/board.schema'
 import { CreateBoardDto } from '@/boards/dto/create-board.dto'
 import { GenericService } from '@/common/generic/generic.service'
+import { checkOwnership } from '@/common/utils/check-owner-ship.util'
 import { PinsService } from '@/pins/pins.service'
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model, mongo } from 'mongoose'
+import { UpdateBoardDto } from './dto/update-board.dto'
 
 @Injectable()
 export class BoardsService extends GenericService<BoardDocument> {
@@ -28,51 +30,22 @@ export class BoardsService extends GenericService<BoardDocument> {
 			}
 		}
 
-		return this.boardModel.create({ ...createBoardDto, user_id: userId })
+		return this.boardModel.create({
+			...createBoardDto,
+			user_id: userId,
+			coverImages: coverImageIds
+		});
 	}
 
-	
-	// async update(id: string, userId: string, updateBoardDto: UpdateBoardDto): Promise<BoardDocument> {
-	// 	const { coverImageId, ...rest } = updateBoardDto
-	// 	const board = await this.boardModel.findById(id)
+	async update(id: string, userId: string, updateBoardDto: UpdateBoardDto): Promise<BoardDocument> {
 
-	// 	if (!board) {
-	// 		throw new NotFoundException('Board not found')
-	// 	}
+		const { coverImageIds } = updateBoardDto;
+		if (coverImageIds.length > 0) {
+			this.checkPinsCoverExist(coverImageIds);
+		}
 
-	// 	if (board.user_id !== userId) {
-	// 		throw new ForbiddenException("Cannot update other user's board")
-	// 	}
-
-	// 	if (rest.title) {
-	// 		const existsBoard = await this.boardModel.findOne({
-	// 			_id: { $ne: board._id },
-	// 			title: { $regex: new RegExp(`^${rest.title}$`, 'i') }
-	// 		})
-	// 		if (existsBoard) {
-	// 			throw new BadRequestException('Title already exists')
-	// 		}
-	// 	}
-
-	// 	const coverImages = board.coverImages
-	// 	if (coverImageId && coverImageId !== coverImages[0].pin_id) {
-	// 		const pin = await this.pinModel.findById(coverImageId).select('url')
-	// 		if (!pin) {
-	// 			throw new BadRequestException('Cover image not found')
-	// 		}
-	// 		if (coverImages.includes({ pin_id: coverImageId, url: pin.url })) {
-	// 			coverImages.splice(coverImages.indexOf({ pin_id: coverImageId, url: pin.url }), 1)
-	// 			coverImages.unshift({ pin_id: coverImageId, url: pin.url })
-	// 		}
-	// 	}
-
-	// 	const data = {
-	// 		...rest,
-	// 		coverImages
-	// 	}
-
-	// 	return this.boardModel.findOneAndUpdate({ _id: id }, data, { new: true })
-	// }
+		return super.baseUpdate(id, updateBoardDto, [document => { checkOwnership(document, userId) }]);
+	}
 
 	// async delete(id: string, userId: string): Promise<void> {
 	// 	const board = await this.boardModel.findById(id)
@@ -96,4 +69,10 @@ export class BoardsService extends GenericService<BoardDocument> {
 
 	// 	return await this.boardModel.find({ user_id: userId })
 	// }
+
+	private async checkPinsCoverExist(coverImageIds: Array<mongoose.Types.ObjectId>): Promise<void> {
+		for (const coverImageId of coverImageIds) {
+			await this.pinService.baseFindOne(coverImageId.toString());
+		}
+	}
 }

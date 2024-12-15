@@ -30,4 +30,10 @@
   - [x] check authenticated
   - [x] validate fields
   - [x] check pin cover exist
+  - [ ] Add cover image to board
+- update board
+  - [x] check the owner ship
+  - [x] validate fields
+  - [x] check pin cover exist 
+  - [ ] Add cover image to board
 

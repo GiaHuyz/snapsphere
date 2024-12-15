@@ -20,7 +20,7 @@ export class BoardsController {
 		return this.boardsService.findAll({});
 	}
 
-	// TODO: test hàm này
+	
 	@Post()
 	async create(
 		@UserId() userId: string,
@@ -29,14 +29,14 @@ export class BoardsController {
 		return this.boardsService.create(userId, createBoardDto)
 	}
 
-	// @Patch(':id')
-	// async update(
-	// 	@Param('id') id: string,
-	// 	@UserId() userId: string,
-	// 	@Body() updateBoardDto: UpdateBoardDto
-	// ): Promise<BoardDocument> {
-	// 	return this.boardsService.update(id, userId, updateBoardDto)
-	// }
+	@Patch(':id')
+	async update(
+		@Param('id') id: string,
+		@UserId() userId: string,
+		@Body() updateBoardDto: UpdateBoardDto
+	): Promise<BoardDocument> {
+		return this.boardsService.update(id, userId, updateBoardDto)
+	}
 
 	// @Delete(':id')
 	// async delete(@UserId() userId: string, @Param('id') id: string): Promise<void> {
