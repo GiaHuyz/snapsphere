@@ -1,14 +1,16 @@
 import { Board, BoardDocument } from '@/boards/board.schema'
 import { CreateBoardDto } from '@/boards/dto/create-board.dto'
 import { GenericService } from '@/common/generic/generic.service'
+import { PinsService } from '@/pins/pins.service'
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import mongoose, { Model, mongo } from 'mongoose'
 
 @Injectable()
 export class BoardsService extends GenericService<BoardDocument> {
 	constructor(
 		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
+		private readonly pinService: PinsService
 	) {
 		super(boardModel)
 	}
@@ -18,6 +20,14 @@ export class BoardsService extends GenericService<BoardDocument> {
 	}
 
 	async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {
+		// check if coverImageId exists
+		const { coverImageIds } = createBoardDto;
+		if (coverImageIds.length > 0) {
+			for (const coverImageId of coverImageIds) {
+				await this.pinService.baseFindOne(coverImageId.toString());
+			}
+		}
+
 		return this.boardModel.create({ ...createBoardDto, user_id: userId })
 	}
 

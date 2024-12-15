@@ -52,5 +52,5 @@ export class CreateBoardDto {
 		}
 		return value.map((val) => mongoose.Types.ObjectId.createFromHexString(val))
 	})
-	coverImageId?: Array<mongoose.Types.ObjectId>
+	coverImageIds?: Array<mongoose.Types.ObjectId>
 }

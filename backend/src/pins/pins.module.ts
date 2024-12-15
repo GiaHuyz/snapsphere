@@ -16,6 +16,6 @@ import { BoardsModule } from '@/boards/boards.module'
     ],
     controllers: [PinsController],
     providers: [PinsService],
-    exports: [MongooseModule]
+    exports: [MongooseModule, PinsService]
 })
 export class PinsModule {}

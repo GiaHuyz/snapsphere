@@ -26,7 +26,7 @@ export class GenericService<T extends Document> {
     const document = await this.model.findById(id).exec();
 
     if (!document) {
-      throw new NotFoundException(['Document not found']);
+      throw new NotFoundException([`${this.model.modelName} not found`]);
     }
 
     // Gọi từng callback để kiểm tra điều kiện
