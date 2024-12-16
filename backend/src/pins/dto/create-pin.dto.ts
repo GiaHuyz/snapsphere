@@ -1,7 +1,7 @@
 import { BadRequestException, Optional, UnprocessableEntityException } from '@nestjs/common'
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform } from 'class-transformer'
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator'
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength, ValidateIf } from 'class-validator'
 import { log } from 'console'
 import mongoose, { isObjectIdOrHexString, ObjectId } from 'mongoose'
 
@@ -14,7 +14,7 @@ export class CreatePinDto {
 	)
 	@IsString()
 	@MaxLength(50)
-	@Optional()
+	@IsOptional()
 	@Transform(({ value }) => value.trim())
 	title: string
 
@@ -44,6 +44,7 @@ export class CreatePinDto {
 	@IsOptional()
 	@IsUrl()
 	@MaxLength(2048)
+    @ValidateIf((object, value) => value !== '')
 	referenceLink?: string
 
 	@ApiProperty({

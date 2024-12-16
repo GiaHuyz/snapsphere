@@ -8,7 +8,7 @@ import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Board } from '@/actions/board-actions'
+import { Board, editBoardAction } from '@/actions/board-actions'
 import { createPin } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
 import { LoaderButton } from '@/components/loading-button'
@@ -21,8 +21,8 @@ import { isActionError } from '@/lib/errors'
 import { toast } from 'sonner'
 
 const createPinSchema = z.object({
-	title: z.string().min(1, 'Title is required').optional().or(z.literal('')),
-	description: z.string().optional().or(z.literal('')),
+	title: z.string().max(50, 'Title must be 50 characters or less').optional(),
+	description: z.string().max(160, 'Description must be 160 characters or less').optional().or(z.literal('')),
 	link: z.string().url().optional().or(z.literal('')),
 	boardId: z.string().optional().or(z.literal('')),
 	allowComments: z.boolean().default(true)
@@ -91,32 +91,34 @@ export default function CreatePinForm() {
 
 		setIsLoading(true)
 		const formData = new FormData()
-		if (data.title) {
-            formData.append('title', data.title)
-		}
-		if (data.boardId) {
-			formData.append('board_id', data.boardId)
-		}
-		if (data.description) {
-            formData.append('description', data.description)
-		}
-		if (data.link) {
-            formData.append('link', data.link)
-		}
-        formData.append('isAllowedComment', data.allowComments.toString())
-        formData.append('image', imageFile)
+
+		const optionalKeys: (keyof CreatePinFormValues)[] = ['title', 'description', 'link']
+		optionalKeys.forEach((key) => {
+			if (data[key]) {
+				formData.append(key, data[key] as string)
+			}
+		})
+
+		formData.append('isAllowedComment', data.allowComments.toString())
+		formData.append('image', imageFile)
 
 		const res = await createPin(formData)
 
 		if (isActionError(res)) {
-			toast.error(res.error)
+            toast.error(res.error)
 		} else {
-			toast.success('Pin created successfully')
+            if (selectedBoard?.coverImages && selectedBoard.coverImages.length < 3) {
+                await editBoardAction({
+                    _id: selectedBoard._id,
+                    coverImageIds: [...selectedBoard.coverImages.map((image) => image._id), res._id]
+                })
+            }
+            toast.success('Pin created successfully')
 			form.reset()
 			setImageFile(null)
 			setImagePreview(null)
 		}
-
+        
 		setIsLoading(false)
 	}
 

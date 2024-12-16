@@ -19,7 +19,8 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
 import { isActionError } from '@/lib/errors'
-import { useBoardDropdownStore } from '@/provider/board-provider'
+import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
+import { useBoardPreviewStore } from '@/provider/board-preview-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Pencil } from 'lucide-react'
 import Image from 'next/image'
@@ -29,7 +30,7 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 export const editBoardSchema = z.object({
-	title: z.string().min(1, 'Board name is required').max(50, 'Board name must be 50 characters or less'),
+	title: z.string().max(50, 'Board name must be 50 characters or less').optional(),
 	description: z.string().max(160, 'Description must be 160 characters or less').optional(),
 	secret: z.boolean()
 })
@@ -37,10 +38,11 @@ export const editBoardSchema = z.object({
 export type EditBoardData = z.infer<typeof editBoardSchema>
 
 export default function EditBoardModal() {
-	const { isOpen, onClose, boardId, boardData, mutateBoardsFn } = useEditBoardModal()
+	const { isOpen, onClose, boardId, boardData } = useEditBoardModal()
 	const [isLoading, setIsLoading] = useState(false)
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
+	const { setBoardPreview } = useBoardPreviewStore()
 
 	const form = useForm<EditBoardData>({
 		resolver: zodResolver(editBoardSchema),
@@ -66,7 +68,10 @@ export default function EditBoardModal() {
 		if (!boardId) return
 
 		setIsLoading(true)
-		const res = await editBoardAction(data, boardId)
+		const res = await editBoardAction({
+            _id: boardId,
+            ...data
+        })
 
 		if (isActionError(res)) {
 			toast.error(res.error)
@@ -74,7 +79,7 @@ export default function EditBoardModal() {
 			// Update local state
 			const updatedBoards = boardsDropdown.map((board) => (board._id === boardId ? { ...board, ...data } : board))
 			setBoardsDropdown(updatedBoards)
-			mutateBoardsFn(updatedBoards)
+			setBoardPreview(updatedBoards)
 			toast.success('Board updated successfully')
 			onClose()
 		}
@@ -94,7 +99,7 @@ export default function EditBoardModal() {
 			// Update state
 			const filteredBoards = boardsDropdown.filter((board) => board._id !== boardId)
 			setBoardsDropdown(filteredBoards)
-			mutateBoardsFn(filteredBoards)
+			setBoardPreview(filteredBoards)
 
 			toast.success('Board deleted successfully')
 			onClose()
@@ -194,11 +199,16 @@ export default function EditBoardModal() {
 									variant="destructive"
 									onClick={() => setShowDeleteAlert(true)}
 									isLoading={isLoading}
-                                    className='rounded-full'
+									className="rounded-full"
 								>
 									Delete
 								</LoaderButton>
-								<LoaderButton type="submit" isLoading={isLoading} disabled={!form.formState.isDirty} className='rounded-full'>
+								<LoaderButton
+									type="submit"
+									isLoading={isLoading}
+									disabled={!form.formState.isDirty}
+									className="rounded-full"
+								>
 									Save
 								</LoaderButton>
 							</DialogFooter>

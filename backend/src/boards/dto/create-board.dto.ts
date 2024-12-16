@@ -42,8 +42,11 @@ export class CreateBoardDto {
 	@Transform(({ value }) => {
 		// if the value is not an array
 		if (!Array.isArray(value)) {
-			throw new UnprocessableEntityException('Invalid ObjectId')
+			throw new UnprocessableEntityException('Not an array')
 		}
+        if(value.length > 3) {
+            throw new UnprocessableEntityException('Too many cover images')
+        }
 		// if the value is an array
 		for (const val of value) {
 			if (!isObjectIdOrHexString(val)) {

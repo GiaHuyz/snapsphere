@@ -1,13 +1,7 @@
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronDown } from 'lucide-react'
-import NextImage from 'next/image'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { Board } from '@/actions/board-actions'
-import { deletePinAction } from '@/actions/pin-actions'
+import { deletePinAction, editPinAction } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
 import { LoaderButton } from '@/components/loading-button'
 import {
@@ -28,14 +22,21 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
 import { isActionError } from '@/lib/errors'
+import { usePinStore } from '@/provider/pin-provider'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ChevronDown } from 'lucide-react'
+import NextImage from 'next/image'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 
 const editPinSchema = z.object({
-	title: z.string().min(1, 'Title is required'),
-	description: z.string().optional(),
+	title: z.string().max(50, 'Title must be 50 characters or less').optional(),
+	description: z.string().max(160, 'Description must be 160 characters or less').optional(),
 	referenceLink: z.string().url().optional().or(z.literal('')),
-	boardId: z.string(),
-	allowComments: z.boolean().default(true)
+	boardId: z.string().optional(),
+	isAllowedComment: z.boolean().default(true)
 })
 
 type EditPinFormValues = z.infer<typeof editPinSchema>
@@ -46,6 +47,7 @@ export default function EditPinModal() {
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const [selectedBoard, setSelectedBoard] = useState<Board | null>(null)
 	const [formValues, setFormValues] = useState<EditPinFormValues | null>(null)
+	const { pins, setPins } = usePinStore()
 
 	const form = useForm<EditPinFormValues>({
 		resolver: zodResolver(editPinSchema),
@@ -54,7 +56,7 @@ export default function EditPinModal() {
 			description: '',
 			referenceLink: '',
 			boardId: '',
-			allowComments: true
+			isAllowedComment: true
 		}
 	})
 
@@ -64,11 +66,11 @@ export default function EditPinModal() {
 				title: pin.title,
 				description: pin.description,
 				referenceLink: pin.referenceLink,
-				allowComments: pin.isAllowedComment,
-                boardId: ''
+				isAllowedComment: pin.isAllowedComment,
+				boardId: ''
 			}
 			setFormValues(initialValues)
-            setSelectedBoard(null)
+			setSelectedBoard(null)
 			form.reset(initialValues)
 		}
 	}, [pin, form])
@@ -80,25 +82,32 @@ export default function EditPinModal() {
 			currentValues.title !== formValues.title ||
 			currentValues.description !== formValues.description ||
 			currentValues.referenceLink !== formValues.referenceLink ||
-			currentValues.allowComments !== formValues.allowComments ||
+			currentValues.isAllowedComment !== formValues.isAllowedComment ||
 			currentValues.boardId !== formValues.boardId
 		)
 	}
 
 	async function onSubmit(data: EditPinFormValues) {
-		// if (!pin) return
+        if (!pin) return
+        
+        delete data.boardId
 
-		// setIsLoading(true)
-		// const res = await editPin(pin._id, data)
+        setIsLoading(true)
+		const res = await editPinAction({
+			_id: pin._id,
+			...data
+		})
 
-		// if (isActionError(res)) {
-		// 	toast.error(res.error)
-		// } else {
-		// 	toast.success('Pin updated successfully!')
-		// 	onClose()
-		// }
+		if (isActionError(res)) {
+			toast.error(res.error)
+		} else {
+			const updatedPins = pins.map((p) => (p._id === pin._id ? { ...p, ...data } : p))
+			setPins(updatedPins)
+			toast.success('Pin updated successfully!')
+			onClose()
+		}
 		setIsLoading(false)
-        console.log(data)
+		console.log(data)
 	}
 
 	const handleBoardChange = (board: Board) => {
@@ -114,6 +123,7 @@ export default function EditPinModal() {
 			toast.error(res.error)
 		} else {
 			toast.success('Pin deleted successfully')
+			setPins([...pins.filter((p) => p._id !== pin!._id)])
 			onClose()
 		}
 
@@ -241,7 +251,7 @@ export default function EditPinModal() {
 
 									<FormField
 										control={form.control}
-										name="allowComments"
+										name="isAllowedComment"
 										render={({ field }) => (
 											<FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
 												<div className="space-y-0.5">

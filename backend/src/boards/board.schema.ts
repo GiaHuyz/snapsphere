@@ -1,11 +1,13 @@
+import { Pin } from '@/pins/pin.schema'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { HydratedDocument, mongo } from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
 
 export type BoardDocument = HydratedDocument<Board>
 
 @Schema({ timestamps: true })
-export class Board { // the collection of pins
-	@Prop({ required: true }) 
+export class Board {
+	// the collection of pins
+	@Prop({ required: true })
 	user_id: string // the owner of the board
 
 	@Prop({ required: true, maxlength: 50, trim: true })
@@ -20,11 +22,20 @@ export class Board { // the collection of pins
 	@Prop({ default: 0 })
 	pinCount: number // number of pins in the board
 
-	@Prop({ type: Array<mongoose.Types.ObjectId>, required: false, default: [] })
-	coverImages: Array<mongoose.Types.ObjectId> // cover images of the board
+	@Prop({
+		type: [mongoose.Types.ObjectId],
+		ref: Pin.name,
+		required: false,
+		default: [],
+		validate: {
+			validator: function (value: mongoose.Types.ObjectId[]) {
+				return value.length <= 3
+			},
+			message: 'Board can have a maximum of 3 cover images'
+		}
+	})
+	coverImages: mongoose.Types.ObjectId[] // cover images of the board
 }
 
 export const BoardSchema = SchemaFactory.createForClass(Board)
-// TODO: mấy cái index này làm gì vậy?
-// mấy cột này có unique đâu mà index?
-BoardSchema.index({ user_id: 1, title: 1 }) 
+BoardSchema.index({ user_id: 1, title: 1 })

@@ -7,11 +7,11 @@ import { revalidateTag } from 'next/cache'
 
 export interface Pin {
 	_id: string
-	userId: string
+	user_id: string
 	url: string
-	title: string
-	description: string
-	referenceLink: string
+	title?: string
+	description?: string
+	referenceLink?: string
 	isAllowedComment: boolean
 	createdAt: Date
 	updatedAt: Date
@@ -21,6 +21,8 @@ interface SavePinDto {
 	pinId: string
 	boardId: string
 }
+
+type EditPinData = Pick<Pin, '_id' | 'title' | 'description' | 'referenceLink' | 'isAllowedComment'>
 
 export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (data) => {
 	try {
@@ -32,10 +34,10 @@ export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (d
 	}
 })
 
-export const getAllPinsUserAction = createServerAction<string, Pin[]>(
-	async (userId) => {
+export const getAllPinsUserAction = createServerAction<void, Pin[]>(
+	async () => {
 		try {
-			const res = await HttpRequest.get<Pin[]>(`/pins/users/${userId}`, { next: { tags: ['pins'] } })
+			const res = await HttpRequest.get<Pin[]>(`/pins`, { next: { tags: ['pins'] } })
 			return res
 		} catch (error) {
 			return { error: getErrorMessage(error) }
@@ -57,8 +59,26 @@ export const deletePinAction = createServerAction<string, void>(async (id) => {
 	try {
 		await HttpRequest.delete(`/pins/${id}`)
 		revalidateTag('boards')
-		revalidateTag('pins')
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}
+})
+
+export const editPinAction = createServerAction<EditPinData, Pin>(async (data) => {
+    try {
+        const { _id, ...updateData } = data
+        const res = await HttpRequest.patch<Pin>(`/pins/${_id}`, updateData)
+        return res
+    } catch (error) {
+        return { error: getErrorMessage(error) }
+    }
+})
+
+export const getPinDetailAction = createServerAction<string, Pin>(async (id) => {
+    try {
+        const res = await HttpRequest.get<Pin>(`/pins/${id}`)
+        return res
+    } catch (error) {
+        return { error: getErrorMessage(error) }
+    }
 })

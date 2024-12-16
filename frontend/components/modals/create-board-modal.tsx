@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { isActionError } from '@/lib/errors'
-import { useBoardDropdownStore } from '@/provider/board-provider'
+import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -19,7 +19,7 @@ import { z } from 'zod'
 export const createBoardSchema = z.object({
 	title: z.string().min(1, 'Board name is required').max(50, 'Board name must be 50 characters or less'),
 	secret: z.boolean().default(false),
-	coverImageId: z.string().optional(),
+	coverImageIds: z.array(z.string()).optional(),
 	description: z.string().max(160, 'Description must be 160 characters or less').optional()
 })
 
@@ -41,15 +41,32 @@ export default function CreateBoardModal() {
 
 	const onSubmit = async (data: createBoardData) => {
 		setIsLoading(true)
-		const newBoard = await createBoardAction({ ...data, coverImageId: pin?._id })
+
+		if (pin?.url) {
+			data.coverImageIds = [pin._id!]
+		}
+
+		let newBoard = await createBoardAction(data)
+
+		if (pin?.url) {
+			newBoard = {
+				...newBoard,
+				coverImages: [
+					{
+						_id: pin._id!,
+						url: pin.url
+					}
+				]
+			}
+		}
 
 		if (isActionError(newBoard)) {
 			toast.error(newBoard.error)
 		} else {
 			toast.success('Board created')
 			setBoardsDropdown([...boardsDropdown, newBoard])
-            onClose()
-            form.reset()
+			onClose()
+			form.reset()
 		}
 
 		setIsLoading(false)
@@ -99,7 +116,7 @@ export default function CreateBoardModal() {
 									control={form.control}
 									name="description"
 									render={({ field }) => (
-										<FormItem className='mt-4'>
+										<FormItem className="mt-4">
 											<FormLabel>Description</FormLabel>
 											<FormControl>
 												<Input

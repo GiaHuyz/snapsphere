@@ -1,48 +1,29 @@
-'use client'
-
+import { getPinDetailAction } from '@/actions/pin-actions'
 import { CommentInput } from '@/components/comment-input'
+import ExpandButton from '@/components/expand-button'
+import FullScreenViewModal from '@/components/modals/full-screen-view-modal'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Expand, Heart, MoreHorizontal, Share2, X } from 'lucide-react'
+import { isActionError } from '@/lib/errors'
+import { clerkClient } from '@clerk/nextjs/server'
+import { Heart, MoreHorizontal, Share2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
 
-interface FullScreenViewProps {
-	imageUrl: string
-	onClose: () => void
-}
+export default async function PinDetails({ params }: { params: { id: string } }) {
+	const { id } = params
+	const pin = await getPinDetailAction(id)
 
-const FullScreenView: React.FC<FullScreenViewProps> = ({ imageUrl, onClose }) => {
-	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-			<Button
-				variant="ghost"
-				size="icon"
-				className="absolute top-4 right-4 bg-white hover:bg-white/90 rounded-full"
-				onClick={onClose}
-			>
-				<X className="h-4 w-4" />
-			</Button>
-			<div className="relative max-h-[90vh] max-w-[90vw] my-8 mx-auto" onClick={(e) => e.stopPropagation()}>
-				<Image
-					src={imageUrl}
-					alt="Expanded view"
-					width={1200}
-					height={800}
-					className="max-h-[90vh] max-w-[90vw] w-auto object-contain rounded-2xl"
-					priority
-				/>
+	if (isActionError(pin)) {
+		return (
+			<div>
+				<h1>Something went wrong</h1>
+				<p>{pin.error}</p>
 			</div>
-		</div>
-	)
-}
+		)
+	}
 
-export default function PinDetails() {
-	const [isFullScreen, setIsFullScreen] = useState(false)
-
-	const imageUrl =
-		'https://plus.unsplash.com/premium_photo-1731624534286-adf5e9c78159?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+	const user = await (await clerkClient()).users.getUser(pin.user_id)
 
 	return (
 		<div className="min-h-screen">
@@ -52,21 +33,14 @@ export default function PinDetails() {
 					<div className="relative">
 						<div className="relative w-full overflow-hidden rounded-lg">
 							<Image
-								src={imageUrl}
+								src={pin.url}
 								alt="Detailed landscape artwork"
 								width={500}
 								height={500}
 								className="h-auto w-full max-h-[685px] object-cover"
 								priority
 							/>
-							<Button
-								size="icon"
-								variant="secondary"
-								className="absolute bottom-4 right-4 rounded-full bg-white/90 backdrop-blur-sm"
-								onClick={() => setIsFullScreen(true)}
-							>
-								<Expand className="h-5 w-5" />
-							</Button>
+							<ExpandButton imageUrl={pin.url} />
 						</div>
 					</div>
 
@@ -96,16 +70,19 @@ export default function PinDetails() {
 							</div>
 						</div>
 
+						{/* Title */}
+						{pin.title && <h2 className="text-2xl font-semibold break-all">{pin.title}</h2>}
+
 						{/* User Info */}
 						<div className="flex items-center justify-between py-4">
-							<Link href={`/giahuy957z`}>
+							<Link href={`/${user.username}`}>
 								<div className="flex items-center gap-2">
 									<Avatar>
-										<AvatarImage src="/placeholder.svg?height=40&width=40" alt="Mùa Hoa" />
+										<AvatarImage src={user.imageUrl} alt="Avatar" />
 										<AvatarFallback>MH</AvatarFallback>
 									</Avatar>
 									<div>
-										<h2 className="font-medium">Mùa Hoa</h2>
+										<h2 className="font-medium">{user.fullName}</h2>
 										<p className="text-sm text-muted-foreground">1k followers</p>
 									</div>
 								</div>
@@ -130,7 +107,7 @@ export default function PinDetails() {
 					</div>
 				</div>
 			</div>
-			{isFullScreen && <FullScreenView imageUrl={imageUrl} onClose={() => setIsFullScreen(false)} />}
+			<FullScreenViewModal />
 		</div>
 	)
 }

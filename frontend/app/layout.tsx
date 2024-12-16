@@ -1,7 +1,7 @@
 import { Board, getBoardsByUsernameAction } from '@/actions/board-actions'
 import Header from '@/components/header'
 import { isActionError } from '@/lib/errors'
-import { BoardDropdownProvider } from '@/provider/board-provider'
+import { BoardDropdownProvider } from '@/provider/board-dropdown-provider'
 import ModalProvider from '@/provider/modal-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { UserProvider } from '@/provider/user-provider'

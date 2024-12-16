@@ -12,7 +12,7 @@ import {
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
-import { useBoardDropdownStore } from '@/provider/board-provider'
+import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
 import { useUserStore } from '@/provider/user-provider'
 import { Download, Eye, Flag, MoreHorizontal, Pencil } from 'lucide-react'
 import Image from 'next/image'
@@ -53,7 +53,7 @@ export default function Pin({ pin }: PinProps) {
 							isSignedIn ? 'justify-between' : 'justify-end'
 						}`}
 					>
-						{isSignedIn && <BoardDropdown mode="save" pinId={pin._id} />}
+						{isSignedIn && <BoardDropdown mode="save" pin={pin} />}
 						<SaveButton
 							variant="overlay"
 							isLoggedIn={isSignedIn}

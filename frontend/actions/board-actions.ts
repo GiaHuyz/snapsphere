@@ -1,7 +1,6 @@
 'use server'
 
 import { createBoardData } from '@/components/modals/create-board-modal'
-import { EditBoardData } from '@/components/modals/edit-board-modal'
 import createServerAction from '@/lib/create-server-action'
 import { getErrorMessage } from '@/lib/errors'
 import { HttpRequest } from '@/lib/http-request'
@@ -14,9 +13,17 @@ export interface Board {
 	pinCount: number
 	createdAt: string
 	coverImages: {
-		pin_id: string
+		_id: string
 		url: string
 	}[]
+}
+
+interface EditBoardData {
+	_id: string
+	title?: string
+	description?: string
+	secret?: boolean
+	coverImageIds?: string[]
 }
 
 export const createBoardAction = createServerAction<createBoardData, Board>(async (data) => {
@@ -28,9 +35,10 @@ export const createBoardAction = createServerAction<createBoardData, Board>(asyn
 	}
 })
 
-export const editBoardAction = createServerAction<EditBoardData, Board>(async (data, boardId) => {
+export const editBoardAction = createServerAction<EditBoardData, Board>(async (data) => {
 	try {
-		const updatedBoard = await HttpRequest.patch<Board>(`/boards/${boardId}`, data)
+		const { _id, ...rest } = data
+		const updatedBoard = await HttpRequest.patch<Board>(`/boards/${_id}`, rest)
 		return updatedBoard
 	} catch (error) {
 		return { error: getErrorMessage(error) }
@@ -48,7 +56,7 @@ export const deleteBoardAction = createServerAction<string, void>(async (id) => 
 export const getBoardsByUsernameAction = createServerAction<string, Board[]>(
 	async (userId) => {
 		try {
-			const boards = await HttpRequest.get<Board[]>(`/boards/user/${userId}`, {
+			const boards = await HttpRequest.get<Board[]>(`/boards?user_id=${userId}`, {
 				cache: 'force-cache',
 				next: { tags: ['boards'] }
 			})

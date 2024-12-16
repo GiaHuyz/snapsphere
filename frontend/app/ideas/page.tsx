@@ -128,7 +128,7 @@ export default function IdeasPage() {
 				<section className="mt-12 space-y-6">
 					<h2 className="text-2xl font-semibold tracking-tight">What&apos;s new on Snapsphere</h2>
 					<div className="relative">
-						<MansoryLayout className="xl:columns-5">
+						{/* <MansoryLayout className="xl:columns-5">
 							{trendingItems.map((item) => (
 								<Pin
 									key={item.title}
@@ -138,7 +138,7 @@ export default function IdeasPage() {
 									currentBoard="wuxia"
 								/>
 							))}
-						</MansoryLayout>
+						</MansoryLayout> */}
 					</div>
 				</section>
 			</main>

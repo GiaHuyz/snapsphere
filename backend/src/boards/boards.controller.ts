@@ -3,7 +3,7 @@ import { CreateBoardDto } from '@/boards/dto/create-board.dto'
 import { UpdateBoardDto } from '@/boards/dto/update-board.dto'
 import { Public } from '@/common/decorators/public'
 import { UserId } from '@/common/decorators/userId'
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { BoardsService } from './boards.service'
 
@@ -16,8 +16,8 @@ export class BoardsController {
 	// TODO: hàm này cần phải thêm filter
 	@Get()
 	@Public()
-	async findAll(): Promise<BoardDocument[]> {
-		return this.boardsService.findAll({});
+	async findAll(@Query() query: any): Promise<BoardDocument[]> {
+		return this.boardsService.findAll(query);
 	}
 
 

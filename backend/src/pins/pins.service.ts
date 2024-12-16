@@ -1,49 +1,44 @@
-import { BoardPin, BoardPinDocument } from '@/board-pin/board-pin.schema'
 import { Board, BoardDocument } from '@/boards/board.schema'
-import { SavePinDto } from '@/pins/dto/save-pin.dto'
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common'
+import { GenericService } from '@/common/generic/generic.service'
+import { checkOwnership } from '@/common/utils/check-owner-ship.util'
+import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { CloudinaryService } from '../cloudinary/cloudinary.service'
 import { CreatePinDto } from './dto/create-pin.dto'
-import { Pin, PinDocument } from './pin.schema'
-import { GenericService } from '@/common/generic/generic.service'
 import { UpdatePinDto } from './dto/update-pin.dto'
-import { checkOwnership } from '@/common/utils/check-owner-ship.util'
+import { Pin, PinDocument } from './pin.schema'
 
 @Injectable()
 export class PinsService extends GenericService<PinDocument> {
 	constructor(
 		@InjectModel(Pin.name) private readonly pinModel: Model<PinDocument>,
+		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
 		private readonly cloudinaryService: CloudinaryService
 	) {
-		super(pinModel);
+		super(pinModel)
 	}
-
 
 	/**
 	 * Creates a new pin.
-	 * 
+	 *
 	 * @param userId - The ID of the user creating the pin.
 	 * @param createPinDto - The data transfer object containing the details of the pin to be created.
 	 * @param image - The image file to be uploaded and associated with the pin.
 	 * @returns A promise that resolves to the created pin document.
 	 */
-	async create(
-		userId: string,
-		createPinDto: CreatePinDto,
-		image: Express.Multer.File): Promise<PinDocument> {
+	async create(userId: string, createPinDto: CreatePinDto, image: Express.Multer.File): Promise<PinDocument> {
 		// Upload image to Cloudinary
-		const uploadedImage = await this.cloudinaryService.uploadFile(image, userId);
+		const uploadedImage = await this.cloudinaryService.uploadFile(image, userId)
 
-		// save pin to database	
+		// save pin to database
 		const newPin = await this.pinModel.create({
 			...createPinDto,
 			url: uploadedImage.secure_url, // image url
 			user_id: userId // owner of the pin
-		});
+		})
 
-		return newPin;
+		return newPin
 	}
 
 	/**
@@ -62,42 +57,45 @@ export class PinsService extends GenericService<PinDocument> {
 		id: string,
 		updatedPinDto: UpdatePinDto,
 		userId: string,
-		image?: Express.Multer.File): Promise<PinDocument> {
-
+		image?: Express.Multer.File
+	): Promise<PinDocument> {
 		// check if the pin exists
-		const pin = await super.baseFindOne(id);
+		const pin = await super.baseFindOne(id)
 
 		// check if the user is the owner of the pin
-		checkOwnership(pin, userId);
+		checkOwnership(pin, userId)
 
 		// if the user wants to update the image
 		if (image) {
 			// delete the old image from Cloudinary
-			await this.cloudinaryService.deleteFile(pin.url);
+			await this.cloudinaryService.deleteFile(pin.url)
 
 			// upload the new image to Cloudinary
-			const uploadedImage = await this.cloudinaryService.uploadFile(image, userId);
+			const uploadedImage = await this.cloudinaryService.uploadFile(image, userId)
 
 			// update the pin with the new image
-			pin.url = uploadedImage.secure_url;
+			pin.url = uploadedImage.secure_url
 		}
 
 		// update the pin with the new data
-		pin.set(updatedPinDto);
-		return await pin.save();
+		pin.set(updatedPinDto)
+		return await pin.save()
 	}
 
 	async delete(id: string, userId: string): Promise<void> {
 		// check if the pin exists
-		const pin = await super.baseFindOne(id);
+		const pin = await super.baseFindOne(id)
 
 		// check if the user is the owner of the pin
-		checkOwnership(pin, userId);
+		checkOwnership(pin, userId)
 
-		// delete the image from Cloudinary
-		await this.cloudinaryService.deleteFile(pin.url);
-
-		// delete the pin from the database
-		await this.pinModel.findByIdAndDelete(id);
+		await Promise.all([
+            // delete the image from Cloudinary
+			this.cloudinaryService.deleteFile(pin.url),
+            // remove cover image from all boards
+			this.boardModel.updateMany({ coverImages: pin._id }, { $pull: { coverImages: pin._id } }),
+			// delete the pin from the database
+			this.pinModel.findByIdAndDelete(id)
+		])
 	}
 }
