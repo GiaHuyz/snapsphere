@@ -9,9 +9,25 @@ export class GenericService<T extends Document> {
 
   // Tìm tất cả các mục
   async baseFindAll(
-    query: any
+    query: any,
+    queryBuilder?: any
   ): Promise<T[]> {
-    return this.model.find(query).exec();
+    // extract query parameters
+    const { from, to, page, pageSize } = query;
+
+    // queryBuilder is an object that contains the query conditions
+    queryBuilder = queryBuilder || {};
+    if (from) queryBuilder.createdAt = { ...queryBuilder.createdAt, $gte: new Date(from) };
+    if (to) queryBuilder.createdAt = { ...queryBuilder.createdAt, $lte: new Date(to) };
+
+    const pageSize2Query = pageSize || 10;
+    const page2Query = page || 1;
+
+    return await this.model
+      .find(queryBuilder)
+      .limit(pageSize2Query)
+      .skip((page2Query - 1) * pageSize2Query)
+      .exec();
   }
 
   // Tìm một mục theo ID
