@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
 import { formatTime } from '@/lib/format-time'
-import { useUserStore } from '@/provider/user-provider'
+import { useUser } from '@clerk/nextjs'
 import { Pencil } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -17,7 +17,7 @@ interface BoardPreviewProps {
 	sectionCount?: number
 	createdAt: string
 	coverImages: {
-		pin_id: string
+		_id: string
 		url: string
 	}[]
 	username: string
@@ -35,7 +35,7 @@ export default function BoardPreview({
 	username
 }: BoardPreviewProps) {
 	const { onOpen: onOpenEdit } = useEditBoardModal()
-	const { user } = useUserStore()
+	const { user } = useUser()
 
 	return (
 		<div className="space-y-2">
@@ -47,7 +47,7 @@ export default function BoardPreview({
 					{/* Main Image */}
 					<div className="relative col-span-2 overflow-hidden bg-slate-300">
 						{coverImages[0] && (
-							<Image src={coverImages[0].url || ''} alt={title} fill className="object-cover" />
+							<Image src={coverImages[0].url || ''} alt={title} fill className="object-fill" />
 						)}
 					</div>
 
@@ -60,7 +60,7 @@ export default function BoardPreview({
 										src={coverImages[index + 1].url}
 										alt={`${title} preview ${index + 2}`}
 										fill
-										className="object-cover"
+										className="object-fill"
 									/>
 								</div>
 							) : (

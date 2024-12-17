@@ -2,6 +2,7 @@
 
 import { savePinToBoardAction } from '@/actions/pin-actions'
 import { Button } from '@/components/ui/button'
+import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { isActionError } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { useClerk } from '@clerk/nextjs'
@@ -10,13 +11,15 @@ import { toast } from 'sonner'
 interface SaveButtonProps {
 	className?: string
 	pinId: string
+    pinUrl: string
 	boardId: string
 	variant?: 'default' | 'overlay'
 	isLoggedIn?: boolean
 }
 
-export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, boardId }: SaveButtonProps) {
+export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, pinUrl, boardId }: SaveButtonProps) {
 	const clerk = useClerk()
+	const { setPin, onOpen } = useCreateBoardModal()
 
 	const handleClick = async (e: React.MouseEvent) => {
 		e.preventDefault()
@@ -24,7 +27,12 @@ export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, 
 			return clerk.openSignIn()
 		}
 
-		const res = await savePinToBoardAction({ pinId, boardId })
+		if (!boardId) {
+            setPin({ _id: pinId, url: pinUrl })
+			return onOpen()
+		}
+
+		const res = await savePinToBoardAction({ pin_id: pinId, board_id: boardId })
 		if (isActionError(res)) {
 			toast.error(res.error)
 		} else {

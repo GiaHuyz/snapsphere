@@ -22,7 +22,6 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
 import { isActionError } from '@/lib/errors'
-import { usePinStore } from '@/provider/pin-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronDown } from 'lucide-react'
 import NextImage from 'next/image'
@@ -32,8 +31,8 @@ import { toast } from 'sonner'
 import { z } from 'zod'
 
 const editPinSchema = z.object({
-	title: z.string().max(50, 'Title must be 50 characters or less').optional(),
-	description: z.string().max(160, 'Description must be 160 characters or less').optional(),
+	title: z.string().max(50, 'Title must be 50 characters or less').optional().or(z.literal('')),
+	description: z.string().max(160, 'Description must be 160 characters or less').optional().or(z.literal('')),
 	referenceLink: z.string().url().optional().or(z.literal('')),
 	boardId: z.string().optional(),
 	isAllowedComment: z.boolean().default(true)
@@ -41,13 +40,12 @@ const editPinSchema = z.object({
 
 type EditPinFormValues = z.infer<typeof editPinSchema>
 
-export default function EditPinModal() {
+export default function EditPinModal({ boardsDropdown }: { boardsDropdown: Board[] }) {
 	const { isOpen, onClose, pin } = useEditPinModal()
 	const [isLoading, setIsLoading] = useState(false)
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const [selectedBoard, setSelectedBoard] = useState<Board | null>(null)
 	const [formValues, setFormValues] = useState<EditPinFormValues | null>(null)
-	const { pins, setPins } = usePinStore()
 
 	const form = useForm<EditPinFormValues>({
 		resolver: zodResolver(editPinSchema),
@@ -88,11 +86,11 @@ export default function EditPinModal() {
 	}
 
 	async function onSubmit(data: EditPinFormValues) {
-        if (!pin) return
-        
-        delete data.boardId
+		if (!pin) return
 
-        setIsLoading(true)
+		delete data.boardId
+
+		setIsLoading(true)
 		const res = await editPinAction({
 			_id: pin._id,
 			...data
@@ -101,13 +99,10 @@ export default function EditPinModal() {
 		if (isActionError(res)) {
 			toast.error(res.error)
 		} else {
-			const updatedPins = pins.map((p) => (p._id === pin._id ? { ...p, ...data } : p))
-			setPins(updatedPins)
 			toast.success('Pin updated successfully!')
 			onClose()
 		}
 		setIsLoading(false)
-		console.log(data)
 	}
 
 	const handleBoardChange = (board: Board) => {
@@ -123,7 +118,6 @@ export default function EditPinModal() {
 			toast.error(res.error)
 		} else {
 			toast.success('Pin deleted successfully')
-			setPins([...pins.filter((p) => p._id !== pin!._id)])
 			onClose()
 		}
 
@@ -211,7 +205,11 @@ export default function EditPinModal() {
 											<FormItem>
 												<FormLabel>Board</FormLabel>
 												<FormControl>
-													<BoardDropdown mode="select" onChange={handleBoardChange}>
+													<BoardDropdown
+														boardsDropdown={boardsDropdown}
+														mode="select"
+														onChange={handleBoardChange}
+													>
 														<Button
 															type="button"
 															variant="outline"

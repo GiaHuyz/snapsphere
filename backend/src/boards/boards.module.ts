@@ -13,7 +13,7 @@ import { PinsService } from '@/pins/pins.service'
     ],
     controllers: [BoardsController],
     providers: [BoardsService],
-    exports: [MongooseModule],
+    exports: [MongooseModule, BoardsService],
     
 })
 export class BoardsModule {}

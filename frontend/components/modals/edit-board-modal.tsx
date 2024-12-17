@@ -19,8 +19,6 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
 import { isActionError } from '@/lib/errors'
-import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
-import { useBoardPreviewStore } from '@/provider/board-preview-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Pencil } from 'lucide-react'
 import Image from 'next/image'
@@ -41,8 +39,6 @@ export default function EditBoardModal() {
 	const { isOpen, onClose, boardId, boardData } = useEditBoardModal()
 	const [isLoading, setIsLoading] = useState(false)
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
-	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
-	const { setBoardPreview } = useBoardPreviewStore()
 
 	const form = useForm<EditBoardData>({
 		resolver: zodResolver(editBoardSchema),
@@ -69,17 +65,13 @@ export default function EditBoardModal() {
 
 		setIsLoading(true)
 		const res = await editBoardAction({
-            _id: boardId,
-            ...data
-        })
+			_id: boardId,
+			...data
+		})
 
 		if (isActionError(res)) {
 			toast.error(res.error)
 		} else {
-			// Update local state
-			const updatedBoards = boardsDropdown.map((board) => (board._id === boardId ? { ...board, ...data } : board))
-			setBoardsDropdown(updatedBoards)
-			setBoardPreview(updatedBoards)
 			toast.success('Board updated successfully')
 			onClose()
 		}
@@ -97,16 +89,17 @@ export default function EditBoardModal() {
 			toast.error(res.error)
 		} else {
 			// Update state
-			const filteredBoards = boardsDropdown.filter((board) => board._id !== boardId)
-			setBoardsDropdown(filteredBoards)
-			setBoardPreview(filteredBoards)
-
+			// const filteredBoards = boardsDropdown.filter((board) => board._id !== boardId)
+			// setBoardsDropdown(filteredBoards)
+			// setBoardPreview(filteredBoards)
 			toast.success('Board deleted successfully')
-			onClose()
 		}
+
+		// mutation.mutate(boardId)
 
 		setShowDeleteAlert(false)
 		setIsLoading(false)
+		onClose()
 	}
 
 	return (

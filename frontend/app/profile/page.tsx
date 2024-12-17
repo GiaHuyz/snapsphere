@@ -1,7 +1,9 @@
 import { ProfileForm } from '@/components/profile-form'
+import currentUser from '@/lib/get-current-user'
 
 export default async function EditProfilePage() {
-	return (
+    const user = await currentUser()
+    return (
 		<div className="container max-w-2xl py-8 px-5 mx-auto">
 			<div className="space-y-6">
 				<div>
@@ -11,7 +13,7 @@ export default async function EditProfilePage() {
 						your profile.
 					</p>
 				</div>
-				<ProfileForm />
+				<ProfileForm initUser={JSON.parse(JSON.stringify(user))} />
 			</div>
 		</div>
 	)

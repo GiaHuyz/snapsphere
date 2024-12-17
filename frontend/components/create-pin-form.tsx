@@ -8,8 +8,8 @@ import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Board, editBoardAction } from '@/actions/board-actions'
-import { createPin } from '@/actions/pin-actions'
+import { Board } from '@/actions/board-actions'
+import { createPin, savePinToBoardAction } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
 import { LoaderButton } from '@/components/loading-button'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,7 @@ const createPinSchema = z.object({
 
 type CreatePinFormValues = z.infer<typeof createPinSchema>
 
-export default function CreatePinForm() {
+export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Board[] }) {
 	const [isLoading, setIsLoading] = useState(false)
 	const [imageFile, setImageFile] = useState<File | null>(null)
 	const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -105,20 +105,20 @@ export default function CreatePinForm() {
 		const res = await createPin(formData)
 
 		if (isActionError(res)) {
-            toast.error(res.error)
+			toast.error(res.error)
 		} else {
-            if (selectedBoard?.coverImages && selectedBoard.coverImages.length < 3) {
-                await editBoardAction({
-                    _id: selectedBoard._id,
-                    coverImageIds: [...selectedBoard.coverImages.map((image) => image._id), res._id]
-                })
-            }
-            toast.success('Pin created successfully')
+			if (selectedBoard) {
+				await savePinToBoardAction({
+					pin_id: res._id,
+					board_id: selectedBoard._id
+				})
+			}
+			toast.success('Pin created successfully')
 			form.reset()
 			setImageFile(null)
 			setImagePreview(null)
 		}
-        
+
 		setIsLoading(false)
 	}
 
@@ -250,7 +250,11 @@ export default function CreatePinForm() {
 								<FormItem>
 									<FormLabel>Board</FormLabel>
 									<FormControl>
-										<BoardDropdown mode="select" onChange={handleBoardChange}>
+										<BoardDropdown
+											boardsDropdown={boardsDropdown}
+											mode="select"
+											onChange={handleBoardChange}
+										>
 											<Button
 												type="button"
 												variant="outline"

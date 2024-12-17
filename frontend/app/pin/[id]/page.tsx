@@ -1,4 +1,6 @@
+import { getBoardsByUsernameAction } from '@/actions/board-actions'
 import { getPinDetailAction } from '@/actions/pin-actions'
+import BoardDropdown from '@/components/board-dropdown'
 import { CommentInput } from '@/components/comment-input'
 import ExpandButton from '@/components/expand-button'
 import FullScreenViewModal from '@/components/modals/full-screen-view-modal'
@@ -24,6 +26,16 @@ export default async function PinDetails({ params }: { params: { id: string } })
 	}
 
 	const user = await (await clerkClient()).users.getUser(pin.user_id)
+	const boardsDropdown = await getBoardsByUsernameAction(user?.id)
+
+	if (isActionError(boardsDropdown)) {
+		return (
+			<div>
+				<h1>Something went wrong</h1>
+				<p>{boardsDropdown.error}</p>
+			</div>
+		)
+	}
 
 	return (
 		<div className="min-h-screen">
@@ -61,12 +73,7 @@ export default async function PinDetails({ params }: { params: { id: string } })
 								</Button>
 							</div>
 							<div className="flex items-center gap-2">
-								<Button variant="secondary" className="rounded-full">
-									wuxia
-								</Button>
-								<Button variant="default" className="rounded-full">
-									Save
-								</Button>
+								<BoardDropdown mode="save" pin={pin} boardsDropdown={boardsDropdown} />
 							</div>
 						</div>
 

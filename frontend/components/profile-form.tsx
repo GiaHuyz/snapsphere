@@ -5,9 +5,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import usePreviewAvatarImage from '@/hooks/use-preview-image'
-import { useUserStore } from '@/provider/user-provider'
 import { useUser } from '@clerk/nextjs'
-import { User } from '@clerk/nextjs/server'
+import type { User } from '@clerk/nextjs/server'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
@@ -29,9 +28,7 @@ const profileSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileSchema>
 
-export function ProfileForm() {
-	const { user: currentUser } = useUserStore()
-    const initUser = currentUser as User
+export function ProfileForm({ initUser }: { initUser: User }) {
 	const { user } = useUser()
 	const [isLoading, setIsLoading] = useState(false)
 	const { previewImage, handleFileChange } = usePreviewAvatarImage()

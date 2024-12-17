@@ -1,5 +1,6 @@
 'use client'
 
+import { Board } from '@/actions/board-actions'
 import { Pin as PinType } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
 import { SaveButton } from '@/components/save-to-board-button'
@@ -12,19 +13,18 @@ import {
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
-import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
-import { useUserStore } from '@/provider/user-provider'
+import { useUser } from '@clerk/nextjs'
 import { Download, Eye, Flag, MoreHorizontal, Pencil } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 interface PinProps {
 	pin: PinType
+	boardsDropdown: Board[]
 }
 
-export default function Pin({ pin }: PinProps) {
-	const { isSignedIn } = useUserStore()
-	const { boardsDropdown } = useBoardDropdownStore()
+export default function Pin({ pin, boardsDropdown }: PinProps) {
+	const { isSignedIn } = useUser()
 	const { onOpen } = useEditPinModal()
 
 	const handleEdit = (e: React.MouseEvent) => {
@@ -53,11 +53,12 @@ export default function Pin({ pin }: PinProps) {
 							isSignedIn ? 'justify-between' : 'justify-end'
 						}`}
 					>
-						{isSignedIn && <BoardDropdown mode="save" pin={pin} />}
+						{isSignedIn && <BoardDropdown boardsDropdown={boardsDropdown} mode="save" pin={pin} />}
 						<SaveButton
 							variant="overlay"
 							isLoggedIn={isSignedIn}
 							pinId={pin._id}
+                            pinUrl={pin.url}
 							boardId={boardsDropdown[0]?._id}
 						/>
 					</div>

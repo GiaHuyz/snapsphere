@@ -1,6 +1,7 @@
 'use client'
 
 import { createBoardAction } from '@/actions/board-actions'
+import { savePinToBoardAction } from '@/actions/pin-actions'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -8,7 +9,6 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { isActionError } from '@/lib/errors'
-import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -28,7 +28,6 @@ export type createBoardData = z.infer<typeof createBoardSchema>
 export default function CreateBoardModal() {
 	const { isOpen, onClose, pin } = useCreateBoardModal()
 	const [isLoading, setIsLoading] = useState(false)
-	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
 
 	const form = useForm<createBoardData>({
 		resolver: zodResolver(createBoardSchema),
@@ -42,31 +41,20 @@ export default function CreateBoardModal() {
 	const onSubmit = async (data: createBoardData) => {
 		setIsLoading(true)
 
-		if (pin?.url) {
-			data.coverImageIds = [pin._id!]
-		}
-
-		let newBoard = await createBoardAction(data)
-
-		if (pin?.url) {
-			newBoard = {
-				...newBoard,
-				coverImages: [
-					{
-						_id: pin._id!,
-						url: pin.url
-					}
-				]
-			}
-		}
-
+		const newBoard = await createBoardAction(data)
+        
 		if (isActionError(newBoard)) {
-			toast.error(newBoard.error)
+            toast.error(newBoard.error)
 		} else {
-			toast.success('Board created')
-			setBoardsDropdown([...boardsDropdown, newBoard])
+            toast.success('Board created')
 			onClose()
 			form.reset()
+            if (pin?._id) {
+                await savePinToBoardAction({
+                    pin_id: pin._id,
+                    board_id: newBoard._id
+                })
+            }
 		}
 
 		setIsLoading(false)
@@ -75,7 +63,9 @@ export default function CreateBoardModal() {
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent
-				className={`w-11/12 rounded-2xl ${pin?.url ? 'sm:max-w-[720px]' : 'sm:max-w-[480px]'} sm:rounded-2xl`}
+				className={`w-11/12 rounded-2xl ${
+					pin?.url ? 'sm:max-w-[720px]' : 'sm:max-w-[480px]'
+				} sm:rounded-2xl max-h-[calc(100vh-64px)] overflow-y-auto`}
 			>
 				<DialogHeader>
 					<DialogTitle className="text-center text-2xl">Create Board</DialogTitle>

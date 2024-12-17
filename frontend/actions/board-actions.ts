@@ -4,6 +4,7 @@ import { createBoardData } from '@/components/modals/create-board-modal'
 import createServerAction from '@/lib/create-server-action'
 import { getErrorMessage } from '@/lib/errors'
 import { HttpRequest } from '@/lib/http-request'
+import { revalidateTag } from 'next/cache'
 
 export interface Board {
 	_id: string
@@ -29,9 +30,10 @@ interface EditBoardData {
 export const createBoardAction = createServerAction<createBoardData, Board>(async (data) => {
 	try {
 		const newBoard = await HttpRequest.post<Board>('/boards', data)
+        revalidateTag('boards')
 		return newBoard
 	} catch (error) {
-		return { error: getErrorMessage(error) }
+        return { error: getErrorMessage(error) }
 	}
 })
 
@@ -39,6 +41,7 @@ export const editBoardAction = createServerAction<EditBoardData, Board>(async (d
 	try {
 		const { _id, ...rest } = data
 		const updatedBoard = await HttpRequest.patch<Board>(`/boards/${_id}`, rest)
+        revalidateTag('boards')
 		return updatedBoard
 	} catch (error) {
 		return { error: getErrorMessage(error) }
@@ -48,6 +51,7 @@ export const editBoardAction = createServerAction<EditBoardData, Board>(async (d
 export const deleteBoardAction = createServerAction<string, void>(async (id) => {
 	try {
 		await HttpRequest.delete(`/boards/${id}`)
+        revalidateTag('boards')
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}
@@ -57,8 +61,10 @@ export const getBoardsByUsernameAction = createServerAction<string, Board[]>(
 	async (userId) => {
 		try {
 			const boards = await HttpRequest.get<Board[]>(`/boards?user_id=${userId}`, {
-				cache: 'force-cache',
-				next: { tags: ['boards'] }
+                cache: 'force-cache',
+				next: {
+					tags: ['boards']
+				}
 			})
 			return boards
 		} catch (error) {

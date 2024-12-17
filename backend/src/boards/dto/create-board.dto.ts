@@ -31,7 +31,6 @@ export class CreateBoardDto {
 	})
 	@IsNotEmpty()
 	@IsBoolean()
-	@Transform(({ value }) => value === 'true')
 	secret: boolean
 
 	@ApiProperty({
