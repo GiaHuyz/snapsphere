@@ -18,15 +18,7 @@ export class BoardsService extends GenericService<BoardDocument> {
 	}
 
 	async findAll(query: any): Promise<BoardDocument[]> {
-		const queryObj = {}
-		const queryKeys = ['user_id']
-		for (const key of queryKeys) {
-			queryObj[key] = query[key]
-		}
-		return this.boardModel.find(queryObj).populate({
-            path: 'coverImages',
-            select: 'url'
-        })
+		return await super.baseFindAll(query)
 	}
 
 	async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {
@@ -60,8 +52,8 @@ export class BoardsService extends GenericService<BoardDocument> {
 		// check ownership
 		checkOwnership(document, userId)
 
-        // check exist title
-        await this.checkExistTitle(userId, updateBoardDto.title)
+		// check exist title
+		await this.checkExistTitle(userId, updateBoardDto.title)
 
 		// update board with new data
 		document.set({
@@ -90,14 +82,14 @@ export class BoardsService extends GenericService<BoardDocument> {
 		}
 	}
 
-    private async checkExistTitle(userId: string, title: string): Promise<void> {
-        if (
-            await this.boardModel.findOne({
-                user_id: userId,
-                title: { $regex: `^${title}$`, $options: 'i' }
-            })
-        ) {
-            throw new BadRequestException('Board title already exists')
-        }
-    }
+	private async checkExistTitle(userId: string, title: string): Promise<void> {
+		if (
+			await this.boardModel.findOne({
+				user_id: userId,
+				title: { $regex: `^${title}$`, $options: 'i' }
+			})
+		) {
+			throw new BadRequestException('Board title already exists')
+		}
+	}
 }
