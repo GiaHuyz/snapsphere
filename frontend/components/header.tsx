@@ -65,7 +65,7 @@ export default function Header({ user }: { user: User }) {
 								<UserButton.Link
 									label="Board"
 									labelIcon={<LayoutDashboard size={16} />}
-									href={`/${user?.username}`}
+									href={`/user/${user?.username}`}
 								/>
 								<UserButton.Link
 									label="Profile"

@@ -10,7 +10,8 @@ export class GenericService<T extends Document> {
   // Tìm tất cả các mục
   async baseFindAll(
     query: any,
-    queryBuilder?: any
+    queryBuilder?: any,
+    populate?: any
   ): Promise<T[]> {
     // extract query parameters
     const { from, to, page, pageSize } = query;
@@ -27,6 +28,7 @@ export class GenericService<T extends Document> {
       .find(queryBuilder)
       .limit(pageSize2Query)
       .skip((page2Query - 1) * pageSize2Query)
+      .populate(populate)
       .exec();
   }
 

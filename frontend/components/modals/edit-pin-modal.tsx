@@ -145,7 +145,7 @@ export default function EditPinModal({ boardsDropdown }: { boardsDropdown: Board
 											alt="Pin image"
 											width={236}
 											height={236}
-											className="w-full rounded-3xl object-cover"
+											className="w-full rounded-3xl object-cover max-h-[508px]"
 										/>
 									</div>
 								</div>

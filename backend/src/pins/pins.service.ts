@@ -19,6 +19,22 @@ export class PinsService extends GenericService<PinDocument> {
 		super(pinModel)
 	}
 
+	async findAll(query: any): Promise<PinDocument[]> {
+		const filterKey = ['title', 'user_id']
+		const filter = {}
+
+		for (const key of filterKey) {
+			if (query[key]) { 
+				if (key === 'title') {
+					query[key] = { $regex: query[key], $options: 'i' }
+				}
+				filter[key] = query[key]
+			}
+		}
+
+		return this.baseFindAll(query, filter)
+	}
+
 	/**
 	 * Creates a new pin.
 	 *
@@ -90,9 +106,9 @@ export class PinsService extends GenericService<PinDocument> {
 		checkOwnership(pin, userId)
 
 		await Promise.all([
-            // delete the image from Cloudinary
+			// delete the image from Cloudinary
 			this.cloudinaryService.deleteFile(pin.url),
-            // remove cover image from all boards
+			// remove cover image from all boards
 			this.boardModel.updateMany({ coverImages: pin._id }, { $pull: { coverImages: pin._id } }),
 			// delete the pin from the database
 			this.pinModel.findByIdAndDelete(id)

@@ -60,6 +60,7 @@ export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, chi
 							variant="secondary"
 							className={'h-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60'}
 							onClick={(e) => e.preventDefault()}
+                            data-prevent-nprogress={true}
 						>
 							{boardsDropdown[0]?.title}
 							<ChevronDown className="ml-1 h-4 w-4" />

@@ -34,7 +34,6 @@ export class CloudinaryService {
 	private async compressImage(file: Express.Multer.File): Promise<Buffer> {
 		const image = sharp(file.buffer)
 		const metadata = await image.metadata()
-		const format = metadata.format
 
 		const maxSize = 1200
 		const resizeOptions: sharp.ResizeOptions = { withoutEnlargement: true }
@@ -45,7 +44,7 @@ export class CloudinaryService {
 			resizeOptions.height = maxSize
 		}
 
-		const compressedBuffer = await image.resize(resizeOptions).toFormat(format, { quality: 75 }).toBuffer()
+		const compressedBuffer = await image.resize(resizeOptions).webp({ quality: 75 }).toBuffer()
 		return compressedBuffer
 	}
 }

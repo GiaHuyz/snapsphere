@@ -1,25 +1,13 @@
 import { Public } from '@/common/decorators/public'
 import { UserId } from '@/common/decorators/userId'
-import { MulterInterceptor } from '@/common/interceptors/multer.interceptor'
-import {
-	Body,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Patch,
-	Post,
-	Query,
-	UploadedFile,
-	UseInterceptors
-} from '@nestjs/common'
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { isValidObjectId } from 'mongoose'
-import { CreatePinDto } from './dto/create-pin.dto'
-import { PinsService } from './pins.service'
 import { GenericController } from '@/common/generic/generic.controller'
-import { PinDocument } from './pin.schema'
+import { MulterInterceptor } from '@/common/interceptors/multer.interceptor'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common'
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { CreatePinDto } from './dto/create-pin.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
+import { PinDocument } from './pin.schema'
+import { PinsService } from './pins.service'
 
 @ApiTags('Pins')
 @Controller('pins')
@@ -34,7 +22,7 @@ export class PinsController extends GenericController<PinDocument> {
 	@Get()
 	async findAll(@Query() query: any = {}): Promise<PinDocument[]> {
 		// TODO: only owner can view their private pins
-		return super.baseFindAll(query);
+		return this.pinsService.findAll(query)
 	}
 
 	@ApiOperation({ summary: 'Get a pin by ID' })
@@ -42,7 +30,7 @@ export class PinsController extends GenericController<PinDocument> {
 	@Get(':id')
 	async findOne(@Param('id') id: string): Promise<PinDocument> {
 		// TODO: only owner can view their private pin
-		return super.baseFindOne(id);
+		return super.baseFindOne(id)
 	}
 
 	@ApiBody({ type: CreatePinDto })
@@ -56,7 +44,8 @@ export class PinsController extends GenericController<PinDocument> {
 	async create(
 		@UserId() userId: string,
 		@UploadedFile() image: Express.Multer.File,
-		@Body() createPinDto: CreatePinDto) {
+		@Body() createPinDto: CreatePinDto
+	) {
 		return await this.pinsService.create(userId, createPinDto, image)
 	}
 
@@ -77,12 +66,12 @@ export class PinsController extends GenericController<PinDocument> {
 		@UserId() userId: string,
 		@UploadedFile() image?: Express.Multer.File
 	): Promise<PinDocument> {
-		return await this.pinsService.update(id, updatePinDto, userId, image);
+		return await this.pinsService.update(id, updatePinDto, userId, image)
 	}
 
 	@ApiOperation({ summary: 'Delete a pin by ID' })
 	@Delete(':id')
 	async delete(@Param('id') id: string, @UserId() userId: string): Promise<void> {
-		return await this.pinsService.delete(id, userId);
+		return await this.pinsService.delete(id, userId)
 	}
 }

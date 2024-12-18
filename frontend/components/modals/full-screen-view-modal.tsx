@@ -20,13 +20,13 @@ export default function FullScreenViewModal() {
 			>
 				<X className="h-4 w-4" />
 			</Button>
-			<div className="relative mx-auto" onClick={(e) => e.stopPropagation()}>
+			<div className="relative" onClick={(e) => e.stopPropagation()}>
 				<Image
 					src={imageUrl}
 					alt="Expanded view"
 					width={1200}
 					height={800}
-					className="max-h-[90vh] max-w-[90vw] w-auto object-contain rounded-2xl"
+					className="max-h-[90vh] max-w-[90vw] w-auto min-w-60 object-cover rounded-2xl"
 					priority
 				/>
 			</div>

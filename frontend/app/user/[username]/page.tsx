@@ -1,7 +1,6 @@
-import { Board, getBoardsByUsernameAction } from '@/actions/board-actions'
+import { Board, getBoardsAction } from '@/actions/board-actions'
 import { getAllPinsUserAction } from '@/actions/pin-actions'
 import BoardPreviewList from '@/components/board-preview-list'
-import EditBoardModal from '@/components/modals/edit-board-modal'
 import EditPinModal from '@/components/modals/edit-pin-modal'
 import PinList from '@/components/pin-list'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -37,12 +36,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 
 	const [loginedUser, pins, boardsPreview] = await Promise.all([
 		currentUser(),
-		getAllPinsUserAction(),
-		getBoardsByUsernameAction(user.id)
+		getAllPinsUserAction({user_id: user.id}),
+		getBoardsAction({ user_id: user.id })
 	])
 
 	if (loginedUser) {
-		boardsDropdown = await getBoardsByUsernameAction(loginedUser.id)
+		boardsDropdown = await getBoardsAction({ user_id: loginedUser.id })
 	}
 
 	if (isActionError(pins) || isActionError(boardsDropdown) || isActionError(boardsPreview)) {
@@ -107,7 +106,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 					</div>
 
 					<TabsContent value="created" className="mt-6">
-						{pins.length === 0 && (
+						{loginedUser!.username === username && pins.length === 0 && (
 							<div className="max-w-[200px] mx-auto">
 								<Link href={`/create`}>
 									<button className="group relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-dashed border-muted hover:border-muted-foreground">
@@ -153,7 +152,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 					</TabsContent>
 				</Tabs>
 			</div>
-			<EditBoardModal />
 			<EditPinModal boardsDropdown={boardsDropdown} />
 		</>
 	)

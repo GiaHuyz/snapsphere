@@ -64,6 +64,9 @@ export default function EditBoardModal() {
 		if (!boardId) return
 
 		setIsLoading(true)
+        if(data.title === boardData?.title) {
+            delete data.title
+        }
 		const res = await editBoardAction({
 			_id: boardId,
 			...data

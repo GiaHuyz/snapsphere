@@ -80,7 +80,7 @@ export default function CreateBoardModal() {
 										alt="Board cover"
 										width={200}
 										height={150}
-										className="w-full object-cover rounded-2xl"
+										className="w-full object-cover rounded-2xl max-h-[508px]"
 									/>
 								</div>
 							)}

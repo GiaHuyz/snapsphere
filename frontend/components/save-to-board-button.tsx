@@ -49,6 +49,7 @@ export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, 
 				className
 			)}
 			onClick={handleClick}
+            data-prevent-nprogress={true}
 		>
 			Save
 		</Button>

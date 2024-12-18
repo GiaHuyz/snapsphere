@@ -83,6 +83,7 @@ export default function BoardPreview({
 									secret
 								})
 							}}
+                            data-prevent-nprogress={true}
 						>
 							<Pencil className="h-4 w-4" />
 						</Button>

@@ -1,4 +1,4 @@
-import { getBoardsByUsernameAction } from '@/actions/board-actions'
+import { Board, getBoardsAction } from '@/actions/board-actions'
 import { getPinDetailAction } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
 import { CommentInput } from '@/components/comment-input'
@@ -6,15 +6,17 @@ import ExpandButton from '@/components/expand-button'
 import FullScreenViewModal from '@/components/modals/full-screen-view-modal'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { isActionError } from '@/lib/errors'
+import { isActionError, ServerActionResponse } from '@/lib/errors'
+import getCurrentUser from '@/lib/get-current-user'
 import { clerkClient } from '@clerk/nextjs/server'
 import { Heart, MoreHorizontal, Share2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default async function PinDetails({ params }: { params: { id: string } }) {
-	const { id } = params
+	const { id } = await params
 	const pin = await getPinDetailAction(id)
+    const currentUser = await getCurrentUser()
 
 	if (isActionError(pin)) {
 		return (
@@ -26,7 +28,11 @@ export default async function PinDetails({ params }: { params: { id: string } })
 	}
 
 	const user = await (await clerkClient()).users.getUser(pin.user_id)
-	const boardsDropdown = await getBoardsByUsernameAction(user?.id)
+
+    let boardsDropdown: ServerActionResponse<Board[]> = []
+    if(currentUser) {
+        boardsDropdown = await getBoardsAction({ user_id: currentUser.id })
+    }
 
 	if (isActionError(boardsDropdown)) {
 		return (
@@ -49,7 +55,7 @@ export default async function PinDetails({ params }: { params: { id: string } })
 								alt="Detailed landscape artwork"
 								width={500}
 								height={500}
-								className="h-auto w-full max-h-[685px] object-cover"
+								className="h-auto w-full max-h-[685px] object-fill"
 								priority
 							/>
 							<ExpandButton imageUrl={pin.url} />
@@ -82,7 +88,7 @@ export default async function PinDetails({ params }: { params: { id: string } })
 
 						{/* User Info */}
 						<div className="flex items-center justify-between py-4">
-							<Link href={`/${user.username}`}>
+							<Link href={`/user/${user.username}`}>
 								<div className="flex items-center gap-2">
 									<Avatar>
 										<AvatarImage src={user.imageUrl} alt="Avatar" />

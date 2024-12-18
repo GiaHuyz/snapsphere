@@ -22,6 +22,14 @@ interface SavePinDto {
 	board_id: string
 }
 
+interface QueryParams {
+	user_id?: string
+	title?: string
+	page?: number
+	pageSize?: number
+	sort?: string
+}
+
 type EditPinData = Partial<Pick<Pin, '_id' | 'title' | 'description' | 'referenceLink' | 'isAllowedComment'>>
 
 export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (data) => {
@@ -34,10 +42,17 @@ export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (d
 	}
 })
 
-export const getAllPinsUserAction = createServerAction<void, Pin[]>(
-	async () => {
+export const getAllPinsUserAction = createServerAction<QueryParams, Pin[]>(
+	async (queryParams) => {
 		try {
-			const res = await HttpRequest.get<Pin[]>(`/pins`, { cache: 'force-cache', next: { tags: ['pins'] } })
+			const queryString = Object.entries(queryParams)
+				.filter(([, value]) => value !== undefined)
+				.map(([key, value]) => `${key}=${value}`)
+				.join('&')
+			const res = await HttpRequest.get<Pin[]>(`/pins?${queryString}`, {
+				cache: 'force-cache',
+				next: { tags: ['pins'] }
+			})
 			return res
 		} catch (error) {
 			return { error: getErrorMessage(error) }
@@ -83,5 +98,17 @@ export const getPinDetailAction = createServerAction<string, Pin>(async (id) => 
 		return res
 	} catch (error) {
 		return { error: getErrorMessage(error) }
+	}
+})
+
+export const getPinsByBoardIdAction = createServerAction(async (boardId: string) => {
+	try {
+		const pins = await HttpRequest.get<Pin[]>(`/board-pin?board_id=${boardId}`, {
+			cache: 'force-cache'
+		})
+		return pins
+	} catch (error) {
+		console.error('Error fetching pins:', error)
+		return []
 	}
 })

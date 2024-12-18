@@ -5,29 +5,40 @@ import { useUploadImageModal } from '@/hooks/use-upload-image-modal'
 import { ImageUp } from 'lucide-react'
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
+import { toast } from 'sonner'
 
 export default function UploadImageModal() {
 	const { setUploadImage, isOpen, onClose } = useUploadImageModal()
 
-    const handleImageUpload = useCallback(
-        (file: File) => {
-            const imageUrl = URL.createObjectURL(file)
-            const img = new Image()
-            img.src = imageUrl
-
-            img.onload = () => {
-                const fixedHeight = 150
-                const scaledWidth = (img.naturalWidth / img.naturalHeight) * fixedHeight
-
-                setUploadImage({
-                    url: imageUrl,
-                    width: scaledWidth,
-                    height: fixedHeight
-                })
+	const handleImageUpload = useCallback(
+		(file: File) => {
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error('Image too large. Please upload an image less than 10 MB in size.')
+                return
             }
-        },
-        [setUploadImage]
-    )
+            
+			const imageUrl = URL.createObjectURL(file)
+			const img = new Image()
+			img.src = imageUrl
+
+			img.onload = () => {
+				if (img.naturalWidth < 150 || img.naturalHeight < 150) {
+					toast.error('Image too small. Please upload an image with a minimum size of 150x150.')
+					return
+				}
+
+				const fixedHeight = 150
+				const scaledWidth = (img.naturalWidth / img.naturalHeight) * fixedHeight
+
+				setUploadImage({
+					url: imageUrl,
+					width: scaledWidth,
+					height: fixedHeight
+				})
+			}
+		},
+		[setUploadImage]
+	)
 
 	const onDrop = useCallback(
 		(acceptedFiles: File[]) => {

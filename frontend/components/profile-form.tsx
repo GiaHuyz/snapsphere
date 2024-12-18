@@ -1,5 +1,6 @@
 'use client'
 
+import { LoaderButton } from '@/components/loading-button'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -8,7 +9,6 @@ import usePreviewAvatarImage from '@/hooks/use-preview-image'
 import { useUser } from '@clerk/nextjs'
 import type { User } from '@clerk/nextjs/server'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -21,7 +21,7 @@ const profileSchema = z.object({
 	username: z
 		.string()
 		.min(3, 'Username must be at least 3 characters.')
-		.regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.'),
+		.regex(/^[a-zA-Z0-9]+$/, 'Username can only contain letters, numbers'),
 	bio: z.string().max(160, 'Bio must not be longer than 160 characters.').optional(),
 	website: z.string().url('Please enter a valid URL').optional().or(z.literal(''))
 })
@@ -172,16 +172,13 @@ export function ProfileForm({ initUser }: { initUser: User }) {
 				/>
 
 				<div className="flex justify-end">
-					<Button type="submit" disabled={isLoading || (!form.formState.isDirty && !previewImage)}>
-						{isLoading ? (
-							<div className="flex items-center gap-2">
-								<Loader2 className="w-4 h-4 animate-spin" />
-								Saving...
-							</div>
-						) : (
-							'Save'
-						)}
-					</Button>
+					<LoaderButton
+						type="submit"
+						isLoading={isLoading}
+						disabled={!form.formState.isDirty && !previewImage}
+					>
+						Save
+					</LoaderButton>
 				</div>
 			</form>
 		</Form>

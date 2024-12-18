@@ -17,8 +17,27 @@ export class BoardsService extends GenericService<BoardDocument> {
 		super(boardModel)
 	}
 
-	async findAll(query: any): Promise<BoardDocument[]> {
-		return await super.baseFindAll(query)
+	async findAll(userId: string, query: any): Promise<BoardDocument[]> {
+        const filterKey = ['title', 'user_id']
+        const filter = {}
+
+        for (const key of filterKey) {
+            if (query[key]) {
+                if(key === 'title') {
+                    query[key] = { $regex: `^${query[key]}$`, $options: 'i' }
+                }
+                filter[key] = query[key]
+            }
+        }
+
+        if(filter['user_id'] && filter['user_id'] !== userId) {
+            filter['secret'] = false
+        }
+
+		return await super.baseFindAll(query, filter, {
+			path: 'coverImages',
+			select: 'url'
+		})
 	}
 
 	async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {

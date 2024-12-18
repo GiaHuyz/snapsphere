@@ -1,11 +1,11 @@
-import { getBoardsByUsernameAction } from '@/actions/board-actions'
+import { getBoardsAction } from '@/actions/board-actions'
 import CreatePinForm from '@/components/create-pin-form'
 import { isActionError } from '@/lib/errors'
 import { auth } from '@clerk/nextjs/server'
 
 export default async function CreatePinPage() {
 	const { userId } = await auth()
-	const boardsDropdown = await getBoardsByUsernameAction(userId!)
+	const boardsDropdown = await getBoardsAction({ user_id: userId! })
 
 	if (isActionError(boardsDropdown)) {
 		return (

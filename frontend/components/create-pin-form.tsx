@@ -304,16 +304,16 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 								</FormItem>
 							)}
 						/>
+						<div className="flex justify-end">
+							<LoaderButton
+								type="submit"
+								isLoading={isLoading}
+								className="rounded-full bg-red-500 hover:bg-red-600"
+							>
+								Publish
+							</LoaderButton>
+						</div>
 					</div>
-				</div>
-				<div className="flex justify-end">
-					<LoaderButton
-						type="submit"
-						isLoading={isLoading}
-						className="rounded-full bg-red-500 hover:bg-red-600"
-					>
-						Publish
-					</LoaderButton>
 				</div>
 			</form>
 		</Form>

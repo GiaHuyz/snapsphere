@@ -17,6 +17,7 @@ import { useUser } from '@clerk/nextjs'
 import { Download, Eye, Flag, MoreHorizontal, Pencil } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 interface PinProps {
 	pin: PinType
@@ -26,6 +27,7 @@ interface PinProps {
 export default function Pin({ pin, boardsDropdown }: PinProps) {
 	const { isSignedIn } = useUser()
 	const { onOpen } = useEditPinModal()
+    const pathname = usePathname()
 
 	const handleEdit = (e: React.MouseEvent) => {
 		e.preventDefault()
@@ -41,7 +43,7 @@ export default function Pin({ pin, boardsDropdown }: PinProps) {
 				alt={pin.title || 'Pin Image'}
 				width={300}
 				height={300}
-				className="object-cover w-full"
+				className="object-fill w-full max-h-[508px]"
 			/>
 
 			<Link href={`/pin/${pin._id}`}>
@@ -65,20 +67,22 @@ export default function Pin({ pin, boardsDropdown }: PinProps) {
 
 					{/* Bottom Actions */}
 					<div className="absolute bottom-4 right-4 flex items-center gap-2">
-						<Button
+						{pathname !== '/' && <Button
 							size="icon"
 							variant="secondary"
 							className="h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
 							onClick={handleEdit}
+                            data-prevent-nprogress={true}
 						>
 							<Pencil className="h-4 w-4" />
-						</Button>
+						</Button>}
 						<DropdownMenu modal={false}>
 							<DropdownMenuTrigger asChild>
 								<Button
 									size="icon"
 									variant="secondary"
 									className="h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
+                                    data-prevent-nprogress={true}
 									onClick={(e) => e.preventDefault()}
 								>
 									<MoreHorizontal className="h-4 w-4" />

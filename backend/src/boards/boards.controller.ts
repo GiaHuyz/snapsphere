@@ -11,21 +11,17 @@ import { BoardsService } from './boards.service'
 @ApiBearerAuth()
 @Controller('boards')
 export class BoardsController {
-	constructor(private readonly boardsService: BoardsService) { }
+	constructor(private readonly boardsService: BoardsService) {}
 
 	// TODO: hàm này cần phải thêm filter
 	@Get()
 	@Public()
-	async findAll(@Query() query: any): Promise<BoardDocument[]> {
-		return this.boardsService.findAll(query);
+	async findAll(@UserId() userId: string, @Query() query: any): Promise<BoardDocument[]> {
+		return this.boardsService.findAll(userId, query)
 	}
 
-
 	@Post()
-	async create(
-		@UserId() userId: string,
-		@Body() createBoardDto: CreateBoardDto
-	): Promise<BoardDocument> {
+	async create(@UserId() userId: string, @Body() createBoardDto: CreateBoardDto): Promise<BoardDocument> {
 		return this.boardsService.create(userId, createBoardDto)
 	}
 
@@ -39,10 +35,7 @@ export class BoardsController {
 	}
 
 	@Delete(':id')
-	async delete(
-		@UserId() userId: string,
-		@Param('id') id: string
-	): Promise<void> {
+	async delete(@UserId() userId: string, @Param('id') id: string): Promise<void> {
 		return this.boardsService.delete(id, userId)
 	}
 }
