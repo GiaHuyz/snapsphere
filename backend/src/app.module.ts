@@ -11,6 +11,7 @@ import { ImagesModule } from './images/images.module'
 import { PinsModule } from './pins/pins.module'
 import { UsersModule } from './users/users.module'
 import { BoardPinModule } from './board-pin/board-pin.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
 	imports: [
@@ -27,7 +28,8 @@ import { BoardPinModule } from './board-pin/board-pin.module';
 		ImagesModule,
 		BoardsModule,
 		PinsModule,
-		BoardPinModule
+		BoardPinModule,
+		CommentsModule
 	],
 	controllers: [AppController],
 	providers: [

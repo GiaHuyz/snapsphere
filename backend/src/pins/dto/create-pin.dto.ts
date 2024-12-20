@@ -54,4 +54,12 @@ export class CreatePinDto {
 		description: 'The '
 	})
 	image: Express.Multer.File
+
+    @ApiProperty({
+        required: true,
+        description: 'The url uploaded'
+    })
+    @IsOptional()
+    @ValidateIf((object, value) => value !== '')
+    url?: string
 }

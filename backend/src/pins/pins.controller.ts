@@ -2,7 +2,7 @@ import { Public } from '@/common/decorators/public'
 import { UserId } from '@/common/decorators/userId'
 import { GenericController } from '@/common/generic/generic.controller'
 import { MulterInterceptor } from '@/common/interceptors/multer.interceptor'
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UnprocessableEntityException, UploadedFile, UseInterceptors } from '@nestjs/common'
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CreatePinDto } from './dto/create-pin.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
@@ -46,6 +46,9 @@ export class PinsController extends GenericController<PinDocument> {
 		@UploadedFile() image: Express.Multer.File,
 		@Body() createPinDto: CreatePinDto
 	) {
+        if(!image && !createPinDto.url) {
+            throw new UnprocessableEntityException('Image is required')
+        }
 		return await this.pinsService.create(userId, createPinDto, image)
 	}
 

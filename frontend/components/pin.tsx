@@ -27,7 +27,8 @@ interface PinProps {
 export default function Pin({ pin, boardsDropdown }: PinProps) {
 	const { isSignedIn } = useUser()
 	const { onOpen } = useEditPinModal()
-    const pathname = usePathname()
+	const pathname = usePathname()
+	const { user } = useUser()
 
 	const handleEdit = (e: React.MouseEvent) => {
 		e.preventDefault()
@@ -60,29 +61,31 @@ export default function Pin({ pin, boardsDropdown }: PinProps) {
 							variant="overlay"
 							isLoggedIn={isSignedIn}
 							pinId={pin._id}
-                            pinUrl={pin.url}
+							pinUrl={pin.url}
 							boardId={boardsDropdown[0]?._id}
 						/>
 					</div>
 
 					{/* Bottom Actions */}
 					<div className="absolute bottom-4 right-4 flex items-center gap-2">
-						{pathname !== '/' && <Button
-							size="icon"
-							variant="secondary"
-							className="h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
-							onClick={handleEdit}
-                            data-prevent-nprogress={true}
-						>
-							<Pencil className="h-4 w-4" />
-						</Button>}
+						{(pathname !== '/' && pin.user_id === user?.id) && (
+							<Button
+								size="icon"
+								variant="secondary"
+								className="h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
+								onClick={handleEdit}
+								data-prevent-nprogress={true}
+							>
+								<Pencil className="h-4 w-4" />
+							</Button>
+						)}
 						<DropdownMenu modal={false}>
 							<DropdownMenuTrigger asChild>
 								<Button
 									size="icon"
 									variant="secondary"
 									className="h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
-                                    data-prevent-nprogress={true}
+									data-prevent-nprogress={true}
 									onClick={(e) => e.preventDefault()}
 								>
 									<MoreHorizontal className="h-4 w-4" />

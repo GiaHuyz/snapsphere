@@ -26,7 +26,7 @@ export default function FullScreenViewModal() {
 					alt="Expanded view"
 					width={1200}
 					height={800}
-					className="max-h-[90vh] max-w-[90vw] w-auto min-w-60 object-cover rounded-2xl"
+					className="max-h-[90vh] max-w-[90vw] w-auto min-w-60 object-fill rounded-2xl"
 					priority
 				/>
 			</div>

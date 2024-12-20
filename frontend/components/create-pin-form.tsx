@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { usePinTransModal } from '@/hooks/use-pin-trans-modal'
 import { isActionError } from '@/lib/errors'
 import { toast } from 'sonner'
 
@@ -33,9 +34,9 @@ type CreatePinFormValues = z.infer<typeof createPinSchema>
 export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Board[] }) {
 	const [isLoading, setIsLoading] = useState(false)
 	const [imageFile, setImageFile] = useState<File | null>(null)
-	const [imagePreview, setImagePreview] = useState<string | null>(null)
 	const [errorUpload, setErrorUpload] = useState<string | null>(null)
 	const [selectedBoard, setSelectedBoard] = useState<Board | null>(null)
+	const { onOpen, onClose, imagePreview, setImagePreview, setCurrentImage } = usePinTransModal()
 
 	const form = useForm<CreatePinFormValues>({
 		resolver: zodResolver(createPinSchema),
@@ -67,13 +68,14 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 					setErrorUpload(null)
 					setImageFile(file)
 					const preview = URL.createObjectURL(file)
+                    setCurrentImage(preview)
 					setImagePreview(preview)
 				}
 			}
 
 			image.src = URL.createObjectURL(file)
 		}
-	}, [])
+	}, [setCurrentImage, setImagePreview])
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop,
@@ -100,7 +102,12 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 		})
 
 		formData.append('isAllowedComment', data.allowComments.toString())
-		formData.append('image', imageFile)
+
+        if(imagePreview?.includes('cloudinary')) {
+            formData.append('url', imagePreview)
+        } else {
+            formData.append('image', imageFile)
+        }
 
 		const res = await createPin(formData)
 
@@ -165,7 +172,7 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 									alt="Pin preview"
 									width={400}
 									height={400}
-									className="w-full max-h-[685px] rounded-3xl object-cover"
+									className="w-full max-h-[685px] rounded-3xl object-fill"
 								/>
 								<div className="absolute right-4 left-4 top-4 z-10 flex justify-between">
 									<Button
@@ -176,6 +183,8 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 											e.stopPropagation()
 											setImageFile(null)
 											setImagePreview(null)
+                                            setCurrentImage(null)
+											onClose()
 										}}
 									>
 										<CircleX className="h-4 w-4" />
@@ -186,6 +195,7 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 										className="rounded-full bg-white text-black backdrop-blur-sm hover:bg-white/60"
 										onClick={(e) => {
 											e.stopPropagation()
+											onOpen(imageFile)
 										}}
 									>
 										<Pencil className="h-4 w-4" />

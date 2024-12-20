@@ -1,7 +1,8 @@
 import { Board, getBoardsAction } from '@/actions/board-actions'
+import { getCommentsAction } from '@/actions/comment-action'
 import { getPinDetailAction } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
-import { CommentInput } from '@/components/comment-input'
+import { CommentSection } from '@/components/comment-section'
 import ExpandButton from '@/components/expand-button'
 import FullScreenViewModal from '@/components/modals/full-screen-view-modal'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -15,38 +16,48 @@ import Link from 'next/link'
 
 export default async function PinDetails({ params }: { params: { id: string } }) {
 	const { id } = await params
-	const pin = await getPinDetailAction(id)
-    const currentUser = await getCurrentUser()
+	const [pin, currentUser, comments] = await Promise.all([
+		getPinDetailAction(id),
+		getCurrentUser(),
+		getCommentsAction({ pin_id: id, page: 1, pageSize: 5 })
+	])
 
-	if (isActionError(pin)) {
+	if (isActionError(pin) || isActionError(comments)) {
 		return (
 			<div>
 				<h1>Something went wrong</h1>
-				<p>{pin.error}</p>
 			</div>
 		)
 	}
 
 	const user = await (await clerkClient()).users.getUser(pin.user_id)
 
-    let boardsDropdown: ServerActionResponse<Board[]> = []
-    if(currentUser) {
-        boardsDropdown = await getBoardsAction({ user_id: currentUser.id })
-    }
+	let boardsDropdown: ServerActionResponse<Board[]> = []
+	if (currentUser) {
+		boardsDropdown = await getBoardsAction({ user_id: currentUser.id })
+	}
 
-	if (isActionError(boardsDropdown)) {
+	if (isActionError(boardsDropdown) || isActionError(comments)) {
 		return (
 			<div>
 				<h1>Something went wrong</h1>
-				<p>{boardsDropdown.error}</p>
 			</div>
 		)
 	}
 
+	for (const comment of comments) {
+		const commentUser = await (await clerkClient()).users.getUser(comment.user_id)
+		comment.user = {
+			username: commentUser.username!,
+			imageUrl: commentUser.imageUrl!,
+			fullName: commentUser.fullName!
+		}
+	}
+
 	return (
 		<div className="min-h-screen">
-			<div className="flex items-center justify-center py-8">
-				<div className="grid w-full max-w-5xl grid-cols-1 gap-4 rounded-2xl bg-white p-4 shadow-2xl lg:grid-cols-[500px,1fr]">
+			<div className="flex items-center justify-center py-4">
+				<div className="grid w-full items-stretch max-w-5xl grid-cols-1 gap-4 rounded-2xl bg-white p-4 shadow-2xl lg:grid-cols-[500px,1fr]">
 					{/* Left: Image Section */}
 					<div className="relative">
 						<div className="relative w-full overflow-hidden rounded-lg">
@@ -55,7 +66,7 @@ export default async function PinDetails({ params }: { params: { id: string } })
 								alt="Detailed landscape artwork"
 								width={500}
 								height={500}
-								className="h-auto w-full max-h-[685px] object-fill"
+								className="h-auto w-full max-h-[600px] object-fill"
 								priority
 							/>
 							<ExpandButton imageUrl={pin.url} />
@@ -106,17 +117,7 @@ export default async function PinDetails({ params }: { params: { id: string } })
 						</div>
 
 						{/* Comments Section */}
-						<div className="flex-1 overflow-y-auto">
-							<h3 className="font-medium">No comments yet</h3>
-							<p className="text-sm text-muted-foreground">
-								No comments yet! Add one to start the conversation.
-							</p>
-						</div>
-
-						{/* Comment Input */}
-						<div className="pt-4">
-							<CommentInput />
-						</div>
+						<CommentSection initialComments={comments} />
 					</div>
 				</div>
 			</div>

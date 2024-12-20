@@ -8,6 +8,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service'
 import { CreatePinDto } from './dto/create-pin.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
 import { Pin, PinDocument } from './pin.schema'
+import {v2 as cloudinary} from 'cloudinary'
 
 @Injectable()
 export class PinsService extends GenericService<PinDocument> {
@@ -44,13 +45,19 @@ export class PinsService extends GenericService<PinDocument> {
 	 * @returns A promise that resolves to the created pin document.
 	 */
 	async create(userId: string, createPinDto: CreatePinDto, image: Express.Multer.File): Promise<PinDocument> {
+        let uploadedImage = ''
+
+        if(image) {
+            uploadedImage = (await this.cloudinaryService.uploadFile(image, userId)).secure_url
+        } else {
+            uploadedImage = createPinDto.url
+        }
 		// Upload image to Cloudinary
-		const uploadedImage = await this.cloudinaryService.uploadFile(image, userId)
 
 		// save pin to database
 		const newPin = await this.pinModel.create({
 			...createPinDto,
-			url: uploadedImage.secure_url, // image url
+			url: uploadedImage, // image url
 			user_id: userId // owner of the pin
 		})
 

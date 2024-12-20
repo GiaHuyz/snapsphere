@@ -8,7 +8,7 @@ import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 
 export default function UploadImageModal() {
-	const { setUploadImage, isOpen, onClose } = useUploadImageModal()
+	const { setUploadImage, setImageFile, isOpen, onClose } = useUploadImageModal()
 
 	const handleImageUpload = useCallback(
 		(file: File) => {
@@ -45,10 +45,11 @@ export default function UploadImageModal() {
 			const file = acceptedFiles[0]
 			if (file) {
 				handleImageUpload(file)
+                setImageFile(file)
 				onClose()
 			}
 		},
-		[onClose, handleImageUpload]
+		[onClose, handleImageUpload, setImageFile]
 	)
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
