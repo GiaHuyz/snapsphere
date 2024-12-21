@@ -19,7 +19,7 @@ export default async function PinDetails({ params }: { params: { id: string } })
 	const [pin, currentUser, comments] = await Promise.all([
 		getPinDetailAction(id),
 		getCurrentUser(),
-		getCommentsAction({ pin_id: id, page: 1, pageSize: 5 })
+		getCommentsAction({ pin_id: id, page: 1, pageSize: 5 }),
 	])
 
 	if (isActionError(pin) || isActionError(comments)) {
@@ -45,14 +45,8 @@ export default async function PinDetails({ params }: { params: { id: string } })
 		)
 	}
 
-	for (const comment of comments) {
-		const commentUser = await (await clerkClient()).users.getUser(comment.user_id)
-		comment.user = {
-			username: commentUser.username!,
-			imageUrl: commentUser.imageUrl!,
-			fullName: commentUser.fullName!
-		}
-	}
+    console.log(comments)
+
 
 	return (
 		<div className="min-h-screen">

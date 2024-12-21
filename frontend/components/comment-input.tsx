@@ -1,34 +1,32 @@
 'use client'
 
-import { createCommentAction, IComment } from '@/actions/comment-action'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUploadImageModal } from '@/hooks/use-upload-image-modal'
-import { isActionError } from '@/lib/errors'
-import { useUser } from '@clerk/nextjs'
+import { useClerk, useUser } from '@clerk/nextjs'
 import type { EmojiClickData } from 'emoji-picker-react'
 import { ImageUp, Loader2, SendHorizonal, Smile, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
+import { useEffect, useRef, useState } from 'react'
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), { ssr: false })
 
-export default function CommentInput({ setComments }: { setComments: Dispatch<SetStateAction<IComment[]>> }) {
-	const [comment, setComment] = useState('')
+export default function CommentInput({ onAddComment, parentId }: { onAddComment: (formData: FormData) => void, parentId?: string }) {
+	const [content, setContent] = useState('')
 	const [loading, setLoading] = useState(false)
 	const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 	const { upLoadImage, setUploadImage, onOpen, imageFile } = useUploadImageModal()
 	const pinId = usePathname().split('/').pop()
 	const emojiPickerRef = useRef<HTMLDivElement>(null)
 	const emojiButtonRef = useRef<HTMLButtonElement>(null)
-	const { isSignedIn, user } = useUser()
+    const clerk = useClerk()
+	const { isSignedIn } = useUser()
 
 	const handleEmojiClick = (emojiData: EmojiClickData) => {
 		setShowEmojiPicker(false)
-		setComment((prevComment) => prevComment + emojiData.emoji)
+		setContent((prevContent) => prevContent + emojiData.emoji)
 	}
 
 	useEffect(() => {
@@ -49,44 +47,39 @@ export default function CommentInput({ setComments }: { setComments: Dispatch<Se
 	}, [])
 
 	const handleTypeComment = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (!comment && e.target.value === ' ') return
-		setComment(e.target.value)
+		if (!content && e.target.value === ' ') return
+		setContent(e.target.value)
 	}
 
 	const handleAddComment = async () => {
-		if ((!comment && !imageFile) || loading) return
+		if ((!content && !imageFile) || loading) return
+
+        if(!isSignedIn) {
+            return clerk.openSignIn()
+        }
+
 		const formData = new FormData()
 
 		if (imageFile) {
 			formData.append('image', imageFile)
 		}
 
-		formData.append('content', comment)
+        if(content) {
+            formData.append('content', content)
+        }
+
+        if(parentId) {
+            formData.append('parent_id', parentId)
+        }
+
 		formData.append('pin_id', pinId!)
 
 		setLoading(true)
-		const res = await createCommentAction(formData)
-
-		if (isActionError(res)) {
-			toast.error(res.error)
-		} else {
-			const newComment = {
-				...res,
-				user: {
-					username: user!.username!,
-					imageUrl: user!.imageUrl!,
-					fullName: user!.fullName!
-				}
-			}
-			setComments((prevComments) => [newComment, ...prevComments])
-			setComment('')
-			setUploadImage(null)
-		}
-
+		onAddComment(formData)
+		setUploadImage(null)
+		setContent('')
 		setLoading(false)
 	}
-
-	if (!isSignedIn) return null
 
 	return (
 		<div className="flex flex-col rounded-2xl border bg-background px-3 py-1 ring-offset-background">
@@ -117,9 +110,9 @@ export default function CommentInput({ setComments }: { setComments: Dispatch<Se
 			<div className="flex items-center">
 				<Input
 					type="text"
-					placeholder="Add a comment"
+					placeholder="Add a content"
 					disabled={loading}
-					value={comment}
+					value={content}
 					onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
 					onChange={handleTypeComment}
 					className="flex-1 border-0 shadow-none bg-transparent p-0 text-sm ring-0 focus-visible:outline-none focus-visible:ring-0 placeholder:text-muted-foreground"
@@ -144,9 +137,9 @@ export default function CommentInput({ setComments }: { setComments: Dispatch<Se
 					<Button size="icon" variant="ghost" className="h-8 w-8" onClick={onOpen}>
 						<ImageUp className="h-4 w-4" />
 					</Button>
-					{(comment || upLoadImage) &&
+					{(content || upLoadImage) &&
 						(loading ? (
-                            <Loader2 className='h-4 w-4 animate-spin'/>
+							<Loader2 className="h-4 w-4 animate-spin" />
 						) : (
 							<Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleAddComment}>
 								<SendHorizonal className="h-4 w-4" />

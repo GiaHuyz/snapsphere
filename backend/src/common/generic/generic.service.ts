@@ -11,7 +11,8 @@ export class GenericService<T extends Document> {
   async baseFindAll(
     query: any,
     queryBuilder?: any,
-    populate?: any
+    populate?: any,
+    sort?: any
   ): Promise<T[]> {
     // extract query parameters
     const { from, to, page, pageSize } = query;
@@ -23,9 +24,11 @@ export class GenericService<T extends Document> {
 
     const pageSize2Query = pageSize || 10;
     const page2Query = page || 1;
+    const sort2Query = sort || { createdAt: -1 };
 
     return await this.model
       .find(queryBuilder)
+      .sort(sort2Query)
       .limit(pageSize2Query)
       .skip((page2Query - 1) * pageSize2Query)
       .populate(populate)

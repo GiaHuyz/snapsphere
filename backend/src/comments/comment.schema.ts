@@ -14,7 +14,7 @@ export class Comment {
 	@Prop({ type: mongoose.Types.ObjectId, ref: 'Comment', default: null })
 	parent_id: string
 
-	@Prop({ default: '' })
+	@Prop({ default: '', maxlength: 1000 })
 	content: string
 
 	@Prop({ default: '' })

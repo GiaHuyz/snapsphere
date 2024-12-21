@@ -10,16 +10,19 @@ export interface IComment {
 	pin_id: string
 	content: string
 	image?: string
+    replyCount: number
 	likes: number
 	user: {
 		username: string
 		fullName: string
 		imageUrl: string
 	}
+    createdAt: string
 }
 
 interface QueryParams {
     pin_id: string
+    parent_id?: string | null
     page: number
     pageSize: number
 }
@@ -35,6 +38,10 @@ export const createCommentAction = createServerAction<FormData, IComment>(async 
 
 export const getCommentsAction = createServerAction<QueryParams, IComment[]>(async (queryParams) => {
 	try {
+        if(!queryParams.parent_id) {
+            queryParams.parent_id = null
+        }
+
 		const queryString = Object.entries(queryParams)
 			.filter(([, value]) => value !== undefined)
 			.map(([key, value]) => `${key}=${value}`)
@@ -51,3 +58,11 @@ export const getCommentsAction = createServerAction<QueryParams, IComment[]>(asy
 		return { error: getErrorMessage(error) }
 	}
 }, { requireAuth: false })
+
+export const deleteCommentAction = createServerAction<string, void>(async (id) => {
+    try {
+        await HttpRequest.delete(`/comments/${id}`)
+    } catch (error) {
+        return { error: getErrorMessage(error) }
+    }
+})

@@ -28,7 +28,7 @@ import {
 } from '@cloudinary/url-gen/actions/adjust'
 import { blackwhite, grayscale, sepia, vignette } from '@cloudinary/url-gen/actions/effect'
 import { Loader2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider'
 import { toast } from 'sonner'
 
@@ -41,8 +41,8 @@ export default function PinTransModal() {
 	const [blur, setBlur] = useState(0)
 	const [selectedEffect, setSelectedEffect] = useState('')
 	const [loading, setLoading] = useState(false)
-    const cldUrl = useRef('')
-    const { user } = useUser()
+	const cldUrl = useRef('')
+	const { user } = useUser()
 
 	// Initialize Cloudinary
 	const cld = new Cloudinary({
@@ -54,12 +54,6 @@ export default function PinTransModal() {
 		}
 	})
 
-	useEffect(() => {
-		if (imagePreview) {
-			setTransformedUrl(imagePreview)
-		}
-	}, [imagePreview])
-
 	const handleTransformation = async () => {
 		if (!imageFile) return
 
@@ -67,7 +61,7 @@ export default function PinTransModal() {
 			setLoading(true)
 
 			if (!imagePreview?.includes('cloudinary')) {
-                cldUrl.current = await uploadToCloudinary(imageFile, user!.id)
+				cldUrl.current = await uploadToCloudinary(imageFile, user!.id)
 			}
 
 			// Extract public ID from Cloudinary URL
@@ -109,7 +103,7 @@ export default function PinTransModal() {
 			// Generate the transformed URL
 			const url = imageCld.toURL()
 			setTransformedUrl(url)
-            setImagePreview(url)
+			setImagePreview(url)
 		} catch (error) {
 			console.error('Transformation error:', error)
 			toast.error('Error transforming image')
@@ -210,17 +204,10 @@ export default function PinTransModal() {
 					<div className="flex items-center justify-center">
 						{transformedUrl && (
 							<div className="relative">
-								{/* <Image
-									src={transformedUrl}
-									alt="Uploaded image"
-									width={500}
-									height={500}
-									className="h-auto max-h-[685px] object-cover rounded-2xl"
-								/> */}
 								{imagePreview && (
 									<ReactCompareSlider
 										itemOne={<ReactCompareSliderImage src={currentImage!} />}
-										itemTwo={<ReactCompareSliderImage src={transformedUrl} />}
+										itemTwo={<ReactCompareSliderImage src={transformedUrl || currentImage!} />}
 										className="h-auto max-h-[685px] w-[500px] object-contain rounded-2xl"
 									/>
 								)}
