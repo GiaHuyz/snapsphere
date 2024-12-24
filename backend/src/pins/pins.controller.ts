@@ -8,6 +8,7 @@ import { CreatePinDto } from './dto/create-pin.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
 import { PinDocument } from './pin.schema'
 import { PinsService } from './pins.service'
+import { FilterPinDto } from './dto/filter-pin.dto'
 
 @ApiTags('Pins')
 @Controller('pins')
@@ -16,13 +17,17 @@ export class PinsController extends GenericController<PinDocument> {
 		super(pinsService)
 	}
 
-	// TODO: add filter for this endpoint
-	@ApiOperation({ summary: 'Get all pins' })
+	@ApiOperation({ 
+		summary: 'Get all pins',
+		description: 'Get all pins with optional filters, ' +
+			'not required login but only authenticated users can get their own pins'
+	})
 	@Public()
 	@Get()
-	async findAll(@Query() query: any = {}): Promise<PinDocument[]> {
-		// TODO: only owner can view their private pins
-		return this.pinsService.findAll(query)
+	async findAll(
+		@Query() query: FilterPinDto,
+		@UserId() userId?: string): Promise<PinDocument[]> {
+		return this.pinsService.findAll(query, userId);
 	}
 
 	@ApiOperation({ summary: 'Get a pin by ID' })
