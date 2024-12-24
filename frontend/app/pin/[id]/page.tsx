@@ -1,3 +1,4 @@
+// TODO:FIX: Comment bị trùng màu với background khi ở chế độ dark mode
 import { Board, getBoardsAction } from '@/actions/board-actions'
 import { getCommentsAction } from '@/actions/comment-action'
 import { getPinDetailAction } from '@/actions/pin-actions'
