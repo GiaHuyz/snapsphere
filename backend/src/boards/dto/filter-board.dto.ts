@@ -27,7 +27,7 @@ export class FilterBoardDto extends BaseFilterDto {
   description?: string;
 
   @ApiPropertyOptional({
-    description: 'Filter by whether the board is secret or public',
+    description: 'Filter by whether the board is secret or public (you can only see your own secret boards)',
   })
   @IsOptional()
   @IsBoolean()
