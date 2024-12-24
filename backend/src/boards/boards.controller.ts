@@ -4,20 +4,27 @@ import { UpdateBoardDto } from '@/boards/dto/update-board.dto'
 import { Public } from '@/common/decorators/public'
 import { UserId } from '@/common/decorators/userId'
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { BoardsService } from './boards.service'
+import { FilterBoardDto } from './dto/filter-board.dto'
 
 @ApiTags('boards')
 @ApiBearerAuth()
 @Controller('boards')
 export class BoardsController {
-	constructor(private readonly boardsService: BoardsService) {}
+	constructor(private readonly boardsService: BoardsService) { }
 
-	// TODO: hàm này cần phải thêm filter
-	@Get()
 	@Public()
-	async findAll(@UserId() userId: string, @Query() query: any): Promise<BoardDocument[]> {
-		return this.boardsService.findAll(userId, query)
+	@ApiOperation({
+		summary: 'Get all board',
+		description: 'Get all boards with optional filters, not required login but only authenticated users can get their own boards'
+	})
+	@Get()
+	async findAll(
+		@Query() query: FilterBoardDto,
+		@UserId() userId?: string
+	): Promise<BoardDocument[]> {
+		return this.boardsService.findAll(query, userId)
 	}
 
 	@Post()

@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsOptional, IsISO8601, Min } from 'class-validator';
 
 export class BaseFilterDto {
@@ -25,6 +26,8 @@ export class BaseFilterDto {
   })
   @IsOptional()
   @Min(1)
+  // cast to number
+  @Transform(({ value }) => parseInt(value, 10))
   page?: number;
 
   @ApiPropertyOptional({
@@ -34,6 +37,8 @@ export class BaseFilterDto {
   })
   @IsOptional()
   @Min(1)
+  // cast to number
+  @Transform(({ value }) => parseInt(value, 10))
   pageSize?: number;
 
 }

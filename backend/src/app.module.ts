@@ -7,7 +7,6 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { BoardsModule } from './boards/boards.module'
 import { CommonModule } from './common/common.module'
-import { ImagesModule } from './images/images.module'
 import { PinsModule } from './pins/pins.module'
 import { UsersModule } from './users/users.module'
 import { BoardPinModule } from './board-pin/board-pin.module';
@@ -25,7 +24,6 @@ import { CommentsModule } from './comments/comments.module';
 		}),
 		CommonModule,
 		UsersModule,
-		ImagesModule,
 		BoardsModule,
 		PinsModule,
 		BoardPinModule,
