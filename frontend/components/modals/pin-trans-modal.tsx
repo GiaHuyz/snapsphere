@@ -24,9 +24,23 @@ import { Cloudinary } from '@cloudinary/url-gen'
 import {
 	brightness as brightnessCld,
 	contrast as contrastCld,
-	saturation as saturationCld
+	improve,
+	saturation as saturationCld,
+	sharpen
 } from '@cloudinary/url-gen/actions/adjust'
-import { blackwhite, grayscale, sepia, vignette } from '@cloudinary/url-gen/actions/effect'
+import {
+	artisticFilter,
+	blackwhite,
+	blur as blurEffect,
+	cartoonify,
+	colorize,
+	grayscale,
+	negate,
+	oilPaint,
+	pixelate,
+	sepia,
+	vignette
+} from '@cloudinary/url-gen/actions/effect'
 import { Loader2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider'
@@ -34,7 +48,6 @@ import { toast } from 'sonner'
 
 export default function PinTransModal() {
 	const { isOpen, onClose, imageFile, imagePreview, setImagePreview, currentImage } = usePinTransModal()
-	const [transformedUrl, setTransformedUrl] = useState('')
 	const [brightness, setBrightness] = useState(100)
 	const [contrast, setContrast] = useState(100)
 	const [saturation, setSaturation] = useState(100)
@@ -81,6 +94,9 @@ export default function PinTransModal() {
 			if (saturation !== 100) {
 				imageCld = imageCld.adjust(saturationCld().level(saturation - 100))
 			}
+			if (blur !== 0) {
+				imageCld = imageCld.effect(blurEffect().strength(blur))
+			}
 
 			// Apply selected effect
 			if (selectedEffect && selectedEffect !== 'None') {
@@ -97,12 +113,95 @@ export default function PinTransModal() {
 					case 'vignette':
 						imageCld = imageCld.effect(vignette())
 						break
+					case 'vintage':
+						imageCld = imageCld.effect(artisticFilter('vintage'))
+						break
+					case 'al_dente':
+						imageCld = imageCld.effect(artisticFilter('al_dente'))
+						break
+					case 'athena':
+						imageCld = imageCld.effect(artisticFilter('athena'))
+						break
+					case 'audrey':
+						imageCld = imageCld.effect(artisticFilter('audrey'))
+						break
+					case 'aurora':
+						imageCld = imageCld.effect(artisticFilter('aurora'))
+						break
+					case 'daguerre':
+						imageCld = imageCld.effect(artisticFilter('daguerre'))
+						break
+					case 'eucalyptus':
+						imageCld = imageCld.effect(artisticFilter('eucalyptus'))
+						break
+					case 'fes':
+						imageCld = imageCld.effect(artisticFilter('fes'))
+						break
+					case 'frost':
+						imageCld = imageCld.effect(artisticFilter('frost'))
+						break
+					case 'hairspray':
+						imageCld = imageCld.effect(artisticFilter('hairspray'))
+						break
+					case 'hokusai':
+						imageCld = imageCld.effect(artisticFilter('hokusai'))
+						break
+					case 'incognito':
+						imageCld = imageCld.effect(artisticFilter('incognito'))
+						break
+					case 'linen':
+						imageCld = imageCld.effect(artisticFilter('linen'))
+						break
+					case 'peacock':
+						imageCld = imageCld.effect(artisticFilter('peacock'))
+						break
+					case 'primavera':
+						imageCld = imageCld.effect(artisticFilter('primavera'))
+						break
+					case 'quartz':
+						imageCld = imageCld.effect(artisticFilter('quartz'))
+						break
+					case 'red_rock':
+						imageCld = imageCld.effect(artisticFilter('red_rock'))
+						break
+					case 'refresh':
+						imageCld = imageCld.effect(artisticFilter('refresh'))
+						break
+					case 'sizzle':
+						imageCld = imageCld.effect(artisticFilter('sizzle'))
+						break
+					case 'sonnet':
+						imageCld = imageCld.effect(artisticFilter('sonnet'))
+					case 'ukulele':
+						imageCld = imageCld.effect(artisticFilter('ukulele'))
+					case 'zorro':
+						imageCld = imageCld.effect(artisticFilter('zorro'))
+					case 'cartoonify':
+						imageCld = imageCld.effect(cartoonify())
+						break
+					case 'oil_painting':
+						imageCld = imageCld.effect(oilPaint())
+						break
+					case 'pixelate':
+						imageCld = imageCld.effect(pixelate())
+						break
+					case 'sharpen':
+						imageCld = imageCld.effect(sharpen())
+						break
+					case 'negate':
+						imageCld = imageCld.effect(negate())
+						break
+					case 'colorize':
+						imageCld = imageCld.effect(colorize())
+						break
+					case 'improve':
+						imageCld = imageCld.adjust(improve())
+						break
 				}
 			}
 
 			// Generate the transformed URL
 			const url = imageCld.toURL()
-			setTransformedUrl(url)
 			setImagePreview(url)
 		} catch (error) {
 			console.error('Transformation error:', error)
@@ -121,7 +220,7 @@ export default function PinTransModal() {
 	}
 
 	return (
-		<SidebarProvider>
+		<SidebarProvider className={isOpen ? 'min-h-svh' : 'min-h-0'}>
 			<Dialog open={isOpen} onOpenChange={onClose}>
 				<DialogContent className="h-screen max-w-screen grid w-full grid-cols-[280px_1fr] gap-4 bg-gray-200">
 					<Sidebar className="border-r">
@@ -137,8 +236,8 @@ export default function PinTransModal() {
 										<Slider
 											id="brightness"
 											defaultValue={[brightness]}
-											min={0}
-											max={200}
+											min={-99}
+											max={100}
 											step={1}
 											onValueChange={handleSliderChange(setBrightness)}
 										/>
@@ -146,7 +245,7 @@ export default function PinTransModal() {
 										<Slider
 											id="contrast"
 											defaultValue={[contrast]}
-											min={0}
+											min={1}
 											max={200}
 											step={1}
 											onValueChange={handleSliderChange(setContrast)}
@@ -165,8 +264,8 @@ export default function PinTransModal() {
 											id="blur"
 											defaultValue={[blur]}
 											min={0}
-											max={100}
-											step={1}
+											max={2000}
+											step={100}
 											onValueChange={handleSliderChange(setBlur)}
 										/>
 									</div>
@@ -184,6 +283,16 @@ export default function PinTransModal() {
 											<SelectItem value="grayscale">Grayscale</SelectItem>
 											<SelectItem value="blackwhite">Black & White</SelectItem>
 											<SelectItem value="vignette">Vignette</SelectItem>
+											<SelectItem value="vintage">Vintage</SelectItem>
+											<SelectItem value="art">Art</SelectItem>
+											<SelectItem value="cartoonify">Cartoonify</SelectItem>
+											<SelectItem value="oil_painting">Oil Painting</SelectItem>
+											<SelectItem value="pixelate">Pixelate</SelectItem>
+											<SelectItem value="blur_effect">Blur Effect</SelectItem>
+											<SelectItem value="sharpen">Sharpen</SelectItem>
+											<SelectItem value="negate">Negate</SelectItem>
+											<SelectItem value="colorize">Colorize</SelectItem>
+											<SelectItem value="improve">Auto Improve</SelectItem>
 										</SelectContent>
 									</Select>
 								</SidebarGroupContent>
@@ -202,22 +311,18 @@ export default function PinTransModal() {
 						</SidebarContent>
 					</Sidebar>
 					<div className="flex items-center justify-center">
-						{transformedUrl && (
-							<div className="relative">
-								{imagePreview && (
-									<ReactCompareSlider
-										itemOne={<ReactCompareSliderImage src={currentImage!} />}
-										itemTwo={<ReactCompareSliderImage src={transformedUrl || currentImage!} />}
-										className="h-auto max-h-[685px] w-[500px] object-contain rounded-2xl"
-									/>
-								)}
-								{loading && (
-									<div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 rounded-2xl">
-										<Loader2 className="h-10 w-10 animate-spin" color="#fff" />
-									</div>
-								)}
-							</div>
-						)}
+						<div className="relative">
+							<ReactCompareSlider
+								itemOne={<ReactCompareSliderImage src={currentImage!} />}
+								itemTwo={<ReactCompareSliderImage src={imagePreview || currentImage!} />}
+								className="h-auto max-h-[685px] w-[500px] object-contain rounded-2xl"
+							/>
+							{loading && (
+								<div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 rounded-2xl">
+									<Loader2 className="h-10 w-10 animate-spin" color="#fff" />
+								</div>
+							)}
+						</div>
 					</div>
 				</DialogContent>
 			</Dialog>

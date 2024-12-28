@@ -34,7 +34,7 @@ export class CreatePinDto {
 	})
 	@IsNotEmpty()
 	@IsBoolean()
-	@Transform(({ value }) => value === 'true')
+    @Transform(({ value }) => value === 'true' || value === true)
 	isAllowedComment: boolean
 
 	@ApiProperty({

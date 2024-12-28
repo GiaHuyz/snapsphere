@@ -3,6 +3,7 @@
 import { createCommentAction, deleteCommentAction, getCommentsAction, IComment } from '@/actions/comment-action'
 import Comment from '@/components/comment'
 import CommentInput from '@/components/comment-input'
+import { PAGE_SIZE_COMMENTS } from '@/lib/constants'
 import { isActionError } from '@/lib/errors'
 import { useUser } from '@clerk/nextjs'
 import { Loader2 } from 'lucide-react'
@@ -11,9 +12,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { toast } from 'sonner'
 
-const PAGE_SIZE = 5
-
-export function CommentSection({ initialComments }: { initialComments: IComment[] }) {
+export function CommentSection({
+	initialComments,
+	isAllowedComment
+}: {
+	initialComments: IComment[]
+	isAllowedComment: boolean
+}) {
 	const [comments, setComments] = useState<IComment[]>(initialComments)
 	const [page, setPage] = useState(2)
 	const pinId = usePathname().split('/').pop()
@@ -23,10 +28,14 @@ export function CommentSection({ initialComments }: { initialComments: IComment[
 
 	const loadMoreComments = async () => {
 		if (hasMore) {
-			const res = (await getCommentsAction({ pin_id: pinId!, page: page, pageSize: PAGE_SIZE })) as IComment[]
-			setComments((prevComments) => [...prevComments, ...res])
-			setPage((prevPage) => prevPage + 1)
-			setHasMore(res.length === PAGE_SIZE)
+			const res = (await getCommentsAction({ pin_id: pinId!, page: page, pageSize: PAGE_SIZE_COMMENTS }))
+            if(!isActionError(res)) {
+                setComments((prevComments) => [...prevComments, ...res])
+                setPage((prevPage) => prevPage + 1)
+                if(res.length < PAGE_SIZE_COMMENTS) {
+                    setHasMore(false)
+                }
+            }
 		}
 	}
 
@@ -59,21 +68,21 @@ export function CommentSection({ initialComments }: { initialComments: IComment[
 		[user]
 	)
 
-    const handleDelete = async (id: string) => {
+	const handleDelete = async (id: string) => {
 		const res = await deleteCommentAction(id)
 
 		if (isActionError(res)) {
 			return toast.error(res.error)
 		}
-        
+
 		setComments(comments.filter((comment) => comment._id !== id))
 	}
 
 	return (
 		<div className="space-y-4">
-			<div className="space-y-2 max-h-[410px] overflow-y-auto">
+			<div className="space-y-2 max-h-[335px] overflow-y-auto">
 				{comments.map((comment) => (
-					<Comment key={comment._id} comment={comment} onDelete={handleDelete} />
+					<Comment key={comment._id} comment={comment} onDelete={handleDelete} isAllowedComment={isAllowedComment} />
 				))}
 				<div className="flex justify-center">
 					{hasMore && (
@@ -83,7 +92,13 @@ export function CommentSection({ initialComments }: { initialComments: IComment[
 					)}
 				</div>
 			</div>
-			<CommentInput onAddComment={handleAddComment} />
+			{isAllowedComment ? (
+				<CommentInput onAddComment={handleAddComment} />
+			) : (
+				<div>
+					<p className="text-xl text-muted-foreground text-center">This pin is not allowed to comment</p>
+				</div>
+			)}
 		</div>
 	)
 }

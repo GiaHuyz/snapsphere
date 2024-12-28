@@ -1,18 +1,23 @@
 import { Board, getBoardsAction } from '@/actions/board-actions'
+import { getAllFollowsAction } from '@/actions/follow-actions'
 import { getAllPinsUserAction } from '@/actions/pin-actions'
 import BoardPreviewList from '@/components/board-preview-list'
-import EditPinModal from '@/components/modals/edit-pin-modal'
+import FollowModal from '@/components/modals/follow-modal'
 import PinList from '@/components/pin-list'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import UserStats from '@/components/user-stats'
 import { isActionError, ServerActionResponse } from '@/lib/errors'
 import currentUser from '@/lib/get-current-user'
 import { clerkClient } from '@clerk/nextjs/server'
-import { DropdownMenu } from '@radix-ui/react-dropdown-menu'
-import { Plus, Settings2, Share } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import Link from 'next/link'
+
+export const generateMetadata = async ({ params }: { params: Promise<{ username: string }> }) => {
+	const { username } = await params
+	return {
+		title: `Snapsphere | ${username}`
+	}
+}
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
 	const { username } = await params
@@ -34,17 +39,25 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 
 	let boardsDropdown: ServerActionResponse<Board[]> = []
 
-	const [loginedUser, pins, boardsPreview] = await Promise.all([
+	const [loginedUser, pins, boardsPreview, followers, following] = await Promise.all([
 		currentUser(),
-		getAllPinsUserAction({user_id: user.id}),
-		getBoardsAction({ user_id: user.id })
+		getAllPinsUserAction({ user_id: user.id }),
+		getBoardsAction({ user_id: user.id }),
+		getAllFollowsAction({ followingId: user.id }),
+		getAllFollowsAction({ followerId: user.id })
 	])
 
 	if (loginedUser) {
 		boardsDropdown = await getBoardsAction({ user_id: loginedUser.id })
 	}
 
-	if (isActionError(pins) || isActionError(boardsDropdown) || isActionError(boardsPreview)) {
+	if (
+		isActionError(pins) ||
+		isActionError(boardsDropdown) ||
+		isActionError(boardsPreview) ||
+		isActionError(followers) ||
+		isActionError(following)
+	) {
 		return (
 			<div className="flex items-center justify-center mt-20">
 				<div className="text-center">
@@ -58,33 +71,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 		<>
 			<div className="min-h-screen bg-background pb-8">
 				{/* Profile Header */}
-				<div className="flex flex-col items-center space-y-3 py-3">
-					<Avatar className="h-28 w-28">
-						<AvatarImage src={user.imageUrl} alt={username} />
-						<AvatarFallback>GH</AvatarFallback>
-					</Avatar>
-					<h1 className="text-2xl font-bold">{user.fullName}</h1>
-					<p className="text-muted-foreground">
-						<span>plus.google.com/102566985836725009655</span>{' '}
-					</p>
-					{(user.unsafeMetadata?.bio as string) && (
-						<p className="text-muted-foreground">{user.unsafeMetadata?.bio as string}</p>
-					)}
-					<div className="flex items-center gap-2 text-sm text-muted-foreground">
-						<span>@{user.username}</span>
-						<span>.</span>
-						<span>1 following</span>
-					</div>
-					<div className="flex gap-2">
-						<Button variant="secondary" className="rounded-full">
-							<Share className="mr-2 h-4 w-4" />
-							Share
-						</Button>
-						<Button variant="secondary" className="rounded-full">
-							Edit profile
-						</Button>
-					</div>
-				</div>
+				<UserStats
+					user={JSON.parse(JSON.stringify(user))}
+					followers={followers.length}
+					following={following.length}
+				/>
 
 				{/* Tabs */}
 				<Tabs defaultValue="saved" className="px-4">
@@ -105,7 +96,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 						</TabsList>
 					</div>
 
-					<TabsContent value="created" className="mt-6">
+					<TabsContent forceMount value="created" className="mt-6 data-[state=inactive]:hidden">
 						{loginedUser!.username === username && pins.length === 0 && (
 							<div className="max-w-[200px] mx-auto">
 								<Link href={`/create`}>
@@ -120,39 +111,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 								</Link>
 							</div>
 						)}
-						<PinList pins={pins} boardsDropdown={boardsDropdown} />
+						<PinList initialPins={pins} boardsDropdown={boardsDropdown} />
 					</TabsContent>
 
-					<TabsContent value="saved" className="mt-2">
-						<div className="flex justify-between items-center">
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button className="rounded-full">
-										<Settings2 className="h-4 w-4" />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="start">
-									<DropdownMenuItem className="cursor-pointer">Share</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button className="rounded-full">
-										<Plus />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuItem className="cursor-pointer">Create Pin</DropdownMenuItem>
-									<DropdownMenuItem className="cursor-pointer">Create Board</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
-						</div>
-						<BoardPreviewList boardsPreview={boardsPreview} username={username} />
+					<TabsContent forceMount value="saved" className="mt-2 data-[state=inactive]:hidden">
+						<BoardPreviewList initBoardsPreview={boardsPreview} userId={user.id} username={username} />
 					</TabsContent>
 				</Tabs>
 			</div>
-			<EditPinModal boardsDropdown={boardsDropdown} />
+			<FollowModal userId={user.id} followers={followers} following={following} />
 		</>
 	)
 }

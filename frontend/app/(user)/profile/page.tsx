@@ -1,5 +1,10 @@
 import { ProfileForm } from '@/components/profile-form'
 import currentUser from '@/lib/get-current-user'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: 'Snapsphere | Edit Profile'
+}
 
 export default async function EditProfilePage() {
     const user = await currentUser()

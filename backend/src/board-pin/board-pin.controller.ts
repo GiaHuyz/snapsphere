@@ -2,7 +2,7 @@ import { BoardPinService } from '@/board-pin/board-pin.service'
 import { CreateBoardPinDto } from '@/board-pin/dto/create-board-pin.dto'
 import { UserId } from '@/common/decorators/userId'
 import { GenericController } from '@/common/generic/generic.controller'
-import { Body, Controller, Get, Post, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { BoardPinDocument } from './board-pin.schema'
 import { FilterBoardPinDto } from './dto/filter-board-pin.dto'
@@ -41,5 +41,10 @@ export class BoardPinController extends GenericController<BoardPinDocument> {
 	): Promise<BoardPinDocument> {
 		return this.boardPinService.create(userId, createBoardPinDto);
 	}
+
+    @Delete(':id')
+    delete(@UserId() userId: string, @Param('id') id: string){
+        return this.boardPinService.delete(userId, id);
+    }
 
 }

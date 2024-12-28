@@ -15,6 +15,6 @@ export const useCreateBoardModal = create<UseCreateBoardModalStore>((set) => ({
 	isOpen: false,
 	pin: null,
 	onOpen: () => set({ isOpen: true }),
-	onClose: () => set({ isOpen: false }),
+	onClose: () => set({ isOpen: false, pin: null }),
 	setPin: (pin) => set({ pin })
 }))

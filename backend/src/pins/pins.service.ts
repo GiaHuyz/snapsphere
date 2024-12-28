@@ -1,3 +1,4 @@
+import { BoardPin, BoardPinDocument } from '@/board-pin/board-pin.schema'
 import { Board, BoardDocument } from '@/boards/board.schema'
 import { GenericService } from '@/common/generic/generic.service'
 import { checkOwnership } from '@/common/utils/check-owner-ship.util'
@@ -8,13 +9,13 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service'
 import { CreatePinDto } from './dto/create-pin.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
 import { Pin, PinDocument } from './pin.schema'
-import {v2 as cloudinary} from 'cloudinary'
 
 @Injectable()
 export class PinsService extends GenericService<PinDocument> {
 	constructor(
 		@InjectModel(Pin.name) private readonly pinModel: Model<PinDocument>,
 		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
+		@InjectModel(BoardPin.name) private readonly boardPinModel: Model<BoardPinDocument>,
 		private readonly cloudinaryService: CloudinaryService
 	) {
 		super(pinModel)
@@ -25,7 +26,7 @@ export class PinsService extends GenericService<PinDocument> {
 		const filter = {}
 
 		for (const key of filterKey) {
-			if (query[key]) { 
+			if (query[key]) {
 				if (key === 'title') {
 					query[key] = { $regex: query[key], $options: 'i' }
 				}
@@ -45,13 +46,13 @@ export class PinsService extends GenericService<PinDocument> {
 	 * @returns A promise that resolves to the created pin document.
 	 */
 	async create(userId: string, createPinDto: CreatePinDto, image: Express.Multer.File): Promise<PinDocument> {
-        let uploadedImage = ''
+		let uploadedImage = ''
 
-        if(image) {
-            uploadedImage = (await this.cloudinaryService.uploadFile(image, userId)).secure_url
-        } else {
-            uploadedImage = createPinDto.url
-        }
+		if (image) {
+			uploadedImage = (await this.cloudinaryService.uploadFile(image, userId)).secure_url
+		} else {
+			uploadedImage = createPinDto.url
+		}
 		// Upload image to Cloudinary
 
 		// save pin to database
@@ -112,13 +113,17 @@ export class PinsService extends GenericService<PinDocument> {
 		// check if the user is the owner of the pin
 		checkOwnership(pin, userId)
 
+		const boardIds = await this.boardPinModel.find({ pin_id: pin._id }).distinct('board_id')
+
 		await Promise.all([
 			// delete the image from Cloudinary
 			this.cloudinaryService.deleteFile(pin.url),
 			// remove cover image from all boards
 			this.boardModel.updateMany({ coverImages: pin._id }, { $pull: { coverImages: pin._id } }),
+			this.boardModel.updateMany({ _id: { $in: boardIds } }, { $inc: { pinCount: -1 } }),
 			// delete the pin from the database
-			this.pinModel.findByIdAndDelete(id)
+			this.pinModel.findByIdAndDelete(id),
+			this.boardPinModel.deleteMany({ pin_id: pin._id })
 		])
 	}
 }

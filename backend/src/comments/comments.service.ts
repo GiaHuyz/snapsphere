@@ -4,8 +4,9 @@ import { CreateCommentDto } from '@/comments/dto/create-comment.dto'
 import { UserId } from '@/common/decorators/userId'
 import { GenericService } from '@/common/generic/generic.service'
 import { checkOwnership } from '@/common/utils/check-owner-ship.util'
+import { PinsService } from '@/pins/pins.service'
 import { clerkClient } from '@clerk/express'
-import { Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 
@@ -13,6 +14,7 @@ import { Model } from 'mongoose'
 export class CommentsService extends GenericService<CommentDocument> {
 	constructor(
 		@InjectModel(Comment.name) private readonly commentModel: Model<CommentDocument>,
+        private readonly pinService: PinsService,
 		private readonly cloudinaryService: CloudinaryService
 	) {
 		super(commentModel)
@@ -50,6 +52,12 @@ export class CommentsService extends GenericService<CommentDocument> {
 	}
 
 	async create(userId: string, createCommentDto: CreateCommentDto, image?: Express.Multer.File) {
+        const pin = await this.pinService.baseFindOne(createCommentDto.pin_id)
+
+        if(!pin.isAllowedComment) {
+            throw new BadRequestException('Comment is not allowed on this pin')
+        }
+
 		if (image) {
 			const uploadedImage = await this.cloudinaryService.uploadFile(image, userId)
 			createCommentDto.image = uploadedImage.secure_url

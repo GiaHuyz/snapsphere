@@ -1,8 +1,6 @@
 'use client'
 
-import { Board } from '@/actions/board-actions'
 import { deletePinAction, editPinAction } from '@/actions/pin-actions'
-import BoardDropdown from '@/components/board-dropdown'
 import { LoaderButton } from '@/components/loading-button'
 import {
 	AlertDialog,
@@ -14,17 +12,18 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
+import { usePinStore } from '@/hooks/use-pin-store'
 import { isActionError } from '@/lib/errors'
+import { checkUserPage } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ChevronDown } from 'lucide-react'
 import NextImage from 'next/image'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -40,12 +39,13 @@ const editPinSchema = z.object({
 
 type EditPinFormValues = z.infer<typeof editPinSchema>
 
-export default function EditPinModal({ boardsDropdown }: { boardsDropdown: Board[] }) {
+export default function EditPinModal() {
 	const { isOpen, onClose, pin } = useEditPinModal()
+	const { pins, setPins } = usePinStore()
 	const [isLoading, setIsLoading] = useState(false)
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
-	const [selectedBoard, setSelectedBoard] = useState<Board | null>(null)
 	const [formValues, setFormValues] = useState<EditPinFormValues | null>(null)
+	const pathname = usePathname()
 
 	const form = useForm<EditPinFormValues>({
 		resolver: zodResolver(editPinSchema),
@@ -68,7 +68,6 @@ export default function EditPinModal({ boardsDropdown }: { boardsDropdown: Board
 				boardId: ''
 			}
 			setFormValues(initialValues)
-			setSelectedBoard(null)
 			form.reset(initialValues)
 		}
 	}, [pin, form])
@@ -101,13 +100,10 @@ export default function EditPinModal({ boardsDropdown }: { boardsDropdown: Board
 		} else {
 			toast.success('Pin updated successfully!')
 			onClose()
+			const updatedPins = pins.map((p) => (p._id === pin._id ? res : p))
+			setPins(updatedPins)
 		}
 		setIsLoading(false)
-	}
-
-	const handleBoardChange = (board: Board) => {
-		setSelectedBoard(board)
-		form.setValue('boardId', board._id)
 	}
 
 	const onDelete = async () => {
@@ -119,6 +115,10 @@ export default function EditPinModal({ boardsDropdown }: { boardsDropdown: Board
 		} else {
 			toast.success('Pin deleted successfully')
 			onClose()
+			if (checkUserPage(pathname)) {
+				const updatedPins = pins.filter((p) => p._id !== pin!._id)
+				setPins(updatedPins)
+			}
 		}
 
 		setShowDeleteAlert(false)
@@ -192,55 +192,6 @@ export default function EditPinModal({ boardsDropdown }: { boardsDropdown: Board
 												<FormLabel>Link</FormLabel>
 												<FormControl>
 													<Input type="url" placeholder="Add a link" {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<FormField
-										control={form.control}
-										name="boardId"
-										render={() => (
-											<FormItem>
-												<FormLabel>Board</FormLabel>
-												<FormControl>
-													<BoardDropdown
-														boardsDropdown={boardsDropdown}
-														mode="select"
-														onChange={handleBoardChange}
-													>
-														<Button
-															type="button"
-															variant="outline"
-															role="combobox"
-															className={`mt-1 px-3 h-12 w-full justify-between rounded-2xl`}
-														>
-															<div className="flex items-center gap-2">
-																{selectedBoard ? (
-																	<>
-																		{selectedBoard.coverImages?.[0] && (
-																			<div className="h-7 w-7 overflow-hidden rounded-md">
-																				<NextImage
-																					src={
-																						selectedBoard.coverImages[0].url
-																					}
-																					alt={selectedBoard.title}
-																					width={24}
-																					height={24}
-																					className="h-full w-full object-cover"
-																				/>
-																			</div>
-																		)}
-																		<span>{selectedBoard.title}</span>
-																	</>
-																) : (
-																	'Choose a board'
-																)}
-															</div>
-															<ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-														</Button>
-													</BoardDropdown>
 												</FormControl>
 												<FormMessage />
 											</FormItem>

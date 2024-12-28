@@ -1,6 +1,6 @@
 'use client'
 
-import { Board } from '@/actions/board-actions'
+import { Board, getBoardsAction } from '@/actions/board-actions'
 import { Button } from '@/components/ui/button'
 import {
 	DropdownMenu,
@@ -11,17 +11,16 @@ import {
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { useBoardDropdownStore } from '@/hooks/use-board-dropdown-store'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
+import { PAGE_SIZE_BOARDS } from '@/lib/constants'
+import { isActionError } from '@/lib/errors'
 import { useUser } from '@clerk/nextjs'
-import { ChevronDown, Plus, Search } from 'lucide-react'
+import { ChevronDown, Loader2, Plus, Search } from 'lucide-react'
 import Image from 'next/image'
-import * as React from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
+import { useInView } from 'react-intersection-observer'
 import { SaveButton } from './save-to-board-button'
-
-interface Suggestion {
-	id: string
-	name: string
-}
 
 interface BoardDropdownProps {
 	mode: 'select' | 'save'
@@ -36,20 +35,49 @@ interface BoardDropdownProps {
 
 export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, children }: BoardDropdownProps) {
 	const { onOpen, setPin } = useCreateBoardModal()
-	const { isSignedIn } = useUser()
-
-	const defaultSuggestions: Suggestion[] = [
-		{ id: '3', name: 'Asian landscape' },
-		{ id: '4', name: 'Wall decor design' },
-		{ id: '5', name: 'Art deco wall' },
-		{ id: '6', name: 'Asian architecture' }
-	]
+	const { isSignedIn, user } = useUser()
+	const { boards, setBoards } = useBoardDropdownStore()
+	const [filteredBoards, setFilteredBoards] = useState<Board[]>(boardsDropdown)
+	const [search, setSearch] = useState('')
+	const [page, setPage] = useState(2)
+	const [hasMore, setHasMore] = useState(true)
+	const [scrollTrigger, isInView] = useInView()
 
 	const handleSelect = (board: Board) => {
 		if (mode === 'select' && onChange) {
 			onChange(board)
 		}
 	}
+
+	const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+		if (e.target.value.startsWith(' ')) return
+		setSearch(e.target.value)
+		const query = e.target.value.toLowerCase()
+		const filteredBoards = boards.filter((board) => board.title.toLowerCase().includes(query))
+		setFilteredBoards(filteredBoards)
+	}
+
+	const loadMoreBoards = async () => {
+		const newBoards = await getBoardsAction({ user_id: user?.id, page: page, pageSize: PAGE_SIZE_BOARDS })
+		if (!isActionError(newBoards)) {
+            setBoards([...boards, ...newBoards])
+			setPage((prevPage) => prevPage + 1)
+			if (newBoards.length < PAGE_SIZE_BOARDS) {
+				setHasMore(false)
+			}
+		}
+	}
+
+	useEffect(() => {
+		if (isInView && hasMore) {
+			loadMoreBoards()
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [hasMore, isInView])
+
+	useEffect(() => {
+		setBoards(boardsDropdown)
+	}, [boardsDropdown, setBoards])
 
 	return (
 		<>
@@ -60,7 +88,7 @@ export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, chi
 							variant="secondary"
 							className={'h-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60'}
 							onClick={(e) => e.preventDefault()}
-                            data-prevent-nprogress={true}
+							data-prevent-nprogress={true}
 						>
 							{boardsDropdown[0]?.title}
 							<ChevronDown className="ml-1 h-4 w-4" />
@@ -77,19 +105,24 @@ export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, chi
 					<div className="p-2">
 						<div className="relative">
 							<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground " />
-							<Input placeholder="Search boards" className="pl-8 rounded-full" />
+							<Input
+								value={search}
+								onChange={handleSearch}
+								placeholder="Search boards"
+								className="pl-8 rounded-full"
+							/>
 						</div>
 					</div>
 					<div className="h-[290px] overflow-y-auto overflow-x-hidden">
 						<DropdownMenuLabel>All boards</DropdownMenuLabel>
-						{boardsDropdown.map((board) => (
+						{(search ? filteredBoards : boards).map((board) => (
 							<DropdownMenuItem
 								key={board._id}
 								className="relative flex items-center gap-2 p-2 cursor-pointer group"
 								onClick={() => handleSelect(board)}
 							>
 								<div className="flex flex-1 items-center gap-2">
-									{board.coverImages[0] && (
+									{board.coverImages[0] ? (
 										<div className="h-12 w-12 overflow-hidden rounded-lg">
 											<Image
 												src={board.coverImages[0].url}
@@ -99,39 +132,32 @@ export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, chi
 												className="h-full w-full object-cover"
 											/>
 										</div>
-									)}
+									) : (
+                                        <div className="h-12 w-12 rounded-lg bg-secondary">
+                                        </div>
+                                    )}
 									<span className="line-clamp-1">{board.title}</span>
 								</div>
 								{mode === 'save' && (
 									<div className="absolute right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-										<SaveButton isLoggedIn={isSignedIn} pinId={pin!._id} pinUrl={pin!.url} boardId={board._id} />
+										<SaveButton
+											isLoggedIn={isSignedIn}
+											pinId={pin!._id}
+											pinUrl={pin!.url}
+											boardId={board._id}
+										/>
 									</div>
 								)}
 							</DropdownMenuItem>
 						))}
+						<div className="flex items-center justify-center">
+							{hasMore && (
+								<div ref={scrollTrigger}>
+									<Loader2 className="h-4 w-4 animate-spin" />
+								</div>
+							)}
+						</div>
 						<DropdownMenuSeparator />
-						{mode === 'save' && (
-							<>
-								<DropdownMenuLabel>Suggestions</DropdownMenuLabel>
-								{defaultSuggestions.map((suggestion) => (
-									<DropdownMenuItem
-										key={suggestion.id}
-										className="flex items-center gap-2 p-2 cursor-pointer group"
-									>
-										<div className="flex flex-1 items-center gap-2">
-											<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary">
-												<Plus className="h-6 w-6" />
-											</div>
-											<span className="line-clamp-1">{suggestion.name}</span>
-										</div>
-										<div className="opacity-0 group-hover:opacity-100">
-											<Button className="rounded-full min-w-14">Create</Button>
-										</div>
-									</DropdownMenuItem>
-								))}
-								<DropdownMenuSeparator />
-							</>
-						)}
 					</div>
 					<DropdownMenuItem
 						className="flex items-center gap-2 p-2 cursor-pointer"

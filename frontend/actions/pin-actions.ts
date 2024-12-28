@@ -1,9 +1,9 @@
 'use server'
 
+import { PAGE_SIZE_PINS } from '@/lib/constants'
 import createServerAction from '@/lib/create-server-action'
 import { getErrorMessage } from '@/lib/errors'
 import { HttpRequest } from '@/lib/http-request'
-import { revalidateTag } from 'next/cache'
 
 export interface Pin {
 	_id: string
@@ -35,7 +35,6 @@ type EditPinData = Partial<Pick<Pin, '_id' | 'title' | 'description' | 'referenc
 export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (data) => {
 	try {
 		const res = await HttpRequest.post<Pin>('/board-pin', data)
-		revalidateTag('boards')
 		return res
 	} catch (error) {
 		return { error: getErrorMessage(error) }
@@ -45,6 +44,9 @@ export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (d
 export const getAllPinsUserAction = createServerAction<QueryParams, Pin[]>(
 	async (queryParams) => {
 		try {
+            queryParams.page = queryParams.page || 1
+            queryParams.pageSize = queryParams.pageSize || PAGE_SIZE_PINS
+
 			const queryString = Object.entries(queryParams)
 				.filter(([, value]) => value !== undefined)
 				.map(([key, value]) => `${key}=${value}`)
@@ -73,7 +75,6 @@ export const createPin = createServerAction<FormData, Pin>(async (data: FormData
 export const deletePinAction = createServerAction<string, void>(async (id) => {
 	try {
 		await HttpRequest.delete(`/pins/${id}`)
-		revalidateTag('pins')
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}
@@ -83,7 +84,6 @@ export const editPinAction = createServerAction<EditPinData, Pin>(async (data) =
 	try {
 		const { _id, ...updateData } = data
 		const res = await HttpRequest.patch<Pin>(`/pins/${_id}`, updateData)
-		revalidateTag('pins')
 		return res
 	} catch (error) {
 		return { error: getErrorMessage(error) }

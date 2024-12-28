@@ -12,6 +12,7 @@ import { PinsModule } from './pins/pins.module'
 import { UsersModule } from './users/users.module'
 import { BoardPinModule } from './board-pin/board-pin.module';
 import { CommentsModule } from './comments/comments.module';
+import { FollowsModule } from './follows/follows.module';
 
 @Module({
 	imports: [
@@ -29,7 +30,8 @@ import { CommentsModule } from './comments/comments.module';
 		BoardsModule,
 		PinsModule,
 		BoardPinModule,
-		CommentsModule
+		CommentsModule,
+		FollowsModule
 	],
 	controllers: [AppController],
 	providers: [

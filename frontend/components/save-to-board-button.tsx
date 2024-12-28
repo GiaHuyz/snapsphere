@@ -2,16 +2,18 @@
 
 import { savePinToBoardAction } from '@/actions/pin-actions'
 import { Button } from '@/components/ui/button'
+import { useBoardPreviewStore } from '@/hooks/use-board-preview-store'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { isActionError } from '@/lib/errors'
-import { cn } from '@/lib/utils'
+import { checkUserPage, cn } from '@/lib/utils'
 import { useClerk } from '@clerk/nextjs'
+import { usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 
 interface SaveButtonProps {
 	className?: string
 	pinId: string
-    pinUrl: string
+	pinUrl: string
 	boardId: string
 	variant?: 'default' | 'overlay'
 	isLoggedIn?: boolean
@@ -20,6 +22,8 @@ interface SaveButtonProps {
 export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, pinUrl, boardId }: SaveButtonProps) {
 	const clerk = useClerk()
 	const { setPin, onOpen } = useCreateBoardModal()
+	const { boardsPreview, setBoardsPreview } = useBoardPreviewStore()
+	const pathname = usePathname()
 
 	const handleClick = async (e: React.MouseEvent) => {
 		e.preventDefault()
@@ -28,7 +32,7 @@ export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, 
 		}
 
 		if (!boardId) {
-            setPin({ _id: pinId, url: pinUrl })
+			setPin({ _id: pinId, url: pinUrl })
 			return onOpen()
 		}
 
@@ -37,6 +41,21 @@ export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, 
 			toast.error(res.error)
 		} else {
 			toast.success('Pin saved successfully')
+			if (checkUserPage(pathname)) {
+				const updatedBoards = boardsPreview.map((board) => {
+					if (board._id === boardId) {
+						if (board.coverImages.length < 3) {
+							board.coverImages.push({
+								_id: pinId,
+								url: pinUrl
+							})
+							board.pinCount++
+						}
+					}
+					return board
+				})
+				setBoardsPreview(updatedBoards)
+			}
 		}
 	}
 
@@ -49,7 +68,7 @@ export function SaveButton({ className, variant = 'default', isLoggedIn, pinId, 
 				className
 			)}
 			onClick={handleClick}
-            data-prevent-nprogress={true}
+			data-prevent-nprogress={true}
 		>
 			Save
 		</Button>

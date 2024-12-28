@@ -3,18 +3,12 @@
 import { Board } from '@/actions/board-actions'
 import { Pin as PinType } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
+import PinActions from '@/components/pin-actions'
 import { SaveButton } from '@/components/save-to-board-button'
 import { Button } from '@/components/ui/button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
 import { useUser } from '@clerk/nextjs'
-import { Download, Eye, Flag, MoreHorizontal, Pencil } from 'lucide-react'
+import { MoreHorizontal, Pencil } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -68,7 +62,7 @@ export default function Pin({ pin, boardsDropdown }: PinProps) {
 
 					{/* Bottom Actions */}
 					<div className="absolute bottom-4 right-4 flex items-center gap-2">
-						{(pathname !== '/' && pin.user_id === user?.id) && (
+						{pathname !== '/' && pin.user_id === user?.id && (
 							<Button
 								size="icon"
 								variant="secondary"
@@ -79,34 +73,17 @@ export default function Pin({ pin, boardsDropdown }: PinProps) {
 								<Pencil className="h-4 w-4" />
 							</Button>
 						)}
-						<DropdownMenu modal={false}>
-							<DropdownMenuTrigger asChild>
-								<Button
-									size="icon"
-									variant="secondary"
-									className="h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
-									data-prevent-nprogress={true}
-									onClick={(e) => e.preventDefault()}
-								>
-									<MoreHorizontal className="h-4 w-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" onClick={(e) => e.preventDefault()}>
-								<DropdownMenuItem>
-									<Eye className="mr-2 h-4 w-4" />
-									Hide Pin
-								</DropdownMenuItem>
-								<DropdownMenuItem>
-									<Download className="mr-2 h-4 w-4" />
-									Download image
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem className="text-red-600">
-									<Flag className="mr-2 h-4 w-4" />
-									Report Pin
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+						<PinActions pinId={pin._id} pinUrl={pin.url}>
+							<Button
+								size="icon"
+								variant="secondary"
+								className="h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60"
+								data-prevent-nprogress={true}
+								onClick={(e) => e.preventDefault()}
+							>
+								<MoreHorizontal className="h-4 w-4" />
+							</Button>
+						</PinActions>
 					</div>
 				</div>
 			</Link>

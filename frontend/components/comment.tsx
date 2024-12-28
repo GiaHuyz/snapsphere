@@ -14,15 +14,18 @@ import Link from 'next/link'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import CommentInput from './comment-input'
+import { PAGE_SIZE_COMMENTS } from '@/lib/constants'
 
 export default function Comment({
 	comment,
 	isReply = false,
-	onDelete
+	onDelete,
+	isAllowedComment
 }: {
 	comment: IComment
 	isReply?: boolean
 	onDelete: (id: string) => void
+	isAllowedComment: boolean
 }) {
 	const [showReplyInput, setShowReplyInput] = useState(false)
 	const [repliesLoaded, setRepliesLoaded] = useState(false)
@@ -39,7 +42,7 @@ export default function Comment({
 		const newReplies = (await getCommentsAction({
 			parent_id: comment._id,
 			page: pageToLoad,
-			pageSize: 5,
+			pageSize: PAGE_SIZE_COMMENTS,
 			pin_id: comment.pin_id
 		})) as IComment[]
 
@@ -123,7 +126,7 @@ export default function Comment({
 							<Heart className="h-4 w-4" />
 						</Button>
 						<span className="text-xs text-muted-foreground">{comment.likes} likes</span>
-						{!isReply && (
+						{!isReply && isAllowedComment && (
 							<Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleReplyClick}>
 								<MessageSquare className="h-4 w-4" />
 							</Button>
@@ -167,7 +170,7 @@ export default function Comment({
 				{repliesLoaded &&
 					replies.map((reply) => (
 						<div key={reply._id} className="py-2">
-							<Comment key={reply._id} comment={reply} isReply={true} onDelete={handleDeleteReply}/>
+							<Comment isAllowedComment={isAllowedComment} key={reply._id} comment={reply} isReply={true} onDelete={handleDeleteReply}/>
 						</div>
 					))}
 				{repliesLoaded && hasMore && (

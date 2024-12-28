@@ -77,10 +77,14 @@ export default function BoardPreview({
 							onClick={(e) => {
 								e.preventDefault()
 								onOpenEdit(_id, {
-									title,
-									description,
-									coverImage: coverImages[0]?.url,
-									secret
+									_id,
+                                    user_id: user.id,
+                                    title,
+                                    description,
+                                    secret,
+                                    coverImages,
+                                    pinCount,
+                                    createdAt
 								})
 							}}
                             data-prevent-nprogress={true}

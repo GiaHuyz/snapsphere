@@ -2,6 +2,11 @@ import { getBoardsAction } from '@/actions/board-actions'
 import CreatePinForm from '@/components/create-pin-form'
 import { isActionError } from '@/lib/errors'
 import { auth } from '@clerk/nextjs/server'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: 'Snapsphere | Create Pin'
+}
 
 export default async function CreatePinPage() {
 	const { userId } = await auth()

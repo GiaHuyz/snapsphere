@@ -7,10 +7,14 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { useBoardDropdownStore } from '@/hooks/use-board-dropdown-store'
+import { useBoardPreviewStore } from '@/hooks/use-board-preview-store'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { isActionError } from '@/lib/errors'
+import { checkUserPage } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -27,7 +31,10 @@ export type createBoardData = z.infer<typeof createBoardSchema>
 
 export default function CreateBoardModal() {
 	const { isOpen, onClose, pin } = useCreateBoardModal()
+	const { boards, setBoards } = useBoardDropdownStore()
+	const { boardsPreview, setBoardsPreview } = useBoardPreviewStore()
 	const [isLoading, setIsLoading] = useState(false)
+	const pathname = usePathname()
 
 	const form = useForm<createBoardData>({
 		resolver: zodResolver(createBoardSchema),
@@ -42,19 +49,30 @@ export default function CreateBoardModal() {
 		setIsLoading(true)
 
 		const newBoard = await createBoardAction(data)
-        
+
 		if (isActionError(newBoard)) {
-            toast.error(newBoard.error)
+			toast.error(newBoard.error)
 		} else {
-            toast.success('Board created')
+			toast.success('Board created')
 			onClose()
 			form.reset()
-            if (pin?._id) {
-                await savePinToBoardAction({
-                    pin_id: pin._id,
-                    board_id: newBoard._id
-                })
-            }
+			if (pin?._id) {
+				await savePinToBoardAction({
+					pin_id: pin._id,
+					board_id: newBoard._id
+				})
+                if(newBoard.coverImages.length < 3) {
+                    newBoard.coverImages.push({
+                        _id: pin._id,
+                        url: pin.url
+                    })
+                    newBoard.pinCount++
+                }
+			}
+            setBoards([newBoard, ...boards])
+			if (checkUserPage(pathname)) {
+				setBoardsPreview([newBoard, ...boardsPreview])
+			}
 		}
 
 		setIsLoading(false)

@@ -8,3 +8,12 @@ export function cn(...inputs: ClassValue[]) {
 export function getPublicId(url: string): string {
 	return url.split('/').slice(-2).join('/').split('.')[0]
 }
+
+export function checkUserPage(pathname: string): boolean {
+    return /^\/user\/[^\/]+\/?$/.test(pathname)
+}
+
+export function checkBoardDetailsPage(pathname: string): boolean {
+    return /^\/user\/[^\/]+\/[^\/]+\/?$/.test(pathname)
+}
+

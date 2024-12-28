@@ -34,10 +34,14 @@ export class BoardsService extends GenericService<BoardDocument> {
             filter['secret'] = false
         }
 
+        if(query['sort'] && query['sort'] === 'pinCount') {
+            query['sort'] = { pinCount: -1 }
+        }
+
 		return await super.baseFindAll(query, filter, {
 			path: 'coverImages',
 			select: 'url'
-		})
+		}, query['sort'])
 	}
 
 	async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {

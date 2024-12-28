@@ -17,11 +17,17 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { useBoardDetailStore } from '@/hooks/use-board-detail-store'
+import { useBoardDropdownStore } from '@/hooks/use-board-dropdown-store'
+import { useBoardPreviewStore } from '@/hooks/use-board-preview-store'
 import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
 import { isActionError } from '@/lib/errors'
+import { checkBoardDetailsPage, checkUserPage } from '@/lib/utils'
+import { useUser } from '@clerk/nextjs'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Pencil } from 'lucide-react'
 import Image from 'next/image'
+import { redirect, usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -37,8 +43,14 @@ export type EditBoardData = z.infer<typeof editBoardSchema>
 
 export default function EditBoardModal() {
 	const { isOpen, onClose, boardId, boardData } = useEditBoardModal()
+	const { boards, setBoards } = useBoardDropdownStore()
+	const { boardsPreview, setBoardsPreview } = useBoardPreviewStore()
+	const { board, setBoard } = useBoardDetailStore()
 	const [isLoading, setIsLoading] = useState(false)
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+	const pathname = usePathname()
+	const { user } = useUser()
+	const router = useRouter()
 
 	const form = useForm<EditBoardData>({
 		resolver: zodResolver(editBoardSchema),
@@ -64,9 +76,9 @@ export default function EditBoardModal() {
 		if (!boardId) return
 
 		setIsLoading(true)
-        if(data.title === boardData?.title) {
-            delete data.title
-        }
+		if (data.title === boardData?.title) {
+			delete data.title
+		}
 		const res = await editBoardAction({
 			_id: boardId,
 			...data
@@ -76,6 +88,22 @@ export default function EditBoardModal() {
 			toast.error(res.error)
 		} else {
 			toast.success('Board updated successfully')
+			if (checkUserPage(pathname)) {
+				const updatedBoards = boards.map((b) =>
+					b._id === boardId ? { ...res, coverImages: b.coverImages } : b
+				)
+				setBoards(updatedBoards)
+				const updatedBoardsPreview = boardsPreview.map((b) =>
+					b._id === boardId ? { ...res, coverImages: b.coverImages } : b
+				)
+				setBoardsPreview(updatedBoardsPreview)
+			} else if (checkBoardDetailsPage(pathname)) {
+				res.coverImages = board.coverImages
+				setBoard(res)
+				const newPathname = pathname.split('/')
+				newPathname[newPathname.length - 1] = res.title
+				router.replace(newPathname.join('/'))
+			}
 			onClose()
 		}
 
@@ -91,14 +119,16 @@ export default function EditBoardModal() {
 		if (isActionError(res)) {
 			toast.error(res.error)
 		} else {
-			// Update state
-			// const filteredBoards = boardsDropdown.filter((board) => board._id !== boardId)
-			// setBoardsDropdown(filteredBoards)
-			// setBoardPreview(filteredBoards)
 			toast.success('Board deleted successfully')
+			if (checkUserPage(pathname)) {
+				const updatedBoards = boards.filter((b) => b._id !== boardId)
+				setBoards(updatedBoards)
+				const updatedBoardsPreview = boardsPreview.filter((b) => b._id !== boardId)
+				setBoardsPreview(updatedBoardsPreview)
+			} else if (checkBoardDetailsPage(pathname)) {
+				redirect(`/user/${user?.id}`)
+			}
 		}
-
-		// mutation.mutate(boardId)
 
 		setShowDeleteAlert(false)
 		setIsLoading(false)
@@ -114,12 +144,16 @@ export default function EditBoardModal() {
 					</DialogHeader>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)}>
-							<div className={`grid gap-4 py-4 ${boardData?.coverImage ? 'grid-cols-1' : 'grid-cols-1'}`}>
+							<div
+								className={`grid gap-4 py-4 ${
+									boardData?.coverImages[0] ? 'grid-cols-1' : 'grid-cols-1'
+								}`}
+							>
 								<div className="space-y-4">
-									{boardData?.coverImage && (
+									{boardData?.coverImages[0] && (
 										<div className="relative w-[140px] h-[140px] cursor-pointer">
 											<Image
-												src={boardData.coverImage}
+												src={boardData.coverImages[0].url}
 												alt="Board cover"
 												width={140}
 												height={140}

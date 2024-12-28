@@ -2,9 +2,9 @@ import { BoardPin, BoardPinDocument } from '@/board-pin/board-pin.schema'
 import { CreateBoardPinDto } from '@/board-pin/dto/create-board-pin.dto'
 import { BoardsService } from '@/boards/boards.service'
 import { GenericService } from '@/common/generic/generic.service'
-import { Pin, PinDocument } from '@/pins/pin.schema'
+import { checkOwnership } from '@/common/utils/check-owner-ship.util'
 import { PinsService } from '@/pins/pins.service'
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { FilterBoardPinDto } from './dto/filter-board-pin.dto'
@@ -13,9 +13,8 @@ import { FilterBoardPinDto } from './dto/filter-board-pin.dto'
 export class BoardPinService extends GenericService<BoardPinDocument> {
 	constructor(
 		@InjectModel(BoardPin.name) private readonly boardPinModel: Model<BoardPinDocument>,
-		@InjectModel(Pin.name) private readonly pinModel: Model<PinDocument>,
-		private readonly boardService: BoardsService,
-		private readonly pinService: PinsService
+		@Inject(forwardRef(() => BoardsService)) private readonly boardService: BoardsService,
+		@Inject(forwardRef(() => PinsService)) private readonly pinService: PinsService
 	) {
 		super(boardPinModel)
 	}
@@ -103,5 +102,23 @@ export class BoardPinService extends GenericService<BoardPinDocument> {
 			// session.endSession();
 			throw error
 		}
+	}
+
+	async delete(userId: string, id: string) {
+		const boardPin = await this.baseFindOne(id)
+
+		// check if the user is the owner of the board pin
+		checkOwnership(boardPin, userId)
+
+		const pin = await this.pinService.baseFindOne(boardPin.pin_id.toString())
+		pin.saveCount = pin.saveCount - 1
+
+		const board = await this.boardService.baseFindOne(boardPin.board_id)
+		board.pinCount = board.pinCount - 1
+
+		// delete board pin
+		await Promise.all([this.boardPinModel.findByIdAndDelete(id), pin.save(), board.save()])
+
+		return { message: 'Board pin deleted successfully' }
 	}
 }
