@@ -7,6 +7,7 @@ import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model } from 'mongoose'
 import { UpdateBoardDto } from './dto/update-board.dto'
+import { FilterBoardDto } from './dto/filter-board.dto'
 
 @Injectable()
 export class BoardsService extends GenericService<BoardDocument> {
@@ -17,31 +18,26 @@ export class BoardsService extends GenericService<BoardDocument> {
 		super(boardModel)
 	}
 
-	async findAll(userId: string, query: any): Promise<BoardDocument[]> {
-        const filterKey = ['title', 'user_id']
-        const filter = {}
+	async findAll(query: FilterBoardDto, userId?: string): Promise<BoardDocument[]> {
+		// extract query parameters
+		const { user_id, title, description, secret, pinCountMin, pinCountMax } = query
+		// build filter conditions
+		const filterConditions: any = {}
 
-        for (const key of filterKey) {
-            if (query[key]) {
-                if(key === 'title') {
-                    query[key] = { $regex: `^${query[key]}$`, $options: 'i' }
-                }
-                filter[key] = query[key]
-            }
-        }
+		if (user_id) filterConditions.user_id = user_id
+		if (title) filterConditions.title = { $regex: title, $options: 'i' }
+		if (description) filterConditions.description = { $regex: description, $options: 'i' }
+		if (pinCountMin) filterConditions.pinCount = { $gte: pinCountMin }
+		if (pinCountMax) filterConditions.pinCount = { $lte: pinCountMax }
+		filterConditions.secret = false // only public boards can be fetched
 
-        if(filter['user_id'] && filter['user_id'] !== userId) {
-            filter['secret'] = false
-        }
+		// only authenticated users can get their own boards
+		const currentUserId = userId;
+		if (currentUserId && secret) {
+			filterConditions.secret = secret
+		}
 
-        if(query['sort'] && query['sort'] === 'pinCount') {
-            query['sort'] = { pinCount: -1 }
-        }
-
-		return await super.baseFindAll(query, filter, {
-			path: 'coverImages',
-			select: 'url'
-		}, query['sort'])
+		return await this.baseFindAll(query, filterConditions);
 	}
 
 	async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {

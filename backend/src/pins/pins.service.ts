@@ -9,6 +9,9 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service'
 import { CreatePinDto } from './dto/create-pin.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
 import { Pin, PinDocument } from './pin.schema'
+import { v2 as cloudinary } from 'cloudinary'
+import { FilterPinDto } from './dto/filter-pin.dto'
+import { buildRangeFilter } from '@/common/utils/build-range-filter'
 
 @Injectable()
 export class PinsService extends GenericService<PinDocument> {
@@ -21,20 +24,44 @@ export class PinsService extends GenericService<PinDocument> {
 		super(pinModel)
 	}
 
-	async findAll(query: any): Promise<PinDocument[]> {
-		const filterKey = ['title', 'user_id']
-		const filter = {}
+	async findAll(
+		query: FilterPinDto,
+		userId: string): Promise<PinDocument[]> {
+		// extract query parameters
+		const {
+			user_id,
+			title,
+			description,
+			saveCountMin,
+			saveCountMax,
+			likeCountMin,
+			likeCountMax,
+			commentCountMin,
+			commentCountMax
+		} = query
+		// build filter conditions
+		const filter: any = {}
 
-		for (const key of filterKey) {
-			if (query[key]) {
-				if (key === 'title') {
-					query[key] = { $regex: query[key], $options: 'i' }
-				}
-				filter[key] = query[key]
-			}
-		}
+		if (user_id) filter.user_id = user_id
+		if (title) filter.title = { $regex: title, $options: 'i' }
+		if (description) filter.description = { $regex: description, $options: 'i' }
 
-		return this.baseFindAll(query, filter)
+		// Add range filters only if they are valid
+		const saveCountFilter = buildRangeFilter(saveCountMin, saveCountMax);
+		const likeCountFilter = buildRangeFilter(likeCountMin, likeCountMax);
+		const commentCountFilter = buildRangeFilter(commentCountMin, commentCountMax);
+
+		if (saveCountFilter) filter.saveCount = saveCountFilter;
+		if (likeCountFilter) filter.likeCount = likeCountFilter;
+		if (commentCountFilter) filter.commentCount = commentCountFilter;
+
+		// TODO: only owner can view their private pin
+		// only authenticated users can get their own pins
+		// if (userId && ) {
+		// }
+
+
+		return this.baseFindAll(query, filter);
 	}
 
 	/**

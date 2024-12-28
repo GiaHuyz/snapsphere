@@ -15,7 +15,6 @@ export class BoardPinController extends GenericController<BoardPinDocument> {
 		super(boardPinService)
 	}
 
-
 	@ApiOperation({
 		summary: 'Get all pin-board',
 		description: 'Get all pin-board relationships'
