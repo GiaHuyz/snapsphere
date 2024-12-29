@@ -39,6 +39,7 @@ export default function Pin({ pin, boardsDropdown }: PinProps) {
 				width={300}
 				height={300}
 				className="object-fill w-full max-h-[508px]"
+                priority
 			/>
 
 			<Link href={`/pin/${pin._id}`}>

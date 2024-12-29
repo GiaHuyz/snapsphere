@@ -1,6 +1,7 @@
 'use client'
 
-import { deletePinAction, editPinAction } from '@/actions/pin-actions'
+import { deletePinAction, deletePinFromBoardAction, editPinAction } from '@/actions/pin-actions'
+import { createPinSchema } from '@/components/create-pin-form'
 import { LoaderButton } from '@/components/loading-button'
 import {
 	AlertDialog,
@@ -20,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
 import { usePinStore } from '@/hooks/use-pin-store'
 import { isActionError } from '@/lib/errors'
-import { checkUserPage } from '@/lib/utils'
+import { checkBoardDetailsPage, checkUserPage } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import NextImage from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -29,13 +30,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
-const editPinSchema = z.object({
-	title: z.string().max(50, 'Title must be 50 characters or less').optional().or(z.literal('')),
-	description: z.string().max(160, 'Description must be 160 characters or less').optional().or(z.literal('')),
-	referenceLink: z.string().url().optional().or(z.literal('')),
-	boardId: z.string().optional(),
-	isAllowedComment: z.boolean().default(true)
-})
+const editPinSchema = createPinSchema
 
 type EditPinFormValues = z.infer<typeof editPinSchema>
 
@@ -46,6 +41,7 @@ export default function EditPinModal() {
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const [formValues, setFormValues] = useState<EditPinFormValues | null>(null)
 	const pathname = usePathname()
+	console.log(checkBoardDetailsPage(pathname))
 
 	const form = useForm<EditPinFormValues>({
 		resolver: zodResolver(editPinSchema),
@@ -65,7 +61,8 @@ export default function EditPinModal() {
 				description: pin.description,
 				referenceLink: pin.referenceLink,
 				isAllowedComment: pin.isAllowedComment,
-				boardId: ''
+				boardId: '',
+				secret: pin.secret
 			}
 			setFormValues(initialValues)
 			form.reset(initialValues)
@@ -80,7 +77,8 @@ export default function EditPinModal() {
 			currentValues.description !== formValues.description ||
 			currentValues.referenceLink !== formValues.referenceLink ||
 			currentValues.isAllowedComment !== formValues.isAllowedComment ||
-			currentValues.boardId !== formValues.boardId
+			currentValues.boardId !== formValues.boardId ||
+			currentValues.secret !== formValues.secret
 		)
 	}
 
@@ -108,14 +106,20 @@ export default function EditPinModal() {
 
 	const onDelete = async () => {
 		setIsLoading(true)
-		const res = await deletePinAction(pin!._id)
+		let res
+
+        if(checkBoardDetailsPage(pathname)) {
+            res = await deletePinFromBoardAction(pin!.board_pin_id)
+        } else {
+            res = await deletePinAction(pin!._id)
+        }
 
 		if (isActionError(res)) {
 			toast.error(res.error)
 		} else {
 			toast.success('Pin deleted successfully')
 			onClose()
-			if (checkUserPage(pathname)) {
+			if (checkUserPage(pathname) || checkBoardDetailsPage(pathname)) {
 				const updatedPins = pins.filter((p) => p._id !== pin!._id)
 				setPins(updatedPins)
 			}
@@ -215,6 +219,24 @@ export default function EditPinModal() {
 											</FormItem>
 										)}
 									/>
+
+									<FormField
+										control={form.control}
+										name="secret"
+										render={({ field }) => (
+											<FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+												<div className="space-y-0.5">
+													<FormLabel className="text-base">Secret</FormLabel>
+													<FormDescription>
+														Enable or disable secret on this pin
+													</FormDescription>
+												</div>
+												<FormControl>
+													<Switch checked={field.value} onCheckedChange={field.onChange} />
+												</FormControl>
+											</FormItem>
+										)}
+									/>
 								</div>
 							</div>
 							<DialogFooter className="flex gap-2 justify-between sm:justify-between">
@@ -224,7 +246,7 @@ export default function EditPinModal() {
 									onClick={() => setShowDeleteAlert(true)}
 									isLoading={isLoading}
 								>
-									Delete
+									{checkBoardDetailsPage(pathname) ? 'Delete From Board' : 'Delete'}
 								</LoaderButton>
 								<LoaderButton
 									type="submit"
@@ -244,8 +266,8 @@ export default function EditPinModal() {
 					<AlertDialogHeader>
 						<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
 						<AlertDialogDescription>
-							This action cannot be undone. This will permanently delete your board and remove all pins
-							associated with it.
+							This action cannot be undone. This will permanently delete{' '}
+							{checkBoardDetailsPage(pathname) ? 'this pin from the board' : 'this pin from all boards and its comments'}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

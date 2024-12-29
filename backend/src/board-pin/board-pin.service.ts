@@ -6,7 +6,7 @@ import { checkOwnership } from '@/common/utils/check-owner-ship.util'
 import { PinsService } from '@/pins/pins.service'
 import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { FilterBoardPinDto } from './dto/filter-board-pin.dto'
 
 @Injectable()
@@ -19,9 +19,9 @@ export class BoardPinService extends GenericService<BoardPinDocument> {
 		super(boardPinModel)
 	}
 
-	async findAll(query: FilterBoardPinDto): Promise<BoardPinDocument[]> {
+	async findAll(query: FilterBoardPinDto, userId?: string): Promise<BoardPinDocument[]> {
 		// extract query parameters
-		const { user_id, board_id, pin_id } = query
+		const { user_id, board_id, pin_id, page = 1, pageSize = 10 } = query
 		// build filter conditions
 		const filterConditions: any = {}
 
@@ -29,12 +29,77 @@ export class BoardPinService extends GenericService<BoardPinDocument> {
 		if (board_id) filterConditions.board_id = board_id
 		if (pin_id) filterConditions.pin_id = pin_id
 
-		return await this.baseFindAll(query, filterConditions, 'pin_id')
+		for (const [key, value] of Object.entries(filterConditions)) {
+			// convert ObjectId to string
+			if (key === 'board_id' || key === 'pin_id') {
+				filterConditions[key] = Types.ObjectId.createFromHexString(value as string)
+			}
+		}
+
+		const boardsPin = await this.boardPinModel.aggregate([
+			{ $match: filterConditions },
+			{
+				$lookup: {
+					from: 'boards',
+					localField: 'board_id',
+					foreignField: '_id',
+					as: 'board'
+				}
+			},
+			{ $unwind: '$board' },
+			{
+				$lookup: {
+					from: 'pins',
+					localField: 'pin_id',
+					foreignField: '_id',
+					as: 'pin'
+				}
+			},
+			{ $unwind: '$pin' },
+			{
+				$project: {
+                    _id: 1,
+					user_id: 1,
+					board: {
+                        $cond: {
+                            if: { $eq: ['$board.user_id', userId] },
+                            then: '$board',
+                            else: { 
+                                $cond: {
+                                    if: { $eq: ['$board.secret', false] },
+                                    then: '$board',
+                                    else: undefined
+                                }
+                            }
+                        }
+                    },
+                    pin: {
+                        $cond: {
+                            if: { $eq: ['$pin.user_id', userId] },
+                            then: '$pin',
+                            else: { 
+                                $cond: {
+                                    if: { $eq: ['$pin.secret', false] },
+                                    then: '$pin',
+                                    else: undefined
+                                }
+                            }
+                        }
+                    }
+				}
+			},
+            {
+                $skip: (page - 1) * pageSize
+            },
+            {
+                $limit: pageSize
+            }
+		])
+
+		return boardsPin
 	}
 
 	async create(userId: string, createBoardPinDto: CreateBoardPinDto): Promise<BoardPinDocument> {
-		// TODO: Tìm các thêm transaction vào hàm này
-
 		// check if board exists
 		const board = await this.boardService.baseFindOne(createBoardPinDto.board_id.toString())
 
@@ -56,52 +121,25 @@ export class BoardPinService extends GenericService<BoardPinDocument> {
 			throw new BadRequestException(['Pin already in the board'])
 		}
 
-		// use transaction to ensure data consistency
-		// const session = await startSession();
-		// session.startTransaction();
+		// add pin to cover images when cover images is less than 3
+		if (board.coverImages.length < 3) {
+			board.coverImages.push(createBoardPinDto.pin_id)
+		}
 
-		try {
-			// add pin to cover images when cover images is less than 3
-			if (board.coverImages.length < 3) {
-				board.coverImages.push(createBoardPinDto.pin_id)
-			}
+		board.pinCount = board.pinCount + 1
+		pin.saveCount = pin.saveCount + 1
 
-			// add pin to board and update pin count
-			// const newBoardPin = await this.boardPinModel.create([{
-			// 	user_id: userId,
-			// 	board_id: createBoardPinDto.board_id,
-			// 	pin_id: createBoardPinDto.pin_id
-			// }, { session }]);
-
-			const newBoardPin = await this.boardPinModel.create({
+		const [newBoardPin] = await Promise.all([
+			this.boardPinModel.create({
 				user_id: userId,
 				board_id: createBoardPinDto.board_id,
 				pin_id: createBoardPinDto.pin_id
-			})
+			}),
+			board.save(),
+			pin.save()
+		])
 
-			// update board pin count
-			// board.pinCount = board.pinCount + 1
-			// await board.save({ session });
-
-			// update board pin count
-			board.pinCount = board.pinCount + 1
-			await board.save()
-
-			// update pin save count
-			// pin.saveCount = pin.saveCount + 1
-			// await pin.save({ session });
-			pin.saveCount = pin.saveCount + 1
-			await pin.save()
-
-			// commit transaction
-			// await session.commitTransaction();
-			// session.endSession(); // Đừng để quên dòng này
-			return newBoardPin
-		} catch (error) {
-			// await session.abortTransaction();
-			// session.endSession();
-			throw error
-		}
+		return newBoardPin
 	}
 
 	async delete(userId: string, id: string) {
@@ -115,6 +153,7 @@ export class BoardPinService extends GenericService<BoardPinDocument> {
 
 		const board = await this.boardService.baseFindOne(boardPin.board_id)
 		board.pinCount = board.pinCount - 1
+        board.coverImages = board.coverImages.filter((id) => id.toString() !== boardPin.pin_id.toString())
 
 		// delete board pin
 		await Promise.all([this.boardPinModel.findByIdAndDelete(id), pin.save(), board.save()])

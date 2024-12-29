@@ -20,11 +20,9 @@ export class BoardPinController extends GenericController<BoardPinDocument> {
 		description: 'Get all pin-board relationships'
 	})
 	@Get()
-	async findAll(@Query() query: FilterBoardPinDto): Promise<BoardPinDocument[]> {
-		return this.boardPinService.findAll(query);
+	async findAll(@Query() query: FilterBoardPinDto, @UserId() userId?: string): Promise<BoardPinDocument[]> {
+		return this.boardPinService.findAll(query, userId);
 	}
-
-	
 
 	@ApiOperation({
 		summary: 'Save a pin to a board',

@@ -111,7 +111,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 								</Link>
 							</div>
 						)}
-						<PinList initialPins={pins} boardsDropdown={boardsDropdown} />
+						<PinList pageName='User' initialPins={pins} boardsDropdown={boardsDropdown} />
 					</TabsContent>
 
 					<TabsContent forceMount value="saved" className="mt-2 data-[state=inactive]:hidden">

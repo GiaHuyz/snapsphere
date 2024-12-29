@@ -1,8 +1,7 @@
 import { Board, getBoardsAction } from '@/actions/board-actions'
-import { getPinsByBoardIdAction, Pin as PinType } from '@/actions/pin-actions'
+import { getPinsByBoardIdAction } from '@/actions/pin-actions'
 import BoardHeader from '@/components/board-header'
-import MansoryLayout from '@/components/mansory-layout'
-import Pin from '@/components/pin'
+import PinList from '@/components/pin-list'
 import { isActionError, ServerActionResponse } from '@/lib/errors'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 
@@ -69,7 +68,15 @@ export default async function BoardPage({ params }: { params: Promise<{ username
 	}
 
 	const board = boards[0]
-	const pins = await getPinsByBoardIdAction(board._id)
+	const pins = await getPinsByBoardIdAction({ board_id: board._id })
+
+	if (isActionError(pins)) {
+		return (
+			<div>
+				<h1>Something went wrong</h1>
+			</div>
+		)
+	}
 
 	return (
 		<>
@@ -77,11 +84,12 @@ export default async function BoardPage({ params }: { params: Promise<{ username
 				<BoardHeader initBoard={board} user={JSON.parse(JSON.stringify(user))} isOwner={userId === user.id} />
 			</div>
 			<div className="mt-8">
-				<MansoryLayout className="xl:columns-6">
-					{(pins as unknown as { pin_id: PinType }[]).map(({ pin_id: pin }) => (
-						<Pin key={pin._id} pin={pin} boardsDropdown={boardsDropdown} />
-					))}
-				</MansoryLayout>
+				<PinList
+					pageName="BoardDetail"
+					boardId={board._id}
+					boardsDropdown={boardsDropdown}
+					initialPins={pins}
+				/>
 			</div>
 		</>
 	)

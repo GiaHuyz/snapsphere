@@ -21,12 +21,13 @@ import { usePinTransModal } from '@/hooks/use-pin-trans-modal'
 import { isActionError } from '@/lib/errors'
 import { toast } from 'sonner'
 
-const createPinSchema = z.object({
+export const createPinSchema = z.object({
 	title: z.string().max(50, 'Title must be 50 characters or less').optional(),
 	description: z.string().max(160, 'Description must be 160 characters or less').optional().or(z.literal('')),
-	link: z.string().url().optional().or(z.literal('')),
+	referenceLink: z.string().url().optional().or(z.literal('')),
 	boardId: z.string().optional().or(z.literal('')),
-	allowComments: z.boolean().default(true)
+	isAllowedComment: z.boolean().default(true),
+	secret: z.boolean().default(false)
 })
 
 type CreatePinFormValues = z.infer<typeof createPinSchema>
@@ -43,39 +44,43 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 		defaultValues: {
 			title: '',
 			description: '',
-			link: '',
+			referenceLink: '',
 			boardId: '',
-			allowComments: true
+			isAllowedComment: true,
+			secret: false
 		}
 	})
 
-	const onDrop = useCallback((acceptedFiles: File[]) => {
-		const file = acceptedFiles[0]
-		if (file) {
-			if (file.size > 20 * 1024 * 1024) {
-				toast.error('Image too large. Please upload an image less than 20 MB in size.')
-				return
-			}
-
-			const image = new Image()
-
-			image.onload = async () => {
-				if (image.width < 200 || image.height < 300) {
-					toast.error('Image too small. Please upload an image with a minimum size of 200x300.')
-					setErrorUpload('Image too small. Please upload an image with a minimum size of 200x300.')
+	const onDrop = useCallback(
+		(acceptedFiles: File[]) => {
+			const file = acceptedFiles[0]
+			if (file) {
+				if (file.size > 20 * 1024 * 1024) {
+					toast.error('Image too large. Please upload an image less than 20 MB in size.')
 					return
-				} else {
-					setErrorUpload(null)
-					setImageFile(file)
-					const preview = URL.createObjectURL(file)
-                    setCurrentImage(preview)
-					setImagePreview(preview)
 				}
-			}
 
-			image.src = URL.createObjectURL(file)
-		}
-	}, [setCurrentImage, setImagePreview])
+				const image = new Image()
+
+				image.onload = async () => {
+					if (image.width < 200 || image.height < 300) {
+						toast.error('Image too small. Please upload an image with a minimum size of 200x300.')
+						setErrorUpload('Image too small. Please upload an image with a minimum size of 200x300.')
+						return
+					} else {
+						setErrorUpload(null)
+						setImageFile(file)
+						const preview = URL.createObjectURL(file)
+						setCurrentImage(preview)
+						setImagePreview(preview)
+					}
+				}
+
+				image.src = URL.createObjectURL(file)
+			}
+		},
+		[setCurrentImage, setImagePreview]
+	)
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop,
@@ -94,20 +99,20 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 		setIsLoading(true)
 		const formData = new FormData()
 
-		const optionalKeys: (keyof CreatePinFormValues)[] = ['title', 'description', 'link']
+		const optionalKeys: (keyof CreatePinFormValues)[] = ['title', 'description', 'referenceLink']
 		optionalKeys.forEach((key) => {
 			if (data[key]) {
 				formData.append(key, data[key] as string)
 			}
 		})
 
-		formData.append('isAllowedComment', data.allowComments.toString())
+		formData.append('isAllowedComment', data.isAllowedComment.toString())
 
-        if(imagePreview?.includes('cloudinary')) {
-            formData.append('url', imagePreview)
-        } else {
-            formData.append('image', imageFile)
-        }
+		if (imagePreview?.includes('cloudinary')) {
+			formData.append('url', imagePreview)
+		} else {
+			formData.append('image', imageFile)
+		}
 
 		const res = await createPin(formData)
 
@@ -183,7 +188,7 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 											e.stopPropagation()
 											setImageFile(null)
 											setImagePreview(null)
-                                            setCurrentImage(null)
+											setCurrentImage(null)
 											onClose()
 										}}
 									>
@@ -241,7 +246,7 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 
 						<FormField
 							control={form.control}
-							name="link"
+							name="referenceLink"
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Link</FormLabel>
@@ -302,11 +307,26 @@ export default function CreatePinForm({ boardsDropdown }: { boardsDropdown: Boar
 
 						<FormField
 							control={form.control}
-							name="allowComments"
+							name="isAllowedComment"
 							render={({ field }) => (
 								<FormItem className="flex flex-row items-center justify-between rounded-lg">
 									<div className="space-y-0.5">
 										<FormLabel className="text-base">Allow people to comment</FormLabel>
+									</div>
+									<FormControl>
+										<Switch checked={field.value} onCheckedChange={field.onChange} />
+									</FormControl>
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="secret"
+							render={({ field }) => (
+								<FormItem className="flex flex-row items-center justify-between rounded-lg">
+									<div className="space-y-0.5">
+										<FormLabel className="text-base">Secret</FormLabel>
 									</div>
 									<FormControl>
 										<Switch checked={field.value} onCheckedChange={field.onChange} />

@@ -42,7 +42,7 @@ export class BoardsController {
 	}
 
 	@Delete(':id')
-	async delete(@UserId() userId: string, @Param('id') id: string): Promise<void> {
+	async delete(@UserId() userId: string, @Param('id') id: string) {
 		return this.boardsService.delete(id, userId)
 	}
 }

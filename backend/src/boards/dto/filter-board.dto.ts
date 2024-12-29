@@ -1,6 +1,7 @@
 // boards/dto/filter-board.dto.ts
 import { BaseFilterDto } from '@/common/dto/filter-base.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsOptional, IsMongoId, IsBoolean, IsString, MaxLength } from 'class-validator';
 
 export class FilterBoardDto extends BaseFilterDto {
@@ -8,6 +9,7 @@ export class FilterBoardDto extends BaseFilterDto {
     description: 'Filter by the user ID who owns the board',
   })
   @IsOptional()
+  @IsString()
   user_id?: string;
 
   @ApiPropertyOptional({
@@ -25,13 +27,6 @@ export class FilterBoardDto extends BaseFilterDto {
   @IsString()
   @MaxLength(160)
   description?: string;
-
-  @ApiPropertyOptional({
-    description: 'Filter by whether the board is secret or public (you can only see your own secret boards)',
-  })
-  @IsOptional()
-  @IsBoolean()
-  secret?: boolean;
 
   @ApiPropertyOptional({
     description: 'Filter by the minimum number of pins in the board',

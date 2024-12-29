@@ -55,10 +55,7 @@ export class PinsService extends GenericService<PinDocument> {
 		if (likeCountFilter) filter.likeCount = likeCountFilter;
 		if (commentCountFilter) filter.commentCount = commentCountFilter;
 
-		// TODO: only owner can view their private pin
-		// only authenticated users can get their own pins
-		// if (userId && ) {
-		// }
+		if(userId !== user_id) filter.secret = false
 
 
 		return this.baseFindAll(query, filter);

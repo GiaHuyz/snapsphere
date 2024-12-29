@@ -74,12 +74,7 @@ export const getBoardsAction = createServerAction<QueryParams, Board[]>(
                 .map(([key, value]) => `${key}=${value}`)
                 .join('&')
 
-			const boards = await HttpRequest.get<Board[]>(`/boards?${queryString}`, {
-				cache: 'force-cache',
-				next: {
-					tags: ['boards']
-				}
-			})
+			const boards = await HttpRequest.get<Board[]>(`/boards?${queryString}`)
 			return boards
 		} catch (error) {
 			if (error instanceof Error && error.message === 'Unauthorized') {

@@ -7,7 +7,7 @@ export class FilterPinDto extends BaseFilterDto {
     description: 'Filter by the user ID who owns the pin',
   })
   @IsOptional()
-  @IsMongoId()
+  @IsString()
   user_id?: string;
 
   @ApiPropertyOptional({

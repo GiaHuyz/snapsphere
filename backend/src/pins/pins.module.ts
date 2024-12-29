@@ -12,7 +12,7 @@ import { BoardPinModule } from '@/board-pin/board-pin.module'
 		MongooseModule.forFeature([{ name: Pin.name, schema: PinSchema }]),
 		CloudinaryModule,
 		forwardRef(() => BoardsModule),
-        BoardPinModule
+        forwardRef(() => BoardPinModule)
 	],
 	controllers: [PinsController],
 	providers: [PinsService],

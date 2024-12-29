@@ -29,6 +29,15 @@ export class CreatePinDto {
 	description?: string
 
 	@ApiProperty({
+		required: false,
+		description: 'If the pin is secret'
+	})
+	@IsOptional()
+	@IsBoolean()
+	@Transform(({ value }) => value === 'true' || value === true)
+	secret?: boolean
+
+	@ApiProperty({
 		required: true,
 		description: 'If the pin is allowed to be commented by other users'
 	})

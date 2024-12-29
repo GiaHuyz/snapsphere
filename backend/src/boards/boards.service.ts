@@ -8,11 +8,13 @@ import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model } from 'mongoose'
 import { UpdateBoardDto } from './dto/update-board.dto'
 import { FilterBoardDto } from './dto/filter-board.dto'
+import { BoardPin, BoardPinDocument } from '@/board-pin/board-pin.schema'
 
 @Injectable()
 export class BoardsService extends GenericService<BoardDocument> {
 	constructor(
 		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
+        @InjectModel(BoardPin.name) private readonly boardPinModel: Model<BoardPinDocument>,
 		private readonly pinService: PinsService
 	) {
 		super(boardModel)
@@ -20,7 +22,7 @@ export class BoardsService extends GenericService<BoardDocument> {
 
 	async findAll(query: FilterBoardDto, userId?: string): Promise<BoardDocument[]> {
 		// extract query parameters
-		const { user_id, title, description, secret, pinCountMin, pinCountMax } = query
+		const { user_id, title, description, pinCountMin, pinCountMax } = query
 		// build filter conditions
 		const filterConditions: any = {}
 
@@ -29,15 +31,17 @@ export class BoardsService extends GenericService<BoardDocument> {
 		if (description) filterConditions.description = { $regex: description, $options: 'i' }
 		if (pinCountMin) filterConditions.pinCount = { $gte: pinCountMin }
 		if (pinCountMax) filterConditions.pinCount = { $lte: pinCountMax }
-		filterConditions.secret = false // only public boards can be fetched
-
+        
 		// only authenticated users can get their own boards
 		const currentUserId = userId;
-		if (currentUserId && secret) {
-			filterConditions.secret = secret
+		if (currentUserId !== user_id) {
+            filterConditions.secret = false // only public boards can be fetched
 		}
 
-		return await this.baseFindAll(query, filterConditions);
+		return await this.baseFindAll(query, filterConditions, {
+            path: 'coverImages',
+            select: 'url'
+        });
 	}
 
 	async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {
@@ -83,7 +87,7 @@ export class BoardsService extends GenericService<BoardDocument> {
 		return this.boardModel.findByIdAndUpdate(id, document, { new: true })
 	}
 
-	async delete(id: string, userId: string): Promise<void> {
+	async delete(id: string, userId: string) {
 		// check if board exists
 		const board = await this.baseFindOne(id)
 
@@ -91,8 +95,12 @@ export class BoardsService extends GenericService<BoardDocument> {
 		checkOwnership(board, userId)
 
 		// delete board
-		// TODO: delete all pins in this board or not?
-		await this.boardModel.findByIdAndDelete(id)
+		await Promise.all([
+            this.boardModel.deleteOne({ _id: id }),
+            this.boardPinModel.deleteMany({ board_id: id })
+        ])
+
+        return { message: 'Board deleted successfully' }
 	}
 
 	private async checkPinsCoverExist(coverImageIds: Array<mongoose.Types.ObjectId>): Promise<void> {
