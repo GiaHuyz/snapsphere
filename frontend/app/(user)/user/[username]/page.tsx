@@ -1,12 +1,12 @@
-import { Board, getBoardsAction } from '@/actions/board-actions'
+import { getBoardsAction } from '@/actions/board-actions'
 import { getAllFollowsAction } from '@/actions/follow-actions'
 import { getAllPinsUserAction } from '@/actions/pin-actions'
-import BoardPreviewList from '@/components/board-preview-list'
 import FollowModal from '@/components/modals/follow-modal'
-import PinList from '@/components/pin-list'
+import BoardPreviewList from '@/components/pages/user/board-preview-list'
+import UserStats from '@/components/pages/user/user-stats'
+import PinList from '@/components/pin/pin-list'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import UserStats from '@/components/user-stats'
-import { isActionError, ServerActionResponse } from '@/lib/errors'
+import { isActionError } from '@/lib/errors'
 import currentUser from '@/lib/get-current-user'
 import { clerkClient } from '@clerk/nextjs/server'
 import { Plus } from 'lucide-react'
@@ -37,8 +37,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 		)
 	}
 
-	let boardsDropdown: ServerActionResponse<Board[]> = []
-
 	const [loginedUser, pins, boardsPreview, followers, following] = await Promise.all([
 		currentUser(),
 		getAllPinsUserAction({ user_id: user.id }),
@@ -47,17 +45,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 		getAllFollowsAction({ followerId: user.id })
 	])
 
-	if (loginedUser) {
-		boardsDropdown = await getBoardsAction({ user_id: loginedUser.id })
-	}
-
-	if (
-		isActionError(pins) ||
-		isActionError(boardsDropdown) ||
-		isActionError(boardsPreview) ||
-		isActionError(followers) ||
-		isActionError(following)
-	) {
+	if (isActionError(pins) || isActionError(boardsPreview) || isActionError(followers) || isActionError(following)) {
 		return (
 			<div className="flex items-center justify-center mt-20">
 				<div className="text-center">
@@ -97,7 +85,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 					</div>
 
 					<TabsContent forceMount value="created" className="mt-6 data-[state=inactive]:hidden">
-						{loginedUser!.username === username && pins.length === 0 && (
+						{loginedUser!.username === username && pins.data.length === 0 && (
 							<div className="max-w-[200px] mx-auto">
 								<Link href={`/create`}>
 									<button className="group relative aspect-square w-full overflow-hidden rounded-2xl border-2 border-dashed border-muted hover:border-muted-foreground">
@@ -111,7 +99,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 								</Link>
 							</div>
 						)}
-						<PinList pageName='User' initialPins={pins} boardsDropdown={boardsDropdown} />
+						<PinList pageName="User" initialPins={pins.data} />
 					</TabsContent>
 
 					<TabsContent forceMount value="saved" className="mt-2 data-[state=inactive]:hidden">

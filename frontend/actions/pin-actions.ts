@@ -18,8 +18,14 @@ export interface Pin {
 	likeCount: number
 	commentCount: number
 	board_pin_id: string
+	isLiked: boolean
 	createdAt: Date
 	updatedAt: Date
+}
+
+export interface PinPage {
+	data: Pin[]
+	totalPages: number
 }
 
 interface SavePinDto {
@@ -55,7 +61,7 @@ export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (d
 	}
 })
 
-export const getAllPinsUserAction = createServerAction<QueryParams, Pin[]>(
+export const getAllPinsUserAction = createServerAction<QueryParams, PinPage>(
 	async (queryParams) => {
 		try {
 			queryParams.page = queryParams.page || 1
@@ -65,7 +71,9 @@ export const getAllPinsUserAction = createServerAction<QueryParams, Pin[]>(
 				.filter(([, value]) => value !== undefined)
 				.map(([key, value]) => `${key}=${value}`)
 				.join('&')
-			const res = await HttpRequest.get<Pin[]>(`/pins?${queryString}`)
+			const res = await HttpRequest.get<PinPage>(`/pins?${queryString}`, {
+				cache: 'force-cache'
+			})
 			return res
 		} catch (error) {
 			return { error: getErrorMessage(error) }
@@ -130,14 +138,18 @@ export const getPinsByBoardIdAction = createServerAction<QueryParamsBoardPin, Pi
 			.map(([key, value]) => `${key}=${value}`)
 			.join('&')
 
-		const res = await HttpRequest.get<{ _id: string, pin: Pin }[]>(`/board-pin?${queryString}`)
+		const res = await HttpRequest.get<{ _id: string; pin: Pin }[]>(`/board-pin?${queryString}`, {
+			cache: 'force-cache'
+		})
 
-		return res.filter(({ pin }) => pin).map(({ _id, pin }) => {
-            return {
-                ...pin,
-                board_pin_id: _id
-            }
-        })
+		return res
+			.filter(({ pin }) => pin)
+			.map(({ _id, pin }) => {
+				return {
+					...pin,
+					board_pin_id: _id
+				}
+			})
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}

@@ -73,10 +73,71 @@ interface PaginationProps {
 }
 
 const Pagination = ({ currentPage, totalPages, onPageChange, className, ...props }: PaginationProps) => {
-	const pageNumbers = []
-	for (let i = 1; i <= totalPages; i++) {
-		pageNumbers.push(i)
+	const generatePageNumbers = () => {
+		const pageNumbers: (number | 'ellipsis')[] = []
+
+		// If total pages is 7 or less, show all pages without ellipsis
+		if (totalPages <= 7) {
+			for (let i = 1; i <= totalPages; i++) {
+				pageNumbers.push(i)
+			}
+			return pageNumbers
+		}
+
+		// For more than 7 pages, use the complex logic with ellipsis
+		const addEllipsis = () => {
+			if (pageNumbers[pageNumbers.length - 1] !== 'ellipsis') {
+				pageNumbers.push('ellipsis')
+			}
+		}
+
+		// Always add first 2 pages
+		pageNumbers.push(1)
+		if (totalPages > 1) pageNumbers.push(2)
+
+		// Add pages around current page
+		let rangeStart = Math.max(3, currentPage - 2)
+		let rangeEnd = Math.min(totalPages - 2, currentPage + 2)
+
+		// Adjust range to avoid small gaps
+		if (rangeStart <= 4) {
+			rangeStart = 3
+			rangeEnd = Math.min(totalPages - 2, 7)
+		}
+		if (rangeEnd >= totalPages - 3) {
+			rangeEnd = totalPages - 2
+			rangeStart = Math.max(3, totalPages - 6)
+		}
+
+		// Add ellipsis before range if needed
+		if (rangeStart > 3) {
+			addEllipsis()
+		}
+
+		// Add range numbers
+		for (let i = rangeStart; i <= rangeEnd; i++) {
+			pageNumbers.push(i)
+		}
+
+		// Add ellipsis after range if needed
+		if (rangeEnd < totalPages - 2) {
+			addEllipsis()
+		}
+
+		// Add last 2 pages
+		if (totalPages > 2) {
+			if (pageNumbers[pageNumbers.length - 1] !== totalPages - 1) {
+				pageNumbers.push(totalPages - 1)
+			}
+			if (pageNumbers[pageNumbers.length - 1] !== totalPages) {
+				pageNumbers.push(totalPages)
+			}
+		}
+
+		return pageNumbers
 	}
+
+	const pageNumbers = generatePageNumbers()
 
 	return (
 		<nav
@@ -94,19 +155,23 @@ const Pagination = ({ currentPage, totalPages, onPageChange, className, ...props
 						className={currentPage <= 1 ? 'pointer-events-none opacity-50' : undefined}
 					/>
 				</PaginationItem>
-				{pageNumbers.map((number) => (
-					<PaginationItem key={number} className='cursor-pointer'>
-						<PaginationLink isActive={currentPage === number} onClick={() => onPageChange(number)}>
-							{number}
-						</PaginationLink>
+				{pageNumbers.map((number, index) => (
+					<PaginationItem key={index} className='cursor-pointer'>
+						{number === 'ellipsis' ? (
+							<PaginationEllipsis />
+						) : (
+							<PaginationLink isActive={currentPage === number} onClick={() => onPageChange(number)}>
+								{number}
+							</PaginationLink>
+						)}
 					</PaginationItem>
 				))}
 				<PaginationItem className='cursor-pointer'>
 					<PaginationNext
 						onClick={() => onPageChange(currentPage + 1)}
-						aria-disabled={currentPage === totalPages}
-						tabIndex={currentPage === totalPages ? -1 : undefined}
-						className={currentPage === totalPages ? 'pointer-events-none opacity-50' : undefined}
+						aria-disabled={currentPage >= totalPages}
+						tabIndex={currentPage >= totalPages ? -1 : undefined}
+						className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : undefined}
 					/>
 				</PaginationItem>
 			</PaginationContent>

@@ -1,17 +1,17 @@
 import { BoardPin, BoardPinDocument } from '@/board-pin/board-pin.schema'
 import { Board, BoardDocument } from '@/boards/board.schema'
 import { GenericService } from '@/common/generic/generic.service'
+import { buildRangeFilter } from '@/common/utils/build-range-filter'
 import { checkOwnership } from '@/common/utils/check-owner-ship.util'
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { CloudinaryService } from '../cloudinary/cloudinary.service'
 import { CreatePinDto } from './dto/create-pin.dto'
+import { FilterPinDto } from './dto/filter-pin.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
 import { Pin, PinDocument } from './pin.schema'
-import { v2 as cloudinary } from 'cloudinary'
-import { FilterPinDto } from './dto/filter-pin.dto'
-import { buildRangeFilter } from '@/common/utils/build-range-filter'
+import { Like, LikeDocument } from '@/likes/like.shema'
 
 @Injectable()
 export class PinsService extends GenericService<PinDocument> {
@@ -19,14 +19,13 @@ export class PinsService extends GenericService<PinDocument> {
 		@InjectModel(Pin.name) private readonly pinModel: Model<PinDocument>,
 		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
 		@InjectModel(BoardPin.name) private readonly boardPinModel: Model<BoardPinDocument>,
+        @InjectModel(Like.name) private readonly likeModel: Model<LikeDocument>,
 		private readonly cloudinaryService: CloudinaryService
 	) {
 		super(pinModel)
 	}
 
-	async findAll(
-		query: FilterPinDto,
-		userId: string): Promise<PinDocument[]> {
+	async findAll(query: FilterPinDto, userId: string, isAdmin: boolean) {
 		// extract query parameters
 		const {
 			user_id,
@@ -47,18 +46,20 @@ export class PinsService extends GenericService<PinDocument> {
 		if (description) filter.description = { $regex: description, $options: 'i' }
 
 		// Add range filters only if they are valid
-		const saveCountFilter = buildRangeFilter(saveCountMin, saveCountMax);
-		const likeCountFilter = buildRangeFilter(likeCountMin, likeCountMax);
-		const commentCountFilter = buildRangeFilter(commentCountMin, commentCountMax);
+		const saveCountFilter = buildRangeFilter(saveCountMin, saveCountMax)
+		const likeCountFilter = buildRangeFilter(likeCountMin, likeCountMax)
+		const commentCountFilter = buildRangeFilter(commentCountMin, commentCountMax)
 
-		if (saveCountFilter) filter.saveCount = saveCountFilter;
-		if (likeCountFilter) filter.likeCount = likeCountFilter;
-		if (commentCountFilter) filter.commentCount = commentCountFilter;
+		if (saveCountFilter) filter.saveCount = saveCountFilter
+		if (likeCountFilter) filter.likeCount = likeCountFilter
+		if (commentCountFilter) filter.commentCount = commentCountFilter
 
-		if(userId !== user_id) filter.secret = false
+		if (userId !== user_id && !isAdmin) filter.secret = false
 
+		const data = await this.baseFindAll(query, filter)
+		const totalItems = await this.pinModel.countDocuments(filter)
 
-		return this.baseFindAll(query, filter);
+		return { data, totalPages: Math.ceil(totalItems / (query.pageSize || 10)) }
 	}
 
 	/**
@@ -89,6 +90,18 @@ export class PinsService extends GenericService<PinDocument> {
 		return newPin
 	}
 
+    async findOne(id: string, userId?: string) {
+        const pin = await this.baseFindOne(id)
+        let isLiked = false
+        if (userId) {
+            if (pin.secret && userId !== pin.user_id) throw new NotFoundException('Pin not found')
+            if (await this.likeModel.findOne({ item_id: pin._id, user_id: userId })) {
+                isLiked = true
+            }
+        }
+        return { ...pin.toObject(), isLiked }
+    }
+
 	/**
 	 * Updates a pin with the given data.
 	 *
@@ -101,41 +114,24 @@ export class PinsService extends GenericService<PinDocument> {
 	 * @throws {Error} If the pin does not exist.
 	 * @throws {Error} If the user is not the owner of the pin.
 	 */
-	async update(
-		id: string,
-		updatedPinDto: UpdatePinDto,
-		userId: string,
-		image?: Express.Multer.File
-	): Promise<PinDocument> {
+	async update(id: string, updatedPinDto: UpdatePinDto, userId: string): Promise<PinDocument> {
 		// check if the pin exists
 		const pin = await super.baseFindOne(id)
 
 		// check if the user is the owner of the pin
 		checkOwnership(pin, userId)
-
-		// if the user wants to update the image
-		if (image) {
-			// delete the old image from Cloudinary
-			await this.cloudinaryService.deleteFile(pin.url)
-
-			// upload the new image to Cloudinary
-			const uploadedImage = await this.cloudinaryService.uploadFile(image, userId)
-
-			// update the pin with the new image
-			pin.url = uploadedImage.secure_url
-		}
 
 		// update the pin with the new data
 		pin.set(updatedPinDto)
 		return await pin.save()
 	}
 
-	async delete(id: string, userId: string): Promise<void> {
+	async delete(id: string, userId: string, isAdmin?: boolean): Promise<void> {
 		// check if the pin exists
 		const pin = await super.baseFindOne(id)
 
 		// check if the user is the owner of the pin
-		checkOwnership(pin, userId)
+		if (!isAdmin) checkOwnership(pin, userId)
 
 		const boardIds = await this.boardPinModel.find({ pin_id: pin._id }).distinct('board_id')
 

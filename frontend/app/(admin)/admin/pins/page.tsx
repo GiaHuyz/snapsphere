@@ -1,7 +1,9 @@
-import { PinsTable } from '@/components/admin/pin-table'
+import { getAllPinsUserAction, PinPage } from '@/actions/pin-actions'
+import { PinsTable } from '@/components/pages/admin/pin-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function AdminPinsPage() {
+export default async function AdminPinsPage() {
+	const pins = (await getAllPinsUserAction({})) as PinPage
 	return (
 		<div className="space-y-4">
 			<h2 className="text-3xl font-bold tracking-tight">Pins Management</h2>
@@ -10,7 +12,7 @@ export default function AdminPinsPage() {
 					<CardTitle>Pins</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<PinsTable />
+					<PinsTable initialPins={pins} />
 				</CardContent>
 			</Card>
 		</div>

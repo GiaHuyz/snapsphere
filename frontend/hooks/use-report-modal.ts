@@ -1,10 +1,11 @@
+import { ReportType } from '@/lib/constants'
 import { create } from 'zustand'
 
 interface ReportModalStore {
 	isOpen: boolean
 	itemId: string | null
-	itemType: 'pin' | 'user' | 'comment' | null
-	onOpen: (itemId: string, itemType: 'pin' | 'user' | 'comment') => void
+	itemType: ReportType | null
+	onOpen: (itemId: string, itemType: ReportType) => void
 	onClose: () => void
 }
 

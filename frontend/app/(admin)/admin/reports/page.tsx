@@ -1,7 +1,10 @@
-import { ReportsTable } from '@/components/admin/report-table'
+import { getReportsAction, ReportPage } from '@/actions/report-actions'
+import { ReportsTable } from '@/components/pages/admin/report-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function AdminReportsPage() {
+export default async function AdminReportsPage() {
+	const initialData = await getReportsAction({})
+
 	return (
 		<div className="space-y-4">
 			<h2 className="text-3xl font-bold tracking-tight">Reports Management</h2>
@@ -10,7 +13,7 @@ export default function AdminReportsPage() {
 					<CardTitle>Reports</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<ReportsTable />
+					<ReportsTable initialData={initialData as ReportPage} />
 				</CardContent>
 			</Card>
 		</div>

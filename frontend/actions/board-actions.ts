@@ -8,7 +8,7 @@ import { HttpRequest } from '@/lib/http-request'
 
 export interface Board {
 	_id: string
-    user_id: string
+	user_id: string
 	title: string
 	description: string
 	secret: boolean
@@ -56,25 +56,28 @@ export const deleteBoardAction = createServerAction<string, void>(async (id) => 
 })
 
 interface QueryParams {
-    user_id?: string
-    title?: string
-    page?: number
-    pageSize?: number
-    sort?: string
+	user_id?: string
+	title?: string
+	page?: number
+	pageSize?: number
+	sort?: string
 }
 
 export const getBoardsAction = createServerAction<QueryParams, Board[]>(
 	async (queryParams) => {
 		try {
-            queryParams.page = queryParams.page || 1
-            queryParams.pageSize = queryParams.pageSize || PAGE_SIZE_BOARDS
+			queryParams.page = queryParams.page || 1
+			queryParams.pageSize = queryParams.pageSize || PAGE_SIZE_BOARDS
 
-            const queryString = Object.entries(queryParams)
-                .filter(([, value]) => value !== undefined)
-                .map(([key, value]) => `${key}=${value}`)
-                .join('&')
+			const queryString = Object.entries(queryParams)
+				.filter(([, value]) => value !== undefined)
+				.map(([key, value]) => `${key}=${value}`)
+				.join('&')
 
-			const boards = await HttpRequest.get<Board[]>(`/boards?${queryString}`)
+			const boards = await HttpRequest.get<Board[]>(`/boards?${queryString}`, {
+				cache: 'force-cache',
+				next: { tags: ['boards'] }
+			})
 			return boards
 		} catch (error) {
 			if (error instanceof Error && error.message === 'Unauthorized') {

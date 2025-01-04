@@ -11,16 +11,16 @@ import {
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { useBoardDropdownStore } from '@/hooks/use-board-dropdown-store'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { PAGE_SIZE_BOARDS } from '@/lib/constants'
 import { isActionError } from '@/lib/errors'
+import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
 import { useUser } from '@clerk/nextjs'
 import { ChevronDown, Loader2, Plus, Search } from 'lucide-react'
 import Image from 'next/image'
 import { ChangeEvent, useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { SaveButton } from './save-to-board-button'
+import { SaveButton } from './pin/save-to-board-button'
 
 interface BoardDropdownProps {
 	mode: 'select' | 'save'
@@ -28,15 +28,14 @@ interface BoardDropdownProps {
 		_id: string
 		url: string
 	}
-	boardsDropdown: Board[]
 	onChange?: (board: Board) => void
 	children?: React.ReactNode
 }
 
-export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, children }: BoardDropdownProps) {
+export default function BoardDropdown({ mode, onChange, pin, children }: BoardDropdownProps) {
 	const { onOpen, setPin } = useCreateBoardModal()
 	const { isSignedIn, user } = useUser()
-	const { boards, setBoards } = useBoardDropdownStore()
+	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
 	const [filteredBoards, setFilteredBoards] = useState<Board[]>(boardsDropdown)
 	const [search, setSearch] = useState('')
 	const [page, setPage] = useState(2)
@@ -53,14 +52,14 @@ export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, chi
 		if (e.target.value.startsWith(' ')) return
 		setSearch(e.target.value)
 		const query = e.target.value.toLowerCase()
-		const filteredBoards = boards.filter((board) => board.title.toLowerCase().includes(query))
+		const filteredBoards = boardsDropdown.filter((board) => board.title.toLowerCase().includes(query))
 		setFilteredBoards(filteredBoards)
 	}
 
 	const loadMoreBoards = async () => {
 		const newBoards = await getBoardsAction({ user_id: user?.id, page: page, pageSize: PAGE_SIZE_BOARDS })
 		if (!isActionError(newBoards)) {
-            setBoards([...boards, ...newBoards])
+			setBoardsDropdown([...boardsDropdown, ...newBoards])
 			setPage((prevPage) => prevPage + 1)
 			if (newBoards.length < PAGE_SIZE_BOARDS) {
 				setHasMore(false)
@@ -76,8 +75,8 @@ export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, chi
 	}, [hasMore, isInView])
 
 	useEffect(() => {
-		setBoards(boardsDropdown)
-	}, [boardsDropdown, setBoards])
+		setBoardsDropdown(boardsDropdown)
+	}, [boardsDropdown, setBoardsDropdown])
 
 	return (
 		<>
@@ -115,7 +114,7 @@ export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, chi
 					</div>
 					<div className="h-[290px] overflow-y-auto overflow-x-hidden">
 						<DropdownMenuLabel>All boards</DropdownMenuLabel>
-						{(search ? filteredBoards : boards).map((board) => (
+						{(search ? filteredBoards : boardsDropdown).map((board) => (
 							<DropdownMenuItem
 								key={board._id}
 								className="relative flex items-center gap-2 p-2 cursor-pointer group"
@@ -133,9 +132,8 @@ export default function BoardDropdown({ mode, onChange, pin, boardsDropdown, chi
 											/>
 										</div>
 									) : (
-                                        <div className="h-12 w-12 rounded-lg bg-secondary">
-                                        </div>
-                                    )}
+										<div className="h-12 w-12 rounded-lg bg-secondary"></div>
+									)}
 									<span className="line-clamp-1">{board.title}</span>
 								</div>
 								{mode === 'save' && (

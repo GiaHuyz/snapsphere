@@ -1,6 +1,6 @@
-import getCurrentUser from "@/lib/get-current-user"
+import { auth } from '@clerk/nextjs/server'
 
 export const isAdmin = async () => {
-    const user = await getCurrentUser()
-    return user?.publicMetadata.role === 'admin'
+	const { sessionClaims } = await auth()
+	return sessionClaims?.metadata.role === 'admin'
 }

@@ -1,5 +1,5 @@
-import { Overview } from '@/components/admin/overview'
-import { RecentPins } from '@/components/admin/recent-pins'
+import { Overview } from '@/components/pages/admin/overview'
+import { RecentPins } from '@/components/pages/admin/recent-pins'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function AdminOverviewPage() {
@@ -61,4 +61,3 @@ export default function AdminOverviewPage() {
 		</div>
 	)
 }
-

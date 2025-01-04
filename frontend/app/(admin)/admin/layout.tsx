@@ -1,12 +1,6 @@
-import AdminSidebar from '@/components/admin/admin-sidebar'
-import { isAdmin } from '@/lib/check-admin'
-import { redirect } from 'next/navigation'
+import AdminSidebar from '@/components/pages/admin/admin-sidebar'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-	if (!(await isAdmin())) {
-		redirect('/')
-	}
-
 	return (
 		<div className="flex h-screen">
 			<AdminSidebar />

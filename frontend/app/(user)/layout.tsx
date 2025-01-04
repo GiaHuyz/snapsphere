@@ -1,5 +1,8 @@
+import { Board, getBoardsAction } from '@/actions/board-actions'
 import Header from '@/components/header'
+import { isActionError, ServerActionResponse } from '@/lib/errors'
 import getCurrentUser from '@/lib/get-current-user'
+import { BoardDropdownProvider } from '@/provider/board-dropdown-provider'
 import ModalProvider from '@/provider/modal-provider'
 import { clerkClient } from '@clerk/nextjs/server'
 
@@ -9,6 +12,7 @@ export default async function UserLayout({
 	children: React.ReactNode
 }>) {
 	const user = await getCurrentUser()
+	let boardsDropdown: ServerActionResponse<Board[]> = []
 
 	if (user) {
 		if (!user.username) {
@@ -31,13 +35,20 @@ export default async function UserLayout({
 				}
 			})
 		}
+
+		const res = await getBoardsAction({ user_id: user.id })
+		if (!isActionError(res)) {
+			boardsDropdown = res
+		}
 	}
 
 	return (
 		<>
-			<Header user={JSON.parse(JSON.stringify(user))} />
-			<main>{children}</main>
-			<ModalProvider />
+			<BoardDropdownProvider boardsDropdown={boardsDropdown}>
+				<Header user={JSON.parse(JSON.stringify(user))} />
+				<main>{children}</main>
+				<ModalProvider />
+			</BoardDropdownProvider>
 		</>
 	)
 }

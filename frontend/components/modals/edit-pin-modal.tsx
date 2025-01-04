@@ -1,8 +1,8 @@
 'use client'
 
 import { deletePinAction, deletePinFromBoardAction, editPinAction } from '@/actions/pin-actions'
-import { createPinSchema } from '@/components/create-pin-form'
 import { LoaderButton } from '@/components/loading-button'
+import { createPinSchema } from '@/components/pages/create/create-pin-form'
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -19,9 +19,9 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
-import { usePinStore } from '@/hooks/use-pin-store'
 import { isActionError } from '@/lib/errors'
 import { checkBoardDetailsPage, checkUserPage } from '@/lib/utils'
+import { usePinStore } from '@/stores/use-pin-store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import NextImage from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -41,7 +41,6 @@ export default function EditPinModal() {
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const [formValues, setFormValues] = useState<EditPinFormValues | null>(null)
 	const pathname = usePathname()
-	console.log(checkBoardDetailsPage(pathname))
 
 	const form = useForm<EditPinFormValues>({
 		resolver: zodResolver(editPinSchema),
@@ -108,11 +107,11 @@ export default function EditPinModal() {
 		setIsLoading(true)
 		let res
 
-        if(checkBoardDetailsPage(pathname)) {
-            res = await deletePinFromBoardAction(pin!.board_pin_id)
-        } else {
-            res = await deletePinAction(pin!._id)
-        }
+		if (checkBoardDetailsPage(pathname)) {
+			res = await deletePinFromBoardAction(pin!.board_pin_id)
+		} else {
+			res = await deletePinAction(pin!._id)
+		}
 
 		if (isActionError(res)) {
 			toast.error(res.error)
@@ -267,7 +266,9 @@ export default function EditPinModal() {
 						<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
 						<AlertDialogDescription>
 							This action cannot be undone. This will permanently delete{' '}
-							{checkBoardDetailsPage(pathname) ? 'this pin from the board' : 'this pin from all boards and its comments'}
+							{checkBoardDetailsPage(pathname)
+								? 'this pin from the board'
+								: 'this pin from all boards and its comments'}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

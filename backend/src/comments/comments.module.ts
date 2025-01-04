@@ -1,14 +1,21 @@
 import { CloudinaryModule } from '@/cloudinary/cloudinary.module'
 import { Comment, CommentSchema } from '@/comments/comment.schema'
-import { Module } from '@nestjs/common'
+import { LikesModule } from '@/likes/likes.module'
+import { PinsModule } from '@/pins/pins.module'
+import { forwardRef, Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
 import { CommentsController } from './comments.controller'
 import { CommentsService } from './comments.service'
-import { PinsModule } from '@/pins/pins.module'
 
 @Module({
-	imports: [MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]), CloudinaryModule, PinsModule],
+	imports: [
+		MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
+		CloudinaryModule,
+		forwardRef(() => PinsModule),
+		forwardRef(() => LikesModule)
+	],
 	controllers: [CommentsController],
-	providers: [CommentsService]
+	providers: [CommentsService],
+	exports: [CommentsService, MongooseModule]
 })
 export class CommentsModule {}

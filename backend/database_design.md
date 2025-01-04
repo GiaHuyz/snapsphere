@@ -68,7 +68,8 @@ Stores information about likes on images.
 |-------------------|------------------|------------------------------------------------|
 | `like_id`         | ObjectId         | Primary key for the like.                      |
 | `user_id`         | ObjectId         | ID of the user who liked the image.            |
-| `image_id`        | ObjectId         | ID of the liked image.                         |
+| `item_id`        | ObjectId         | ID of the liked image.                         |
+| `type`            | String           | Type of the liked item (e.g., 'pin', 'comment'). |
 | `created_at`      | Date             | Date the like was created.                     |
 
 ---

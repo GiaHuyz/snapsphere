@@ -1,5 +1,5 @@
 import { getUsers } from '@/actions/admin-actions'
-import { UsersTable } from '@/components/admin/user-table'
+import { UsersTable } from '@/components/pages/admin/user-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function AdminUsersPage() {
@@ -19,4 +19,3 @@ export default async function AdminUsersPage() {
 		</div>
 	)
 }
-

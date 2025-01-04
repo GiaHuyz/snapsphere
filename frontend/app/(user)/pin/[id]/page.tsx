@@ -1,20 +1,15 @@
-// TODO:FIX: Comment bị trùng màu với background khi ở chế độ dark mode
-import { Board, getBoardsAction } from '@/actions/board-actions'
 import { getCommentsAction } from '@/actions/comment-action'
 import { checkFollowAction } from '@/actions/follow-actions'
 import { getPinDetailAction } from '@/actions/pin-actions'
-import BoardDropdown from '@/components/board-dropdown'
-import { CommentSection } from '@/components/comment-section'
-import ExpandButton from '@/components/expand-button'
 import FollowButton from '@/components/follow-button'
 import FullScreenViewModal from '@/components/modals/full-screen-view-modal'
-import PinActions from '@/components/pin-actions'
+import { CommentSection } from '@/components/pages/pin-detail/comment-section'
+import ExpandButton from '@/components/pages/pin-detail/expand-button'
+import PinDetailTopActions from '@/components/pages/pin-detail/pin-detail-top-actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { isActionError, ServerActionResponse } from '@/lib/errors'
+import { isActionError } from '@/lib/errors'
 import getCurrentUser from '@/lib/get-current-user'
 import { clerkClient } from '@clerk/nextjs/server'
-import { Heart, MoreHorizontal, Share2 } from 'lucide-react'
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -34,7 +29,9 @@ export default async function PinDetails({ params }: { params: Promise<{ id: str
 	if (isActionError(pin)) {
 		return (
 			<div className="flex items-center justify-center mt-8">
-				<h1 className="text-2xl font-semibold">{pin.error.includes('not found') ? 'Pin not found' : 'Something went wrong'}</h1>
+				<h1 className="text-2xl font-semibold">
+					{pin.error.includes('not found') ? 'Pin not found' : 'Something went wrong'}
+				</h1>
 			</div>
 		)
 	}
@@ -42,9 +39,7 @@ export default async function PinDetails({ params }: { params: Promise<{ id: str
 	const user = await (await clerkClient()).users.getUser(pin.user_id)
 
 	let isFollowing = false
-	let boardsDropdown: ServerActionResponse<Board[]> = []
 	if (currentUser) {
-		boardsDropdown = await getBoardsAction({ user_id: currentUser.id })
 		if (
 			(await checkFollowAction({ followerId: currentUser.id, followingId: user.id })) &&
 			currentUser.id !== user.id
@@ -53,10 +48,10 @@ export default async function PinDetails({ params }: { params: Promise<{ id: str
 		}
 	}
 
-	if (isActionError(boardsDropdown) || isActionError(comments)) {
+	if (isActionError(comments)) {
 		return (
-			<div>
-				<h1>Something went wrong</h1>
+			<div className="flex items-center justify-center mt-8">
+				<h1 className="text-2xl font-semibold">Something went wrong</h1>
 			</div>
 		)
 	}
@@ -83,25 +78,7 @@ export default async function PinDetails({ params }: { params: Promise<{ id: str
 					{/* Right: Info Section */}
 					<div className="flex flex-col">
 						{/* Top Actions */}
-						<div className="flex items-center justify-between pb-4">
-							<div className="flex items-center gap-2">
-								<div className="flex items-center gap-2 rounded-full bg-secondary px-3 py-2">
-									<Heart className="h-5 w-5" />
-									<span className="text-sm font-medium">30</span>
-								</div>
-								<Button size="icon" variant="secondary" className="rounded-full">
-									<Share2 className="h-5 w-5" />
-								</Button>
-								<PinActions pinId={pin._id} pinUrl={pin.url}>
-									<Button size="icon" variant="secondary" className="rounded-full">
-										<MoreHorizontal className="h-5 w-5" />
-									</Button>
-								</PinActions>
-							</div>
-							<div className="flex items-center gap-2">
-								<BoardDropdown mode="save" pin={pin} boardsDropdown={boardsDropdown} />
-							</div>
-						</div>
+						<PinDetailTopActions pin={pin} />
 
 						{/* Title */}
 						<div>
@@ -143,7 +120,7 @@ export default async function PinDetails({ params }: { params: Promise<{ id: str
 						</div>
 
 						{/* Comments Section */}
-						<CommentSection isAllowedComment={pin.isAllowedComment} initialComments={comments} />
+						<CommentSection isAllowedComment={pin.isAllowedComment} initialComments={comments} pinUserId={pin.user_id} />
 					</div>
 				</div>
 			</div>

@@ -7,11 +7,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { useBoardDropdownStore } from '@/hooks/use-board-dropdown-store'
-import { useBoardPreviewStore } from '@/hooks/use-board-preview-store'
 import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { isActionError } from '@/lib/errors'
 import { checkUserPage } from '@/lib/utils'
+import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
+import { useBoardPreviewStore } from '@/stores/use-board-preview-store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -31,7 +31,7 @@ export type createBoardData = z.infer<typeof createBoardSchema>
 
 export default function CreateBoardModal() {
 	const { isOpen, onClose, pin } = useCreateBoardModal()
-	const { boards, setBoards } = useBoardDropdownStore()
+	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
 	const { boardsPreview, setBoardsPreview } = useBoardPreviewStore()
 	const [isLoading, setIsLoading] = useState(false)
 	const pathname = usePathname()
@@ -61,15 +61,15 @@ export default function CreateBoardModal() {
 					pin_id: pin._id,
 					board_id: newBoard._id
 				})
-                if(newBoard.coverImages.length < 3) {
-                    newBoard.coverImages.push({
-                        _id: pin._id,
-                        url: pin.url
-                    })
-                    newBoard.pinCount++
-                }
+				if (newBoard.coverImages.length < 3) {
+					newBoard.coverImages.push({
+						_id: pin._id,
+						url: pin.url
+					})
+					newBoard.pinCount++
+				}
 			}
-            setBoards([newBoard, ...boards])
+			setBoardsDropdown([newBoard, ...boardsDropdown])
 			if (checkUserPage(pathname)) {
 				setBoardsPreview([newBoard, ...boardsPreview])
 			}

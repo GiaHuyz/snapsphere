@@ -9,10 +9,10 @@ export class Comment {
 	user_id: string
 
 	@Prop({ required: true, type: mongoose.Types.ObjectId, ref: 'Pin' })
-	pin_id: string
+	pin_id: mongoose.Types.ObjectId
 
 	@Prop({ type: mongoose.Types.ObjectId, ref: 'Comment', default: null })
-	parent_id: string
+	parent_id: mongoose.Types.ObjectId
 
 	@Prop({ default: '', maxlength: 1000 })
 	content: string

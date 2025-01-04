@@ -1,79 +1,84 @@
 'use client'
 
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
+import { createReportAction } from '@/actions/report-actions'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { useReportModal } from '@/hooks/use-report-modal'
+import { ReportReason } from '@/lib/constants'
+import { isActionError } from '@/lib/errors'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
-const reportReasons = [
+const reportReasons: { value: ReportReason; label: string; description?: string }[] = [
 	{
-		value: 'spam',
+		value: ReportReason.SPAM,
 		label: 'Spam',
 		description: 'Misleading or repetitive posts'
 	},
 	{
-		value: 'nudity',
+		value: ReportReason.NUDITY,
 		label: 'Nudity, pornography or sexualized content',
 		description: 'Sexually explicit content involving adults or nudity, non-nudity or intentional misuse involving minors'
 	},
 	{
-		value: 'self-harm',
+		value: ReportReason.SELF_HARM,
 		label: 'Self-harm',
 		description: 'Eating disorders, cutting, suicide'
 	},
 	{
-		value: 'misinformation',
+		value: ReportReason.MISINFORMATION,
 		label: 'Misinformation',
 		description: 'Health, climate, voting misinformation or conspiracies'
 	},
 	{
-		value: 'hate',
+		value: ReportReason.HATE,
 		label: 'Hateful activities',
 		description: 'Prejudice, stereotypes, white supremacy, slurs'
 	},
 	{
-		value: 'dangerous',
+		value: ReportReason.DANGEROUS,
 		label: 'Dangerous goods',
 		description: 'Drugs, weapons, regulated products'
 	},
 	{
-		value: 'harassment',
+		value: ReportReason.HARASSMENT,
 		label: 'Harassment or criticism',
 		description: 'Insults, threats, cyberbullying, non-consensual nude images'
 	},
 	{
-		value: 'violence',
+		value: ReportReason.VIOLENCE,
 		label: 'Graphic violence',
 		description: 'Violent images or promotion of violence'
 	},
 	{
-		value: 'privacy',
+		value: ReportReason.PRIVACY,
 		label: 'Privacy violation',
 		description: 'Private photos, personal information'
 	},
 	{
-		value: 'intellectual-property',
+		value: ReportReason.INTELLECTUAL_PROPERTY,
 		label: 'My intellectual property',
 		description: 'Copyright or trademark infringement'
 	}
 ]
 
 export default function ReportModal() {
-	const [selectedReason, setSelectedReason] = useState<string>('')
+	const [selectedReason, setSelectedReason] = useState<ReportReason>(ReportReason.SPAM)
 	const { isOpen, onClose, itemId, itemType } = useReportModal()
 
 	const handleSubmit = async () => {
 		if (!selectedReason) return
 
-		try {
-			// TODO: Implement report submission
-			onClose()
-			setSelectedReason('')
-		} catch (error) {
-			console.error('Error submitting report:', error)
-		}
+        const res = await createReportAction({item_id: itemId!, reason: selectedReason, type: itemType!})
+
+        if (isActionError(res)) {
+            toast.error(res.error)
+        } else {
+            toast.success('Report submitted successfully')
+            onClose()
+        }
 	}
 
 	return (
@@ -83,7 +88,7 @@ export default function ReportModal() {
 					<DialogTitle className="text-center text-xl font-semibold">Report Pin</DialogTitle>
 				</DialogHeader>
 				<div className="mt-4">
-					<RadioGroup value={selectedReason} onValueChange={setSelectedReason} className='space-y-4'>
+					<RadioGroup value={selectedReason} onValueChange={setSelectedReason as any} className='space-y-4'>
 						{reportReasons.map((reason) => (
 							<div
 								key={reason.value}

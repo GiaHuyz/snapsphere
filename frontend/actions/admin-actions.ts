@@ -30,15 +30,17 @@ export async function getUsers(page: number = 1, query: string = '', limit: numb
 	}
 }
 
-export async function updateUserStatus(userId: string, action: 'suspend' | 'unsuspend') {
+export async function updateUserStatus(userId: string, action: 'ban' | 'unban') {
 	try {
 		if (!(await isAdmin())) {
 			throw new Error('Unauthorized')
 		}
 
-		await client.users.updateUser(userId, {
-			publicMetadata: { suspended: action === 'suspend' }
-		})
+		if(action === 'ban') {
+			await client.users.banUser(userId)
+		} else if(action === 'unban') {
+			await client.users.unbanUser(userId)
+		}
 
 		revalidatePath('/admin/users')
 		return { success: true }
@@ -56,7 +58,7 @@ export async function deleteUser(userId: string) {
 
 		await client.users.deleteUser(userId)
 		revalidatePath('/admin/users')
-        
+
 		return { success: true }
 	} catch (error) {
 		console.error('Error deleting user:', error)

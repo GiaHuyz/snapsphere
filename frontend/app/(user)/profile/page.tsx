@@ -1,14 +1,14 @@
-import { ProfileForm } from '@/components/profile-form'
+import { ProfileForm } from '@/components/pages/profile/profile-form'
 import currentUser from '@/lib/get-current-user'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: 'Snapsphere | Edit Profile'
+	title: 'Snapsphere | Edit Profile'
 }
 
 export default async function EditProfilePage() {
-    const user = await currentUser()
-    return (
+	const user = await currentUser()
+	return (
 		<div className="container max-w-2xl py-8 px-5 mx-auto">
 			<div className="space-y-6">
 				<div>

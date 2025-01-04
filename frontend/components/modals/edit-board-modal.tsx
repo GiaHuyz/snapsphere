@@ -17,12 +17,12 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { useBoardDetailStore } from '@/hooks/use-board-detail-store'
-import { useBoardDropdownStore } from '@/hooks/use-board-dropdown-store'
-import { useBoardPreviewStore } from '@/hooks/use-board-preview-store'
 import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
 import { isActionError } from '@/lib/errors'
 import { checkBoardDetailsPage, checkUserPage } from '@/lib/utils'
+import { useBoardDetailStore } from '@/stores/use-board-detail-store'
+import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
+import { useBoardPreviewStore } from '@/stores/use-board-preview-store'
 import { useUser } from '@clerk/nextjs'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Pencil } from 'lucide-react'
@@ -43,7 +43,7 @@ export type EditBoardData = z.infer<typeof editBoardSchema>
 
 export default function EditBoardModal() {
 	const { isOpen, onClose, boardId, boardData } = useEditBoardModal()
-	const { boards, setBoards } = useBoardDropdownStore()
+	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
 	const { boardsPreview, setBoardsPreview } = useBoardPreviewStore()
 	const { board, setBoard } = useBoardDetailStore()
 	const [isLoading, setIsLoading] = useState(false)
@@ -89,10 +89,10 @@ export default function EditBoardModal() {
 		} else {
 			toast.success('Board updated successfully')
 			if (checkUserPage(pathname)) {
-				const updatedBoards = boards.map((b) =>
+				const updatedBoards = boardsDropdown.map((b) =>
 					b._id === boardId ? { ...res, coverImages: b.coverImages } : b
 				)
-				setBoards(updatedBoards)
+				setBoardsDropdown(updatedBoards)
 				const updatedBoardsPreview = boardsPreview.map((b) =>
 					b._id === boardId ? { ...res, coverImages: b.coverImages } : b
 				)
@@ -121,12 +121,13 @@ export default function EditBoardModal() {
 		} else {
 			toast.success('Board deleted successfully')
 			if (checkUserPage(pathname)) {
-				const updatedBoards = boards.filter((b) => b._id !== boardId)
-				setBoards(updatedBoards)
+				const updatedBoards = boardsDropdown.filter((b) => b._id !== boardId)
+				setBoardsDropdown(updatedBoards)
 				const updatedBoardsPreview = boardsPreview.filter((b) => b._id !== boardId)
 				setBoardsPreview(updatedBoardsPreview)
 			} else if (checkBoardDetailsPage(pathname)) {
-				redirect(`/user/${user?.id}`)
+                onClose()
+				redirect(`/user/${user?.username}`)
 			}
 		}
 

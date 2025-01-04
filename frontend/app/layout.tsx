@@ -1,8 +1,6 @@
-import getCurrentUser from '@/lib/get-current-user'
 import ProgressBarProvider from '@/provider/progress-bar-provider'
 import { ThemeProvider } from '@/provider/theme-provider'
 import { ClerkProvider } from '@clerk/nextjs'
-import { clerkClient } from '@clerk/nextjs/server'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import { Toaster } from 'sonner'
