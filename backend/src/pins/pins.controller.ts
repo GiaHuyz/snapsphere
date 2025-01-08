@@ -1,7 +1,6 @@
 import { IsAdmin } from '@/common/decorators/isAdmin'
 import { Public } from '@/common/decorators/public'
 import { UserId } from '@/common/decorators/userId'
-import { GenericController } from '@/common/generic/generic.controller'
 import { MulterInterceptor } from '@/common/interceptors/multer.interceptor'
 import {
 	Body,
@@ -25,9 +24,8 @@ import { PinsService } from './pins.service'
 
 @ApiTags('Pins')
 @Controller('pins')
-export class PinsController extends GenericController<PinDocument> {
+export class PinsController {
 	constructor(private readonly pinsService: PinsService) {
-		super(pinsService)
 	}
 
 	@ApiOperation({
