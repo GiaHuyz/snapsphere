@@ -5,7 +5,7 @@ import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer
 
 const multerConfig: MulterOptions = {
     limits: {
-        fileSize: 20 * 1024 * 1024, // 20MB
+        fileSize: 10 * 1024 * 1024, // 10 MB
     },
     fileFilter: (req, file, cb) => {
         if (!file.mimetype.startsWith('image/')) {

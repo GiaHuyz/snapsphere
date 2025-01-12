@@ -47,10 +47,6 @@ export class ReportsService extends GenericService<ReportDocument> {
 		return { data, totalPages: Math.ceil(totalItems / pageSize) }
 	}
 
-	async update(id: string, updateReportDto: UpdateReportDto) {
-		return this.baseUpdate(id, updateReportDto)
-	}
-
 	async remove(id: string) {
 		return this.baseDelete(id)
 	}

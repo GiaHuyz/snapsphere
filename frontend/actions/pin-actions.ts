@@ -16,6 +16,7 @@ export interface Pin {
 	secret: boolean
 	saveCount: number
 	likeCount: number
+    tags: string[]
 	commentCount: number
 	board_pin_id: string
 	isLiked: boolean
@@ -39,6 +40,7 @@ interface QueryParams {
 	page?: number
 	pageSize?: number
 	sort?: string
+    search?: string
 }
 
 interface QueryParamsBoardPin {
@@ -86,6 +88,24 @@ export const createPin = createServerAction<FormData, Pin>(async (data: FormData
 	try {
 		const res = await HttpRequest.post<Pin>('/pins', data)
 		return res
+	} catch (error) {
+		return { error: getErrorMessage(error) }
+	}
+})
+
+export const fetchImageFromUrl = createServerAction(async (url: string) => {
+	try {
+		const response = await fetch(url)
+		if (!response.ok) {
+			throw new Error(`Failed to fetch image: ${response.statusText}`)
+		}
+		const contentType = response.headers.get('content-type')
+		if (!contentType || !contentType.startsWith('image/')) {
+			throw new Error('The URL does not point to a valid image')
+		}
+		const arrayBuffer = await response.arrayBuffer()
+		const base64 = Buffer.from(arrayBuffer).toString('base64')
+		return `data:${contentType};base64,${base64}`
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}
@@ -153,4 +173,24 @@ export const getPinsByBoardIdAction = createServerAction<QueryParamsBoardPin, Pi
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}
+})
+
+export const getRecommendedPinsAction = createServerAction<QueryParams, PinPage>(async (queryParams) => {
+    try {
+        queryParams.page = queryParams.page || 1
+        queryParams.pageSize = queryParams.pageSize || PAGE_SIZE_PINS
+
+        const queryString = Object.entries(queryParams)
+            .filter(([, value]) => value !== undefined)
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&')
+
+        const res = await HttpRequest.get<PinPage>(`/pins/recommended?${queryString}`, {
+            cache: 'force-cache'
+        })
+
+        return res
+    } catch (error) {
+        return { error: getErrorMessage(error) }
+    }
 })

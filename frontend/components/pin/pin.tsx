@@ -74,7 +74,7 @@ export default function Pin({ pin }: PinProps) {
 								<Pencil className="h-4 w-4" />
 							</Button>
 						)}
-						<PinActions pinId={pin._id} pinUrl={pin.url}>
+						<PinActions pin={pin}>
 							<Button
 								size="icon"
 								variant="secondary"

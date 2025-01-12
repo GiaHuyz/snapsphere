@@ -1,6 +1,7 @@
 'use server'
 
 import { isAdmin } from '@/lib/check-admin'
+import { getErrorMessage } from '@/lib/errors'
 import { clerkClient } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 
@@ -8,10 +9,6 @@ const client = await clerkClient()
 
 export async function getUsers(page: number = 1, query: string = '', limit: number = 10) {
 	try {
-		if (!(await isAdmin())) {
-			throw new Error('Unauthorized')
-		}
-
 		const users = await client.users.getUserList({
 			query,
 			limit,
@@ -25,8 +22,7 @@ export async function getUsers(page: number = 1, query: string = '', limit: numb
 			currentPage: page
 		}
 	} catch (error) {
-		console.error('Error fetching users:', error)
-		throw new Error('Failed to fetch users')
+		return { error: getErrorMessage(error) }
 	}
 }
 
@@ -45,8 +41,7 @@ export async function updateUserStatus(userId: string, action: 'ban' | 'unban') 
 		revalidatePath('/admin/users')
 		return { success: true }
 	} catch (error) {
-		console.error('Error updating user:', error)
-		throw new Error('Failed to update user')
+		return { error: getErrorMessage(error) }
 	}
 }
 
@@ -61,7 +56,6 @@ export async function deleteUser(userId: string) {
 
 		return { success: true }
 	} catch (error) {
-		console.error('Error deleting user:', error)
-		throw new Error('Failed to delete user')
+		return { error: getErrorMessage(error) }
 	}
 }

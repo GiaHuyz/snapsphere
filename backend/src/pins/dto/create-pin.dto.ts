@@ -1,7 +1,7 @@
 import { BadRequestException, Optional, UnprocessableEntityException } from '@nestjs/common'
 import { ApiProperty } from '@nestjs/swagger'
 import { Transform } from 'class-transformer'
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength, ValidateIf } from 'class-validator'
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength, ValidateIf } from 'class-validator'
 import { log } from 'console'
 import mongoose, { isObjectIdOrHexString, ObjectId } from 'mongoose'
 
@@ -71,4 +71,14 @@ export class CreatePinDto {
     @IsOptional()
     @ValidateIf((object, value) => value !== '')
     url?: string
+
+    @ApiProperty({
+        required: true,
+        description: 'The tags of the pin'
+    })
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    @Transform(({ value }) => value.map((name: string) => name.trim().toLowerCase()))
+    tags?: string[]
 }

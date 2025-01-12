@@ -1,17 +1,20 @@
 import { BoardPin, BoardPinDocument } from '@/board-pin/board-pin.schema'
 import { Board, BoardDocument } from '@/boards/board.schema'
+import { ClarifaiService } from '@/clarifai/clarifai.service'
 import { GenericService } from '@/common/generic/generic.service'
 import { buildRangeFilter } from '@/common/utils/build-range-filter'
 import { checkOwnership } from '@/common/utils/check-owner-ship.util'
+import { Like, LikeDocument } from '@/likes/like.shema'
+import { Tag, TagDocument } from '@/tags/tag.schema'
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { CloudinaryService } from '../cloudinary/cloudinary.service'
 import { CreatePinDto } from './dto/create-pin.dto'
 import { FilterPinDto } from './dto/filter-pin.dto'
+import { GetRecommendedPinsDto } from './dto/get-recommended-pins.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
 import { Pin, PinDocument } from './pin.schema'
-import { Like, LikeDocument } from '@/likes/like.shema'
 
 @Injectable()
 export class PinsService extends GenericService<PinDocument> {
@@ -19,7 +22,9 @@ export class PinsService extends GenericService<PinDocument> {
 		@InjectModel(Pin.name) private readonly pinModel: Model<PinDocument>,
 		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
 		@InjectModel(BoardPin.name) private readonly boardPinModel: Model<BoardPinDocument>,
-        @InjectModel(Like.name) private readonly likeModel: Model<LikeDocument>,
+		@InjectModel(Like.name) private readonly likeModel: Model<LikeDocument>,
+		@InjectModel(Tag.name) private readonly tagModel: Model<TagDocument>,
+		private readonly clarifaiService: ClarifaiService,
 		private readonly cloudinaryService: CloudinaryService
 	) {
 		super(pinModel)
@@ -36,7 +41,8 @@ export class PinsService extends GenericService<PinDocument> {
 			likeCountMin,
 			likeCountMax,
 			commentCountMin,
-			commentCountMax
+			commentCountMax,
+			search
 		} = query
 		// build filter conditions
 		const filter: any = {}
@@ -53,6 +59,14 @@ export class PinsService extends GenericService<PinDocument> {
 		if (saveCountFilter) filter.saveCount = saveCountFilter
 		if (likeCountFilter) filter.likeCount = likeCountFilter
 		if (commentCountFilter) filter.commentCount = commentCountFilter
+		if (search) {
+			// title, description, tags
+			filter.$or = [
+				{ title: { $regex: `.*${search}.*`, $options: 'i' } },
+				{ description: { $regex: `.*${search}.*`, $options: 'i' } },
+				{ tags: { $regex: `.*${search}.*`, $options: 'i' } }
+			]
+		}
 
 		if (userId !== user_id && !isAdmin) filter.secret = false
 
@@ -71,36 +85,46 @@ export class PinsService extends GenericService<PinDocument> {
 	 * @returns A promise that resolves to the created pin document.
 	 */
 	async create(userId: string, createPinDto: CreatePinDto, image: Express.Multer.File): Promise<PinDocument> {
-		let uploadedImage = ''
+		const uploadedImageUrl = image
+			? (await this.cloudinaryService.uploadFile(image, userId)).secure_url
+			: createPinDto.url
 
-		if (image) {
-			uploadedImage = (await this.cloudinaryService.uploadFile(image, userId)).secure_url
-		} else {
-			uploadedImage = createPinDto.url
-		}
-		// Upload image to Cloudinary
+		const generatedTags = await this.clarifaiService.generateTags(uploadedImageUrl)
 
-		// save pin to database
-		const newPin = await this.pinModel.create({
-			...createPinDto,
-			url: uploadedImage, // image url
-			user_id: userId // owner of the pin
-		})
+		const newTags = [...new Set(createPinDto.tags.concat(generatedTags))]
+
+		const [newPin] = await Promise.all([
+			this.pinModel.create({
+				...createPinDto,
+				url: uploadedImageUrl,
+				user_id: userId,
+				tags: newTags
+			}),
+			this.tagModel.bulkWrite(
+				newTags.map((tagName) => ({
+					updateOne: {
+						filter: { name: tagName },
+						update: { $setOnInsert: { name: tagName } },
+						upsert: true
+					}
+				}))
+			)
+		])
 
 		return newPin
 	}
 
-    async findOne(id: string, userId?: string) {
-        const pin = await this.baseFindOne(id)
-        let isLiked = false
-        if (userId) {
-            if (pin.secret && userId !== pin.user_id) throw new NotFoundException('Pin not found')
-            if (await this.likeModel.findOne({ item_id: pin._id, user_id: userId })) {
-                isLiked = true
-            }
-        }
-        return { ...pin.toObject(), isLiked }
-    }
+	async findOne(id: string, userId?: string) {
+		const pin = await this.baseFindOne(id)
+		let isLiked = false
+		if (userId) {
+			if (pin.secret && userId !== pin.user_id) throw new NotFoundException('Pin not found')
+			if (await this.likeModel.findOne({ item_id: pin._id, user_id: userId })) {
+				isLiked = true
+			}
+		}
+		return { ...pin.toObject(), isLiked }
+	}
 
 	/**
 	 * Updates a pin with the given data.
@@ -145,5 +169,129 @@ export class PinsService extends GenericService<PinDocument> {
 			this.pinModel.findByIdAndDelete(id),
 			this.boardPinModel.deleteMany({ pin_id: pin._id })
 		])
+	}
+
+	/**
+	 * Get recommended pins for a user based on their interactions
+	 * Optimized for large datasets by:
+	 * 1. Using limit in queries to reduce data load
+	 * 2. Combining queries using $lookup
+	 * 3. Using simpler scoring mechanism
+	 */
+	async getRecommendedPins(userId: string, query: GetRecommendedPinsDto) {
+		const { page = 1, pageSize = 10 } = query
+		const skip = (page - 1) * pageSize
+
+		// Get user's recent interactions in a single aggregation
+		const userInteractions = await this.pinModel.aggregate([
+			{
+				$facet: {
+					// Get user's recently created pins (limited to last 50)
+					recentCreated: [
+						{ $match: { user_id: userId } },
+						{ $sort: { created_at: -1 } },
+						{ $limit: 50 },
+						{ $project: { _id: 1, tags: 1 } }
+					],
+					// Get user's recently saved pins (limited to last 50)
+					recentSaved: [
+						{
+							$lookup: {
+								from: 'boardpins',
+								let: { pinId: '$_id' },
+								pipeline: [
+									{
+										$match: {
+											$expr: { $eq: ['$pin_id', '$$pinId'] }
+										}
+									},
+									{
+										$lookup: {
+											from: 'boards',
+											let: { boardId: '$board_id' },
+											pipeline: [
+												{
+													$match: {
+														$expr: {
+															$and: [
+																{ $eq: ['$_id', '$$boardId'] },
+																{ $eq: ['$user_id', userId] }
+															]
+														}
+													}
+												}
+											],
+											as: 'board'
+										}
+									},
+									{ $match: { board: { $ne: [] } } }
+								],
+								as: 'savedBy'
+							}
+						},
+						{ $match: { savedBy: { $ne: [] } } },
+						{ $sort: { created_at: -1 } },
+						{ $limit: 50 },
+						{ $project: { _id: 1, tags: 1 } }
+					]
+				}
+			}
+		])
+
+		// Extract unique tags from recent interactions
+		const recentPins = [...userInteractions[0].recentCreated, ...userInteractions[0].recentSaved]
+		const recentTags = [...new Set(recentPins.flatMap((p) => p.tags))]
+		const excludePinIds = recentPins.map((p) => p._id)
+
+		// Get recommendations using a simpler scoring system
+		const recommendedPins = await this.pinModel.aggregate([
+			{
+				$match: {
+					_id: { $nin: excludePinIds },
+					user_id: { $ne: userId },
+					tags: { $in: recentTags } // Only get pins with matching tags
+				}
+			},
+			{
+				$addFields: {
+					// Simple scoring based on matching tags and popularity
+					matchingTags: {
+						$size: { $setIntersection: ['$tags', recentTags] }
+					},
+					popularity: {
+						$add: [{ $ifNull: ['$saveCount', 0] }, { $ifNull: ['$likeCount', 0] }]
+					}
+				}
+			},
+			{
+				$addFields: {
+					score: {
+						$add: ['$matchingTags', { $divide: ['$popularity', 100] }]
+					}
+				}
+			},
+			{ $sort: { score: -1 } },
+			{ $skip: skip },
+			{ $limit: pageSize },
+			{
+				$project: {
+					matchingTags: 0,
+					popularity: 0,
+					score: 0
+				}
+			}
+		])
+
+		// Get total count for pagination
+		const totalItems = await this.pinModel.countDocuments({
+			_id: { $nin: excludePinIds },
+			user_id: { $ne: userId },
+			tags: { $in: recentTags }
+		})
+
+		return {
+			data: recommendedPins,
+			totalPages: Math.ceil(totalItems / pageSize)
+		}
 	}
 }

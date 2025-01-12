@@ -1,14 +1,14 @@
-import { getAllPinsUserAction } from '@/actions/pin-actions'
+import { getRecommendedPinsAction } from '@/actions/pin-actions'
 import PinList from '@/components/pin/pin-list'
 import { isActionError } from '@/lib/errors'
 
 export default async function HomePage() {
-	const pins = await getAllPinsUserAction({})
+	const pins = await getRecommendedPinsAction({})
 
 	if (isActionError(pins)) {
 		return (
-			<div>
-				<h1>Something went wrong</h1>
+			<div className="flex items-center justify-center mt-8">
+				<h1 className="text-2xl font-semibold">Something went wrong</h1>
 			</div>
 		)
 	}

@@ -1,6 +1,7 @@
 'use client'
 
 import { createCommentAction, deleteCommentAction, getCommentsAction, IComment } from '@/actions/comment-action'
+import LikeCommentButton from '@/components/pages/pin-detail/like-comment-button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
@@ -10,7 +11,7 @@ import { isActionError } from '@/lib/errors'
 import { formatTime } from '@/lib/format-time'
 import { useUser } from '@clerk/nextjs'
 import { DropdownMenu, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
-import { Flag, Heart, MessageSquare, MoreHorizontal, Trash } from 'lucide-react'
+import { Flag, MessageSquare, MoreHorizontal, Trash } from 'lucide-react'
 import NextImage from 'next/image'
 import Link from 'next/link'
 import { useCallback, useState } from 'react'
@@ -33,7 +34,6 @@ export default function Comment({ comment, isReply = false, onDelete, isAllowedC
 	const [replies, setReplies] = useState<IComment[]>([])
 	const { user } = useUser()
 	const { onOpen } = useReportModal()
-    console.log(comment.user_id)
 
 	const handleReplyClick = () => {
 		setShowReplyInput(!showReplyInput)
@@ -121,10 +121,11 @@ export default function Comment({ comment, isReply = false, onDelete, isAllowedC
 						</div>
 					)}
 					<div className="flex items-center gap-2 mt-2">
-						<Button variant="ghost" size="icon" className="h-6 w-6">
-							<Heart className="h-4 w-4" />
-						</Button>
-						<span className="text-xs text-muted-foreground">{comment.likes} likes</span>
+						<LikeCommentButton
+							commentId={comment._id}
+							isLiked={comment.isLiked}
+							likeCount={comment.likeCount}
+						/>
 						{!isReply && isAllowedComment && (
 							<Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleReplyClick}>
 								<MessageSquare className="h-4 w-4" />

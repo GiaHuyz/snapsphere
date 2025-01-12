@@ -1,6 +1,7 @@
 import { getUsers } from '@/actions/admin-actions'
 import { UsersTable } from '@/components/pages/admin/user-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { User } from '@clerk/nextjs/server'
 
 export default async function AdminUsersPage() {
 	const initialData = await getUsers()
@@ -13,7 +14,9 @@ export default async function AdminUsersPage() {
 					<CardTitle>Users</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<UsersTable initialData={initialData} />
+					<UsersTable
+						initialData={initialData as { users: User[]; totalPages: number; currentPage: number }}
+					/>
 				</CardContent>
 			</Card>
 		</div>

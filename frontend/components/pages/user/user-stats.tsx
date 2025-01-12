@@ -3,8 +3,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useFollowModal } from '@/hooks/use-follow-modal'
+import { useReportModal } from '@/hooks/use-report-modal'
+import { ReportType } from '@/lib/constants'
+import { useUser } from '@clerk/nextjs'
 import { User } from '@clerk/nextjs/server'
-import { Share } from 'lucide-react'
+import { Flag, Share } from 'lucide-react'
 import Link from 'next/link'
 
 interface UserStatsProps {
@@ -15,6 +18,8 @@ interface UserStatsProps {
 
 export default function UserStats({ user, followers, following }: UserStatsProps) {
 	const { onOpen } = useFollowModal()
+	const { onOpen: onOpenReport } = useReportModal()
+	const { user: currentUser } = useUser()
 
 	return (
 		<div className="flex flex-col items-center space-y-3 py-3">
@@ -53,11 +58,19 @@ export default function UserStats({ user, followers, following }: UserStatsProps
 					<Share className="mr-2 h-4 w-4" />
 					Share
 				</Button>
-				<Link href={`/profile`}>
-					<Button variant="secondary" className="rounded-full hover:bg-slate-300 dark:hover:text-black">
-						Edit profile
+				{currentUser?.id === user.id && (
+					<Link href={`/profile`}>
+						<Button variant="secondary" className="rounded-full hover:bg-slate-300 dark:hover:text-black">
+							Edit profile
+						</Button>
+					</Link>
+				)}
+				{currentUser?.id !== user.id && (
+					<Button variant="secondary" className="rounded-full hover:bg-slate-300 dark:hover:text-black" onClick={() => onOpenReport(user.id, ReportType.USER)}>
+						<Flag className="mr-2 h-4 w-4" />
+						Report
 					</Button>
-				</Link>
+				)}
 			</div>
 		</div>
 	)

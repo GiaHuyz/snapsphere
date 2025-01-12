@@ -18,7 +18,7 @@ import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
 import { useUser } from '@clerk/nextjs'
 import { ChevronDown, Loader2, Plus, Search } from 'lucide-react'
 import Image from 'next/image'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useDeferredValue, useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { SaveButton } from './pin/save-to-board-button'
 
@@ -38,6 +38,7 @@ export default function BoardDropdown({ mode, onChange, pin, children }: BoardDr
 	const { boardsDropdown, setBoardsDropdown } = useBoardDropdownStore()
 	const [filteredBoards, setFilteredBoards] = useState<Board[]>(boardsDropdown)
 	const [search, setSearch] = useState('')
+    const deferredSearch = useDeferredValue(search)
 	const [page, setPage] = useState(2)
 	const [hasMore, setHasMore] = useState(true)
 	const [scrollTrigger, isInView] = useInView()
@@ -48,12 +49,13 @@ export default function BoardDropdown({ mode, onChange, pin, children }: BoardDr
 		}
 	}
 
-	const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+	const handleSearch = async (e: ChangeEvent<HTMLInputElement>) => {
 		if (e.target.value.startsWith(' ')) return
 		setSearch(e.target.value)
-		const query = e.target.value.toLowerCase()
-		const filteredBoards = boardsDropdown.filter((board) => board.title.toLowerCase().includes(query))
-		setFilteredBoards(filteredBoards)
+		const res = await getBoardsAction({ user_id: user?.id, title: deferredSearch })
+		if (!isActionError(res)) {
+			setFilteredBoards(res)
+		}
 	}
 
 	const loadMoreBoards = async () => {
@@ -89,7 +91,7 @@ export default function BoardDropdown({ mode, onChange, pin, children }: BoardDr
 							onClick={(e) => e.preventDefault()}
 							data-prevent-nprogress={true}
 						>
-							{boardsDropdown[0]?.title}
+							{boardsDropdown[0]?.title.slice(0, 13) + '...'}
 							<ChevronDown className="ml-1 h-4 w-4" />
 						</Button>
 					</DropdownMenuTrigger>
@@ -107,6 +109,7 @@ export default function BoardDropdown({ mode, onChange, pin, children }: BoardDr
 							<Input
 								value={search}
 								onChange={handleSearch}
+                                onKeyDown={(e) => e.stopPropagation()}
 								placeholder="Search boards"
 								className="pl-8 rounded-full"
 							/>

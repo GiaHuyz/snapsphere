@@ -20,11 +20,11 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useEditPinModal } from '@/hooks/use-edit-pin-modal'
 import { isActionError } from '@/lib/errors'
-import { checkBoardDetailsPage, checkUserPage } from '@/lib/utils'
+import { checkBoardDetailsPage, checkPinDetailsPage, checkUserPage } from '@/lib/utils'
 import { usePinStore } from '@/stores/use-pin-store'
 import { zodResolver } from '@hookform/resolvers/zod'
 import NextImage from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -41,6 +41,7 @@ export default function EditPinModal() {
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const [formValues, setFormValues] = useState<EditPinFormValues | null>(null)
 	const pathname = usePathname()
+	const router = useRouter()
 
 	const form = useForm<EditPinFormValues>({
 		resolver: zodResolver(editPinSchema),
@@ -95,11 +96,16 @@ export default function EditPinModal() {
 		if (isActionError(res)) {
 			toast.error(res.error)
 		} else {
-			toast.success('Pin updated successfully!')
-			onClose()
-			const updatedPins = pins.map((p) => (p._id === pin._id ? res : p))
-			setPins(updatedPins)
+            toast.success('Pin updated successfully!')
+			if (checkUserPage(pathname) || checkBoardDetailsPage(pathname)) {
+				const updatedPins = pins.map((p) => (p._id === pin._id ? res : p))
+				setPins(updatedPins)
+			} else if (checkPinDetailsPage(pathname)) {
+                router.refresh()
+            }
+            onClose()
 		}
+
 		setIsLoading(false)
 	}
 
@@ -121,7 +127,9 @@ export default function EditPinModal() {
 			if (checkUserPage(pathname) || checkBoardDetailsPage(pathname)) {
 				const updatedPins = pins.filter((p) => p._id !== pin!._id)
 				setPins(updatedPins)
-			}
+			} else if (checkPinDetailsPage(pathname)) {
+                router.push(`/`)
+            }
 		}
 
 		setShowDeleteAlert(false)

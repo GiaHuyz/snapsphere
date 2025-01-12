@@ -15,10 +15,11 @@ import { useInView } from 'react-intersection-observer'
 interface PinListProps {
 	initialPins: PinType[]
 	boardId?: string
-	pageName?: 'BoardDetail' | 'User' | 'Home'
+	pageName?: 'BoardDetail' | 'User' | 'Home' | 'Search' | 'Ideas'
+	search?: string
 }
 
-export default function PinList({ initialPins, boardId, pageName }: PinListProps) {
+export default function PinList({ initialPins, boardId, pageName, search }: PinListProps) {
 	const { pins, setPins } = usePinStore()
 	const [hasMore, setHasMore] = useState(true)
 	const [page, setPage] = useState(2)
@@ -46,8 +47,17 @@ export default function PinList({ initialPins, boardId, pageName }: PinListProps
 						setHasMore(false)
 					}
 				}
-			} else if (pageName === 'Home') {
+			} else if (pageName === 'Home' || pageName === 'Ideas') {
 				const res = await getAllPinsUserAction({ page: page, pageSize: PAGE_SIZE_PINS })
+				if (!isActionError(res)) {
+					setPins([...pins, ...res.data])
+					setPage((prevPage) => prevPage + 1)
+					if (res.data.length < PAGE_SIZE_PINS) {
+						setHasMore(false)
+					}
+				}
+			} else if (pageName === 'Search') {
+				const res = await getAllPinsUserAction({ search: search, page: page, pageSize: PAGE_SIZE_PINS })
 				if (!isActionError(res)) {
 					setPins([...pins, ...res.data])
 					setPage((prevPage) => prevPage + 1)
@@ -72,7 +82,7 @@ export default function PinList({ initialPins, boardId, pageName }: PinListProps
 
 	return (
 		<>
-			<MansoryLayout className="xl:columns-6">
+			<MansoryLayout className={`xl:columns-${pageName === 'Ideas' ? 4 : 6}`}>
 				{(isMouted ? pins : initialPins).map((pin) => (
 					<Pin key={pin._id} pin={pin} />
 				))}

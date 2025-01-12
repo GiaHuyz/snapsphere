@@ -5,9 +5,10 @@ import { Pin } from '@/actions/pin-actions'
 import BoardDropdown from '@/components/board-dropdown'
 import PinActions from '@/components/pin/pin-actions'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useLikesListModal } from '@/hooks/use-likes-list-modal'
 import { isActionError } from '@/lib/errors'
-import { Heart, MoreHorizontal, Share2 } from 'lucide-react'
+import { Heart, MoreHorizontal, Save } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -40,17 +41,37 @@ export default function PinDetailTopActions({ pin }: { pin: Pin }) {
 				<Button onClick={handleLike} className="rounded-full px-3 py-2">
 					<Heart className={`h-5 w-5 ${liked ? 'fill-red-500' : 'fill-none'}`} />
 				</Button>
-				<Button
-					className="text-xl font-medium rounded-full bg-secondary"
-					variant="ghost"
-					onClick={() => onOpen(pin._id)}
-				>
-					{likeCount}
-				</Button>
-				<Button size="icon" variant="secondary" className="rounded-full">
-					<Share2 className="h-5 w-5" />
-				</Button>
-				<PinActions pinId={pin._id} pinUrl={pin.url}>
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								className="text-xl font-medium rounded-full bg-secondary"
+								variant="ghost"
+								onClick={() => onOpen(pin._id)}
+							>
+								{likeCount}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>Like Count</p>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<div className="flex gap-2 items-center rounded-full h-9 py-2 px-3 bg-secondary cursor-pointer">
+								<Save className="h-3 w-3" />
+								{pin.saveCount}
+							</div>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>Save Count</p>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+				<PinActions pin={pin}>
 					<Button size="icon" variant="secondary" className="rounded-full">
 						<MoreHorizontal className="h-5 w-5" />
 					</Button>

@@ -34,9 +34,9 @@ export class CommentsService extends GenericService<CommentDocument> {
 			}
 		}
 
-        if(query['parent_id'] === null) {
-            filter['parent_id'] = null
-        }
+		if (query['parent_id'] === null) {
+			filter['parent_id'] = null
+		}
 
 		const comments: CommentDocument[] = await this.baseFindAll(query, filter)
 		const result = await Promise.all(
@@ -61,6 +61,11 @@ export class CommentsService extends GenericService<CommentDocument> {
 		)
 
 		return result
+	}
+
+	async findOne(id: string) {
+		const comment = await this.baseFindOne(id)
+		return comment
 	}
 
 	async create(userId: string, createCommentDto: CreateCommentDto, image?: Express.Multer.File) {
@@ -99,13 +104,13 @@ export class CommentsService extends GenericService<CommentDocument> {
 		return await this.baseUpdate(id, updateCommentDto)
 	}
 
-	async delete(@UserId() userId: string, id: string) {
+	async delete(@UserId() userId: string, id: string, isAdmin?: boolean) {
 		const comment = await this.baseFindOne(id)
-        const pin = await this.pinService.baseFindOne(comment.pin_id.toString())
-		
-        if(comment.user_id !== userId && pin.user_id !== userId) {
-            throw new BadRequestException('You are not the owner of this comment')
-        }
+		const pin = await this.pinService.baseFindOne(comment.pin_id.toString())
+
+		if (comment.user_id !== userId && pin.user_id !== userId && !isAdmin) {
+			throw new BadRequestException('You are not the owner of this comment')
+		}
 
 		if (comment.parent_id) {
 			await this.commentModel.updateOne({ _id: comment.parent_id }, { $inc: { replyCount: -1 } })

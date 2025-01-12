@@ -1,5 +1,6 @@
+import { Tag } from '@/tags/tag.schema'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument } from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
 
 export type PinDocument = HydratedDocument<Pin>
 
@@ -34,6 +35,9 @@ export class Pin {
 
 	@Prop({ default: 0 })
 	commentCount: number // cached number of comments on the pin
+
+    @Prop({ type: [String], ref: Tag.name, default: [] })
+    tags: string[]
 }
 
 export const PinSchema = SchemaFactory.createForClass(Pin)

@@ -19,6 +19,7 @@ import {
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CreatePinDto } from './dto/create-pin.dto'
 import { FilterPinDto } from './dto/filter-pin.dto'
+import { GetRecommendedPinsDto } from './dto/get-recommended-pins.dto'
 import { UpdatePinDto } from './dto/update-pin.dto'
 import { PinDocument } from './pin.schema'
 import { PinsService } from './pins.service'
@@ -38,12 +39,20 @@ export class PinsController extends GenericController<PinDocument> {
 	})
 	@Public()
 	@Get()
-	async findAll(
-		@Query() query: FilterPinDto,
-		@UserId() userId?: string,
-		@IsAdmin() isAdmin?: boolean
-	) {
+	async findAll(@Query() query: FilterPinDto, @UserId() userId?: string, @IsAdmin() isAdmin?: boolean) {
 		return this.pinsService.findAll(query, userId, isAdmin)
+	}
+    
+    @ApiOperation({
+        summary: 'Get recommended pins for a user',
+        description:
+            'Get recommended pins for a user based on their tags, ' +
+            'required login, ' +
+            'only authenticated users can get their own recommended pins'
+    })
+	@Get('recommended')
+	async getRecommendedPins(@Query() query: GetRecommendedPinsDto, @UserId() userId: string) {
+		return this.pinsService.getRecommendedPins(userId, query)
 	}
 
 	@ApiOperation({ summary: 'Get a pin by ID' })
@@ -56,7 +65,7 @@ export class PinsController extends GenericController<PinDocument> {
 	@ApiBody({ type: CreatePinDto })
 	@ApiOperation({
 		summary: 'Create a new pin (image)',
-		description: 'Only for authenticated users, max file size: 20MB'
+		description: 'Only for authenticated users, max file size: 10MB'
 	})
 	@ApiConsumes('multipart/form-data') // for uploading image
 	@UseInterceptors(MulterInterceptor('image')) // get image with name 'image' from request
@@ -76,7 +85,7 @@ export class PinsController extends GenericController<PinDocument> {
 	@ApiOperation({
 		summary: 'Update a pin by ID',
 		description:
-			'Only for authenticated users, max file size: 20MB, ' +
+			'Only for authenticated users, max file size: 10MB, ' +
 			'only owner can update their pin, ' +
 			'replace the provided fields'
 	})

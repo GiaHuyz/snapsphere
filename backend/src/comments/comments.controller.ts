@@ -6,6 +6,7 @@ import { CommentsService } from './comments.service'
 import { Public } from '@/common/decorators/public'
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FilterCommentDto } from '@/comments/dto/filter-comment.dto'
+import { IsAdmin } from '@/common/decorators/isAdmin'
 
 @ApiTags('comments')
 @ApiBearerAuth()
@@ -18,6 +19,12 @@ export class CommentsController {
     @Get()
     async findAll(@Query() query: FilterCommentDto, @UserId() userId?: string) {
         return this.commentsService.findAll(query, userId)
+    }
+
+    @Public()
+    @Get(':id')
+    async findOne(@Param('id') id: string) {
+        return this.commentsService.findOne(id)
     }
 
 	@Post()
@@ -36,7 +43,7 @@ export class CommentsController {
     }
 
     @Delete(':id')
-    async delete(@UserId() userId: string, @Param('id') id: string) {
-        return this.commentsService.delete(userId, id)
+    async delete(@UserId() userId: string, @Param('id') id: string, @IsAdmin() isAdmin?: boolean) {
+        return this.commentsService.delete(userId, id, isAdmin)
     }
 }

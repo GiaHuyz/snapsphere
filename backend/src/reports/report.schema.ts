@@ -36,10 +36,6 @@ export class Report {
     @ApiProperty({ required: true, description: 'The type of the item being reported pin, comment, or user' })
     @Prop({ required: true, type: String, enum: ['pin', 'comment', 'user'] })
     type: string
-
-    @ApiProperty({ required: true, description: 'The status of the report' })
-    @Prop({ type: String, enum: ['pending', 'approved'], default: 'pending' })
-    status: string
 }
 
 export const ReportSchema = SchemaFactory.createForClass(Report)

@@ -20,14 +20,13 @@ import { Switch } from '@/components/ui/switch'
 import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
 import { isActionError } from '@/lib/errors'
 import { checkBoardDetailsPage, checkUserPage } from '@/lib/utils'
-import { useBoardDetailStore } from '@/stores/use-board-detail-store'
 import { useBoardDropdownStore } from '@/provider/board-dropdown-provider'
+import { useBoardDetailStore } from '@/stores/use-board-detail-store'
 import { useBoardPreviewStore } from '@/stores/use-board-preview-store'
-import { useUser } from '@clerk/nextjs'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Pencil } from 'lucide-react'
 import Image from 'next/image'
-import { redirect, usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -49,7 +48,6 @@ export default function EditBoardModal() {
 	const [isLoading, setIsLoading] = useState(false)
 	const [showDeleteAlert, setShowDeleteAlert] = useState(false)
 	const pathname = usePathname()
-	const { user } = useUser()
 	const router = useRouter()
 
 	const form = useForm<EditBoardData>({
@@ -102,7 +100,7 @@ export default function EditBoardModal() {
 				setBoard(res)
 				const newPathname = pathname.split('/')
 				newPathname[newPathname.length - 1] = res.title
-				router.replace(newPathname.join('/'))
+				history.pushState(null, '', newPathname.join('/'))
 			}
 			onClose()
 		}
@@ -126,8 +124,7 @@ export default function EditBoardModal() {
 				const updatedBoardsPreview = boardsPreview.filter((b) => b._id !== boardId)
 				setBoardsPreview(updatedBoardsPreview)
 			} else if (checkBoardDetailsPage(pathname)) {
-                onClose()
-				redirect(`/user/${user?.username}`)
+				router.push(`/`)
 			}
 		}
 

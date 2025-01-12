@@ -12,12 +12,14 @@ export interface IComment {
 	content: string
 	image?: string
     replyCount: number
+    likeCount: number
 	likes: number
 	user: {
 		username: string
 		fullName: string
 		imageUrl: string
 	}
+    isLiked: boolean
     createdAt: string
 }
 

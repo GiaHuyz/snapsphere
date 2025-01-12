@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Pagination } from '@/components/ui/pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { isActionError } from '@/lib/errors'
 import { User } from '@clerk/nextjs/server'
 import { MoreHorizontal, Search } from 'lucide-react'
 import { useState } from 'react'
@@ -33,14 +34,12 @@ export function UsersTable({ initialData }: UsersTableProps) {
 	const [currentPage, setCurrentPage] = useState(1)
 
 	const fetchUsers = async (page: number, query: string = '') => {
-		try {
-			const data = await getUsers(page, query)
+		const data = await getUsers(page, query)
+
+		if (!isActionError(data)) {
 			setUsers(data.users)
 			setTotalPages(data.totalPages)
 			setCurrentPage(page)
-		} catch (error) {
-			console.error('Error fetching users:', error)
-			toast.error('Failed to fetch users')
 		}
 	}
 
@@ -54,10 +53,10 @@ export function UsersTable({ initialData }: UsersTableProps) {
 			if (action === 'delete') {
 				await deleteUser(userId)
 			} else if (action === 'ban') {
-                await updateUserStatus(userId, 'ban')
-            } else if (action === 'unban') {
-                await updateUserStatus(userId, 'unban')
-            }
+				await updateUserStatus(userId, 'ban')
+			} else if (action === 'unban') {
+				await updateUserStatus(userId, 'unban')
+			}
 
 			toast.success(`User ${action}ed successfully`)
 
@@ -132,13 +131,8 @@ export function UsersTable({ initialData }: UsersTableProps) {
 										<DropdownMenuContent align="end">
 											<DropdownMenuLabel>Actions</DropdownMenuLabel>
 											<DropdownMenuItem
-                                                className='cursor-pointer'
-												onClick={() =>
-													handleAction(
-														user.id,
-														user.banned ? 'unban' : 'ban'
-													)
-												}
+												className="cursor-pointer"
+												onClick={() => handleAction(user.id, user.banned ? 'unban' : 'ban')}
 											>
 												{user.banned ? 'Unban' : 'Ban'} User
 											</DropdownMenuItem>

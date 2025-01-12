@@ -1,18 +1,20 @@
 'use client'
 
 import ModeToggle from '@/components/mode-toggle'
+import { SearchBar } from '@/components/seach-bar'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SignInButton, SignUpButton, UserButton } from '@clerk/nextjs'
 import { User } from '@clerk/nextjs/server'
-import { LayoutDashboard, Search, UserRoundPen } from 'lucide-react'
+import { LayoutDashboard, UserRoundPen } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function Header({ user }: { user: User }) {
 	const isSignedIn = !!user
 	const pathname = usePathname()
+	const router = useRouter()
 
 	return (
 		<div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -22,29 +24,44 @@ export default function Header({ user }: { user: User }) {
 						<Image src="/logo.png" alt="logo" width={24} height={24} />
 					</Link>
 					{isSignedIn && (
-						<Button
-							variant={pathname === '/' ? 'default' : 'ghost'}
-							className="text-sm font-medium"
-							asChild
-						>
-							<Link href="/">Home</Link>
-						</Button>
-					)}
-					{isSignedIn && (
-						<Button
-							variant={pathname === '/create' ? 'default' : 'ghost'}
-							className="text-sm font-medium"
-							asChild
-						>
-							<Link href="/create">Create</Link>
-						</Button>
+						<>
+							<div className="hidden md:flex space-x-4">
+								<Button
+									variant={pathname === '/' ? 'default' : 'ghost'}
+									className="text-sm font-medium"
+									asChild
+								>
+									<Link href="/">Home</Link>
+								</Button>
+								<Button
+									variant={pathname === '/create' ? 'default' : 'ghost'}
+									className="text-sm font-medium"
+									asChild
+								>
+									<Link href="/create">Create</Link>
+								</Button>
+							</div>
+							<div className="md:hidden">
+								<Select
+									defaultValue={
+										pathname === '/' ? 'home' : pathname === '/create' ? 'create' : 'home'
+									}
+									onValueChange={(value) => router.push(value === 'home' ? '/' : '/create')}
+								>
+									<SelectTrigger className="w-[90px]">
+										<SelectValue placeholder="Select" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="home">Home</SelectItem>
+										<SelectItem value="create">Create</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</>
 					)}
 				</div>
 				<div className="flex-1 px-4">
-					<div className="relative">
-						<Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-						<Input placeholder="Search for inspiration" className="pl-8 h-[48px] rounded-full" />
-					</div>
+					<SearchBar />
 				</div>
 				<div className="flex items-center space-x-4">
 					<ModeToggle />

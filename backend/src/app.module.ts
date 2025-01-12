@@ -13,6 +13,7 @@ import { FollowsModule } from './follows/follows.module'
 import { LikesModule } from './likes/likes.module'
 import { PinsModule } from './pins/pins.module'
 import { ReportsModule } from './reports/reports.module'
+import { TagsModule } from './tags/tags.module';
 
 @Module({
 	imports: [
@@ -31,7 +32,8 @@ import { ReportsModule } from './reports/reports.module'
 		CommentsModule,
 		FollowsModule,
 		ReportsModule,
-		LikesModule
+		LikesModule,
+		TagsModule
 	],
 	controllers: [AppController],
 	providers: [

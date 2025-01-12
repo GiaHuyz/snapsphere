@@ -147,7 +147,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, className, ...props
 			{...props}
 		>
 			<PaginationContent>
-				<PaginationItem className='cursor-pointer'>
+				<PaginationItem className="cursor-pointer">
 					<PaginationPrevious
 						onClick={() => onPageChange(currentPage - 1)}
 						aria-disabled={currentPage <= 1}
@@ -156,7 +156,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, className, ...props
 					/>
 				</PaginationItem>
 				{pageNumbers.map((number, index) => (
-					<PaginationItem key={index} className='cursor-pointer'>
+					<PaginationItem key={index} className="cursor-pointer">
 						{number === 'ellipsis' ? (
 							<PaginationEllipsis />
 						) : (
@@ -166,7 +166,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, className, ...props
 						)}
 					</PaginationItem>
 				))}
-				<PaginationItem className='cursor-pointer'>
+				<PaginationItem className="cursor-pointer">
 					<PaginationNext
 						onClick={() => onPageChange(currentPage + 1)}
 						aria-disabled={currentPage >= totalPages}

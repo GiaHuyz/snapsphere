@@ -5,10 +5,11 @@ interface PinTransModalStore {
 	imageFile: File | null
 	imagePreview: string | null
     currentImage: string | null
-	onOpen: (image: File | null) => void
+	onOpen: () => void
 	onClose: () => void
 	setImagePreview: (preview: string | null) => void
     setCurrentImage: (currentImage: string | null) => void
+    setImageFile: (image: File | null) => void
 }
 
 export const usePinTransModal = create<PinTransModalStore>((set) => ({
@@ -16,8 +17,9 @@ export const usePinTransModal = create<PinTransModalStore>((set) => ({
 	imageFile: null,
 	imagePreview: null,
 	currentImage: null,
-	onOpen: (imageFile) => set({ isOpen: true, imageFile }),
+	onOpen: () => set({ isOpen: true }),
 	onClose: () => set({ isOpen: false, imageFile: null }),
     setImagePreview: (preview) => set({ imagePreview: preview }),
     setCurrentImage: (currentImage) => set({ currentImage }),
+    setImageFile: (imageFile) => set({ imageFile })
 }))

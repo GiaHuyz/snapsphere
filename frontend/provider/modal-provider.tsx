@@ -4,6 +4,7 @@ import EditPinModal from '@/components/modals/edit-pin-modal'
 import LikesListModal from '@/components/modals/like-list-modal'
 import PinTransModal from '@/components/modals/pin-trans-modal'
 import ReportModal from '@/components/modals/report-modal'
+import { SaveFromUrlModal } from '@/components/modals/save-from-url-modal'
 import UploadImageModal from '@/components/modals/upload-image-modal'
 
 export default function ModalProvider() {
@@ -16,6 +17,7 @@ export default function ModalProvider() {
 			<PinTransModal />
             <ReportModal />
             <LikesListModal />
+            <SaveFromUrlModal />
 		</>
 	)
 }

@@ -2,6 +2,7 @@ export const PAGE_SIZE_COMMENTS = 20
 export const PAGE_SIZE_PINS = 20
 export const PAGE_SIZE_BOARDS = 20
 export const PAGE_SIZE_USERS_LIKES = 20
+export const PAGE_SIZE_TAGS = 20
 
 export enum ReportReason {
 	SPAM = 'spam',

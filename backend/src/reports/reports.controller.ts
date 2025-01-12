@@ -26,13 +26,6 @@ export class ReportsController {
 		return this.reportsService.findAll(query)
 	}
 
-	@ApiOperation({ summary: 'Approve report only for admin' })
-	@UseGuards(AdminGuard)
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateReportDto: UpdateReportDto) {
-		return this.reportsService.update(id, updateReportDto)
-	}
-
 	@ApiOperation({ summary: 'Delete report only for admin' })
 	@UseGuards(AdminGuard)
 	@Delete(':id')

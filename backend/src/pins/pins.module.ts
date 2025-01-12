@@ -7,6 +7,8 @@ import { PinsController } from './pins.controller'
 import { PinsService } from './pins.service'
 import { BoardPinModule } from '@/board-pin/board-pin.module'
 import { LikesModule } from '@/likes/likes.module'
+import { ClarifaiModule } from '@/clarifai/clarifai.module'
+import { TagsModule } from '@/tags/tags.module'
 
 @Module({
 	imports: [
@@ -14,7 +16,9 @@ import { LikesModule } from '@/likes/likes.module'
 		CloudinaryModule,
 		forwardRef(() => BoardsModule),
         forwardRef(() => BoardPinModule),
-        forwardRef(() => LikesModule)
+        forwardRef(() => LikesModule),
+        TagsModule,
+        ClarifaiModule
     ],
 	controllers: [PinsController],
 	providers: [PinsService],

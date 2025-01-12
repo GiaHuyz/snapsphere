@@ -2,8 +2,7 @@ import { IsEnum, IsOptional } from 'class-validator'
 
 enum ReportStatus {
 	PENDING = 'pending',
-	APPROVED = 'approved',
-	REJECTED = 'rejected'
+	PROCESSED = 'processed'
 }
 
 export class UpdateReportDto {
