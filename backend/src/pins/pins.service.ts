@@ -188,7 +188,7 @@ export class PinsService extends GenericService<PinDocument> {
 				$facet: {
 					// Get user's recently created pins (limited to last 50)
 					recentCreated: [
-						{ $match: { user_id: userId } },
+						{ $match: { user_id: userId, secret: false } },
 						{ $sort: { created_at: -1 } },
 						{ $limit: 50 },
 						{ $project: { _id: 1, tags: 1 } }
@@ -202,7 +202,9 @@ export class PinsService extends GenericService<PinDocument> {
 								pipeline: [
 									{
 										$match: {
-											$expr: { $eq: ['$pin_id', '$$pinId'] }
+											$expr: {
+												$and: [{ $eq: ['$pin_id', '$$pinId'] }, { $eq: ['$secret', false] }]
+											}
 										}
 									},
 									{
@@ -215,7 +217,8 @@ export class PinsService extends GenericService<PinDocument> {
 														$expr: {
 															$and: [
 																{ $eq: ['$_id', '$$boardId'] },
-																{ $eq: ['$user_id', userId] }
+																{ $eq: ['$user_id', userId] },
+																{ $eq: ['$secret', false] }
 															]
 														}
 													}
@@ -249,6 +252,7 @@ export class PinsService extends GenericService<PinDocument> {
 				$match: {
 					_id: { $nin: excludePinIds },
 					user_id: { $ne: userId },
+					secret: false,
 					tags: { $in: recentTags } // Only get pins with matching tags
 				}
 			},
@@ -286,6 +290,7 @@ export class PinsService extends GenericService<PinDocument> {
 		const totalItems = await this.pinModel.countDocuments({
 			_id: { $nin: excludePinIds },
 			user_id: { $ne: userId },
+			secret: false,
 			tags: { $in: recentTags }
 		})
 

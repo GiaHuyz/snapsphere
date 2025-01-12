@@ -91,7 +91,7 @@ export default function BoardDropdown({ mode, onChange, pin, children }: BoardDr
 							onClick={(e) => e.preventDefault()}
 							data-prevent-nprogress={true}
 						>
-							{boardsDropdown[0]?.title.slice(0, 13) + '...'}
+							{boardsDropdown[0] ? boardsDropdown[0].title.slice(0, 13) + '...' : 'No boards'}
 							<ChevronDown className="ml-1 h-4 w-4" />
 						</Button>
 					</DropdownMenuTrigger>
