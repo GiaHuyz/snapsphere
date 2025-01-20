@@ -44,7 +44,7 @@ export class CommentsService extends GenericService<CommentDocument> {
 				const user = await clerkClient.users.getUser(comment.user_id)
 				let isLiked = false
 				if (userId) {
-					if (await this.likeModel.findOne({ item_id: comment._id, user_id: userId })) {
+					if (await this.likeModel.findOne({ user_id: userId, item_id: comment._id })) {
 						isLiked = true
 					}
 				}

@@ -28,6 +28,11 @@ interface EditBoardData {
 	coverImageIds?: string[]
 }
 
+interface MergeBoardDto {
+	currentBoardId: string
+	selectedBoardId: string
+}
+
 export const createBoardAction = createServerAction<createBoardData, Board>(async (data) => {
 	try {
 		const newBoard = await HttpRequest.post<Board>('/boards', data)
@@ -88,3 +93,12 @@ export const getBoardsAction = createServerAction<QueryParams, Board[]>(
 	},
 	{ requireAuth: false }
 )
+
+export const mergeBoardsAction = createServerAction<MergeBoardDto, { message: string }>(async (mergeBoardDto) => {
+	try {
+		const res = await HttpRequest.post<{ message: string }>('board-pin/merge', mergeBoardDto)
+		return res
+	} catch (error) {
+		return { error: getErrorMessage(error) }
+	}
+})

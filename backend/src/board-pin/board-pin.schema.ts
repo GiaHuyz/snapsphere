@@ -16,3 +16,5 @@ export class BoardPin {
 }
 
 export const BoardPinSchema = SchemaFactory.createForClass(BoardPin)
+
+BoardPinSchema.index({ board_id: 1, pin_id: 1 }, { unique: true })

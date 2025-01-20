@@ -4,10 +4,11 @@ import { Board } from '@/actions/board-actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { useEditBoardModal } from '@/hooks/use-edit-board-modal'
+import { useMergeBoardModal } from '@/hooks/use-merge-board-modal'
 import { useMounted } from '@/hooks/use-mouted'
 import { useBoardDetailStore } from '@/stores/use-board-detail-store'
 import { User } from '@clerk/nextjs/server'
-import { Pencil, Share2 } from 'lucide-react'
+import { Combine, Pencil, Share2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
@@ -20,6 +21,7 @@ interface BoardHeaderProps {
 export default function BoardHeader({ initBoard, user, isOwner }: BoardHeaderProps) {
 	const { onOpen } = useEditBoardModal()
 	const { board, setBoard } = useBoardDetailStore()
+    const { onOpen: onOpenMerge } = useMergeBoardModal()
 	const isMounted = useMounted()
 
 	const handleShare = () => {
@@ -51,10 +53,16 @@ export default function BoardHeader({ initBoard, user, isOwner }: BoardHeaderPro
 					Share
 				</Button>
 				{isOwner && (
-					<Button onClick={() => onOpen(board._id, board)} variant="outline" className="rounded-full">
-						<Pencil className="mr-2 h-4 w-4" />
-						Edit
-					</Button>
+					<>
+						<Button onClick={() => onOpen(board._id, board)} variant="outline" className="rounded-full">
+							<Pencil className="mr-2 h-4 w-4" />
+							Edit
+						</Button>
+						<Button onClick={() => onOpenMerge(board)} variant="outline" className="rounded-full">
+							<Combine className="mr-2 h-4 w-4" />
+							Merge
+						</Button>
+					</>
 				)}
 			</div>
 		</div>

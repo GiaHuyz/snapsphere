@@ -41,3 +41,5 @@ export class Pin {
 }
 
 export const PinSchema = SchemaFactory.createForClass(Pin)
+
+PinSchema.index({ user_id: 1 })

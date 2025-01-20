@@ -82,7 +82,7 @@ export default function PinList({ initialPins, boardId, pageName, search }: PinL
 
 	return (
 		<>
-			<MansoryLayout className={`xl:columns-${pageName === 'Ideas' ? 4 : 6}`}>
+			<MansoryLayout className={pageName === 'Ideas' ? 'xl:columns-4' : 'xl:columns-6'}>
 				{(isMouted ? pins : initialPins).map((pin) => (
 					<Pin key={pin._id} pin={pin} />
 				))}

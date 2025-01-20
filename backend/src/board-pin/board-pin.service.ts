@@ -1,5 +1,7 @@
 import { BoardPin, BoardPinDocument } from '@/board-pin/board-pin.schema'
 import { CreateBoardPinDto } from '@/board-pin/dto/create-board-pin.dto'
+import { MergeBoardDto } from '@/board-pin/dto/merge-board-dto'
+import { Board, BoardDocument } from '@/boards/board.schema'
 import { BoardsService } from '@/boards/boards.service'
 import { GenericService } from '@/common/generic/generic.service'
 import { checkOwnership } from '@/common/utils/check-owner-ship.util'
@@ -13,6 +15,7 @@ import { FilterBoardPinDto } from './dto/filter-board-pin.dto'
 export class BoardPinService extends GenericService<BoardPinDocument> {
 	constructor(
 		@InjectModel(BoardPin.name) private readonly boardPinModel: Model<BoardPinDocument>,
+		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
 		@Inject(forwardRef(() => BoardsService)) private readonly boardService: BoardsService,
 		@Inject(forwardRef(() => PinsService)) private readonly pinService: PinsService
 	) {
@@ -58,42 +61,42 @@ export class BoardPinService extends GenericService<BoardPinDocument> {
 			{ $unwind: '$pin' },
 			{
 				$project: {
-                    _id: 1,
+					_id: 1,
 					user_id: 1,
 					board: {
-                        $cond: {
-                            if: { $eq: ['$board.user_id', userId] },
-                            then: '$board',
-                            else: { 
-                                $cond: {
-                                    if: { $eq: ['$board.secret', false] },
-                                    then: '$board',
-                                    else: undefined
-                                }
-                            }
-                        }
-                    },
-                    pin: {
-                        $cond: {
-                            if: { $eq: ['$pin.user_id', userId] },
-                            then: '$pin',
-                            else: { 
-                                $cond: {
-                                    if: { $eq: ['$pin.secret', false] },
-                                    then: '$pin',
-                                    else: undefined
-                                }
-                            }
-                        }
-                    }
+						$cond: {
+							if: { $eq: ['$board.user_id', userId] },
+							then: '$board',
+							else: {
+								$cond: {
+									if: { $eq: ['$board.secret', false] },
+									then: '$board',
+									else: undefined
+								}
+							}
+						}
+					},
+					pin: {
+						$cond: {
+							if: { $eq: ['$pin.user_id', userId] },
+							then: '$pin',
+							else: {
+								$cond: {
+									if: { $eq: ['$pin.secret', false] },
+									then: '$pin',
+									else: undefined
+								}
+							}
+						}
+					}
 				}
 			},
-            {
-                $skip: (page - 1) * pageSize
-            },
-            {
-                $limit: pageSize
-            }
+			{
+				$skip: (page - 1) * pageSize
+			},
+			{
+				$limit: pageSize
+			}
 		])
 
 		return boardsPin
@@ -153,11 +156,58 @@ export class BoardPinService extends GenericService<BoardPinDocument> {
 
 		const board = await this.boardService.baseFindOne(boardPin.board_id)
 		board.pinCount = board.pinCount - 1
-        board.coverImages = board.coverImages.filter((id) => id.toString() !== boardPin.pin_id.toString())
+		board.coverImages = board.coverImages.filter((id) => id.toString() !== boardPin.pin_id.toString())
 
 		// delete board pin
 		await Promise.all([this.boardPinModel.findByIdAndDelete(id), pin.save(), board.save()])
 
 		return { message: 'Board pin deleted successfully' }
+	}
+
+	async mergeBoard(mergeBoardDto: MergeBoardDto, userId: string) {
+		const { currentBoardId, selectedBoardId } = mergeBoardDto
+
+		const [currentBoard, selectedBoard] = await Promise.all([
+			this.boardService.baseFindOne(currentBoardId.toString()),
+			this.boardService.baseFindOne(selectedBoardId.toString())
+		])
+
+		checkOwnership(currentBoard, userId)
+		checkOwnership(selectedBoard, userId)
+
+		const [currentBoardPins, selectedBoardPins] = await Promise.all([
+			this.boardPinModel.find({ board_id: currentBoardId }),
+			this.boardPinModel.find({ board_id: selectedBoardId })
+		])
+
+		const selectedPinIds = new Set(selectedBoardPins.map((pin) => pin.pin_id.toString()))
+		const pinsToMove = currentBoardPins.filter((pin) => !selectedPinIds.has(pin.pin_id.toString()))
+		const pinIdsToMove = pinsToMove.map((pin) => pin.pin_id)
+
+		if (pinsToMove.length > 0) {
+			await this.boardPinModel.updateMany(
+				{ board_id: currentBoardId, pin_id: { $in: pinIdsToMove } },
+				{ board_id: selectedBoardId }
+			)
+		}
+
+		await Promise.all([
+			this.boardPinModel.deleteMany({ board_id: currentBoardId }),
+			this.boardModel.findByIdAndDelete(currentBoardId)
+		])
+
+		selectedBoard.pinCount += pinsToMove.length
+		if (selectedBoard.coverImages.length < 3) {
+			selectedBoard.coverImages = [
+				...selectedBoard.coverImages,
+				...pinIdsToMove
+					.slice(0, 3 - selectedBoard.coverImages.length)
+					.map((id) => new Types.ObjectId(id.toString()))
+			]
+		}
+
+		await selectedBoard.save()
+
+		return { message: 'Board merged successfully' }
 	}
 }

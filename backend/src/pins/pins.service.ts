@@ -6,8 +6,10 @@ import { buildRangeFilter } from '@/common/utils/build-range-filter'
 import { checkOwnership } from '@/common/utils/check-owner-ship.util'
 import { Like, LikeDocument } from '@/likes/like.shema'
 import { Tag, TagDocument } from '@/tags/tag.schema'
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
+import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { Cache } from 'cache-manager'
 import { Model } from 'mongoose'
 import { CloudinaryService } from '../cloudinary/cloudinary.service'
 import { CreatePinDto } from './dto/create-pin.dto'
@@ -25,12 +27,19 @@ export class PinsService extends GenericService<PinDocument> {
 		@InjectModel(Like.name) private readonly likeModel: Model<LikeDocument>,
 		@InjectModel(Tag.name) private readonly tagModel: Model<TagDocument>,
 		private readonly clarifaiService: ClarifaiService,
-		private readonly cloudinaryService: CloudinaryService
+		private readonly cloudinaryService: CloudinaryService,
+		@Inject(CACHE_MANAGER) private cacheManager: Cache
 	) {
 		super(pinModel)
 	}
 
 	async findAll(query: FilterPinDto, userId: string, isAdmin: boolean) {
+		const cacheKey = `pins:${JSON.stringify(query || {})}:${userId || 'guest'}:${isAdmin}`
+
+		// Try to get data from cache
+		const cachedData = await this.cacheManager.get(cacheKey)
+		if (cachedData) return cachedData
+
 		// extract query parameters
 		const {
 			user_id,
@@ -73,7 +82,12 @@ export class PinsService extends GenericService<PinDocument> {
 		const data = await this.baseFindAll(query, filter)
 		const totalItems = await this.pinModel.countDocuments(filter)
 
-		return { data, totalPages: Math.ceil(totalItems / (query.pageSize || 10)) }
+		const result = { data, totalPages: Math.ceil(totalItems / (query.pageSize || 10)) }
+
+		// Store in cache for 30 minutes
+		await this.cacheManager.set(cacheKey, result)
+
+		return result
 	}
 
 	/**
@@ -167,7 +181,8 @@ export class PinsService extends GenericService<PinDocument> {
 			this.boardModel.updateMany({ _id: { $in: boardIds } }, { $inc: { pinCount: -1 } }),
 			// delete the pin from the database
 			this.pinModel.findByIdAndDelete(id),
-			this.boardPinModel.deleteMany({ pin_id: pin._id })
+			this.boardPinModel.deleteMany({ pin_id: pin._id }),
+            this.likeModel.deleteMany({ item_id: pin._id })
 		])
 	}
 
@@ -177,9 +192,16 @@ export class PinsService extends GenericService<PinDocument> {
 	 * 1. Using limit in queries to reduce data load
 	 * 2. Combining queries using $lookup
 	 * 3. Using simpler scoring mechanism
+	 * 4. Implementing Redis caching for faster responses
 	 */
 	async getRecommendedPins(userId: string, query: GetRecommendedPinsDto) {
 		const { page = 1, pageSize = 10 } = query
+		const cacheKey = `recommendations:${userId}:${page}:${pageSize}`
+
+		// Try to get recommendations from cache
+		const cachedRecommendations = await this.cacheManager.get(cacheKey)
+		if (cachedRecommendations) return cachedRecommendations
+
 		const skip = (page - 1) * pageSize
 
 		// Get user's recent interactions in a single aggregation
@@ -294,9 +316,14 @@ export class PinsService extends GenericService<PinDocument> {
 			tags: { $in: recentTags }
 		})
 
-		return {
+		const result = {
 			data: recommendedPins,
 			totalPages: Math.ceil(totalItems / pageSize)
 		}
+
+		// Cache recommendations 
+		await this.cacheManager.set(cacheKey, result)
+
+		return result
 	}
 }
