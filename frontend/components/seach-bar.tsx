@@ -223,8 +223,8 @@ export function SearchBar() {
 									))}
 								</CommandGroup>
 							)}
-							{results.users?.length > 0 && results.tags.length > 0 && <CommandSeparator />}
-							{!isLoading && results.tags.length > 0 && (
+							{results.users?.length > 0 && results.tags?.length > 0 && <CommandSeparator />}
+							{!isLoading && results.tags?.length > 0 && (
 								<CommandGroup heading="Tags">
 									{results.tags.map((tag) => (
 										<CommandItem
@@ -239,9 +239,9 @@ export function SearchBar() {
 								</CommandGroup>
 							)}
 							{!isLoading &&
-								results.recent.length > 0 &&
-								results.tags.length === 0 &&
-								results.users.length === 0 && (
+								results.recent?.length > 0 &&
+								results.tags?.length === 0 &&
+								results.users?.length === 0 && (
 									<CommandGroup heading="Recent Searches">
 										{results.recent.map((result) => (
 											<CommandItem

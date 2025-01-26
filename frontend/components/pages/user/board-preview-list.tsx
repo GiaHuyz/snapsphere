@@ -8,6 +8,7 @@ import { useCreateBoardModal } from '@/hooks/use-create-board-modal'
 import { useMounted } from '@/hooks/use-mouted'
 import { PAGE_SIZE_BOARDS } from '@/lib/constants'
 import { isActionError } from '@/lib/errors'
+import { cn } from '@/lib/utils'
 import { useBoardPreviewStore } from '@/stores/use-board-preview-store'
 import { Loader2, Plus, Settings2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -16,11 +17,13 @@ import { useInView } from 'react-intersection-observer'
 export default function BoardPreviewList({
 	initBoardsPreview,
 	userId,
-	username
+	username,
+	search
 }: {
 	initBoardsPreview: Board[]
 	userId: string
 	username: string
+	search?: string
 }) {
 	const { onOpen } = useCreateBoardModal()
 	const { boardsPreview, setBoardsPreview } = useBoardPreviewStore()
@@ -37,7 +40,7 @@ export default function BoardPreviewList({
 	}
 
 	const loadMoreBoards = async () => {
-		const res = await getBoardsAction({ user_id: userId, page: page, pageSize: PAGE_SIZE_BOARDS })
+		const res = await getBoardsAction({ user_id: userId, title: search, page: page, pageSize: PAGE_SIZE_BOARDS })
 		if (!isActionError(res)) {
 			setBoardsPreview([...boardsPreview, ...res])
 			setPage(page + 1)
@@ -60,7 +63,7 @@ export default function BoardPreviewList({
 
 	return (
 		<>
-			<div className="flex justify-between items-center">
+			{!search && <div className="flex justify-between items-center">
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button className="rounded-full">
@@ -80,8 +83,8 @@ export default function BoardPreviewList({
 				<Button className="rounded-full" onClick={() => onOpen()}>
 					<Plus />
 				</Button>
-			</div>
-			<div className="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-6 mt-6">
+			</div>}
+			<div className={cn("grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-6 mt-6", search && "px-2 mt-0")}>
 				{(isMouted ? boardsPreview : initBoardsPreview).map((board) => (
 					<BoardPreview key={board._id} {...board} username={username} />
 				))}
