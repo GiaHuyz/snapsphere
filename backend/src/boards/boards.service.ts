@@ -24,12 +24,6 @@ export class BoardsService extends GenericService<BoardDocument> {
 	}
 
 	async findAll(query: FilterBoardDto, userId?: string): Promise<BoardDocument[]> {
-		const cacheKey = `boards:${JSON.stringify(query || {})}:${userId || 'guest'}`
-
-		// Try to get data from cache
-		const cachedData = await this.cacheManager.get(cacheKey)
-		if (cachedData) return cachedData as BoardDocument[]
-
 		// extract query parameters
 		const { user_id, title, description, pinCountMin, pinCountMax } = query
 		// build filter conditions
@@ -52,9 +46,6 @@ export class BoardsService extends GenericService<BoardDocument> {
 			select: 'url'
 		})
 
-		// Store in cache for 30 minutes
-		await this.cacheManager.set(cacheKey, result)
-
 		return result
 	}
 
@@ -69,11 +60,13 @@ export class BoardsService extends GenericService<BoardDocument> {
 
 		await this.checkExistTitle(userId, createBoardDto.title)
 
-		return this.boardModel.create({
+		const newBoard = await this.boardModel.create({
 			...createBoardDto,
 			user_id: userId,
 			coverImages: coverImageIds
 		})
+
+		return newBoard
 	}
 
 	async update(id: string, userId: string, updateBoardDto: UpdateBoardDto): Promise<BoardDocument> {
@@ -97,19 +90,22 @@ export class BoardsService extends GenericService<BoardDocument> {
 			...updateBoardDto,
 			coverImages: coverImageIds
 		})
+
 		// save and return updated board
-		return this.boardModel.findByIdAndUpdate(id, document, { new: true })
+		const updatedBoard = await this.boardModel.findByIdAndUpdate(id, document, { new: true })
+
+		return updatedBoard
 	}
 
-	async delete(id: string, userId: string) {
-		// check if board exists
-		const board = await this.baseFindOne(id)
+	async delete(id: string, userId: string, isAdmin?: boolean) {
+		const document = await this.baseFindOne(id)
 
-		// check ownership
-		checkOwnership(board, userId)
+		if (!isAdmin) checkOwnership(document, userId)
 
-		// delete board
-		await Promise.all([this.boardModel.deleteOne({ _id: id }), this.boardPinModel.deleteMany({ board_id: id })])
+		await Promise.all([
+			this.boardModel.findByIdAndDelete(id),
+			this.boardPinModel.deleteMany({ board_id: document._id })
+		])
 
 		return { message: 'Board deleted successfully' }
 	}

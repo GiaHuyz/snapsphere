@@ -34,11 +34,15 @@ export class PinsService extends GenericService<PinDocument> {
 	}
 
 	async findAll(query: FilterPinDto, userId: string, isAdmin: boolean) {
-		const cacheKey = `pins:${JSON.stringify(query || {})}:${userId || 'guest'}:${isAdmin}`
+		// Only cache if there's a search query
+		const shouldCache = !!query.search;
+		const cacheKey = shouldCache ? `pins:search:${query.search}:${userId}:${isAdmin}` : null;
 
-		// Try to get data from cache
-		const cachedData = await this.cacheManager.get(cacheKey)
-		if (cachedData) return cachedData
+		// Try to get data from cache only if we should cache
+		if (shouldCache) {
+			const cachedData = await this.cacheManager.get(cacheKey)
+			if (cachedData) return cachedData
+		}
 
 		// extract query parameters
 		const {
@@ -84,8 +88,10 @@ export class PinsService extends GenericService<PinDocument> {
 
 		const result = { data, totalPages: Math.ceil(totalItems / (query.pageSize || 10)) }
 
-		// Store in cache for 30 minutes
-		await this.cacheManager.set(cacheKey, result)
+		// Store in cache only if we should cache
+		if (shouldCache) {
+			await this.cacheManager.set(cacheKey, result)
+		}
 
 		return result
 	}
@@ -161,7 +167,9 @@ export class PinsService extends GenericService<PinDocument> {
 
 		// update the pin with the new data
 		pin.set(updatedPinDto)
-		return await pin.save()
+		const updatedPin = await pin.save()
+
+		return updatedPin
 	}
 
 	async delete(id: string, userId: string, isAdmin?: boolean): Promise<void> {
