@@ -10,20 +10,23 @@ import { PAGE_SIZE_BOARDS } from '@/lib/constants'
 import { isActionError } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { useBoardPreviewStore } from '@/stores/use-board-preview-store'
-import { Loader2, Plus, Settings2 } from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
+import { Check, Loader2, Plus, Settings2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 
 export default function BoardPreviewList({
 	initBoardsPreview,
 	userId,
+	userSort,
 	username,
 	search
 }: {
 	initBoardsPreview: Board[]
-	userId: string
-	username: string
-	search?: string
+	userId: string,
+	username: string,
+	search?: string,
+	userSort?: string
 }) {
 	const { onOpen } = useCreateBoardModal()
 	const { boardsPreview, setBoardsPreview } = useBoardPreviewStore()
@@ -31,16 +34,24 @@ export default function BoardPreviewList({
 	const [page, setPage] = useState(2)
 	const [hasMore, setHasMore] = useState(true)
 	const isMouted = useMounted()
+	const { user } = useUser()
+	const [sort, setSort] = useState<string>(userSort || 'createdAt-desc')
 
 	const handleSort = async (value: string) => {
 		const res = await getBoardsAction({ user_id: userId, sort: value })
 		if (!isActionError(res)) {
 			setBoardsPreview(res)
+			await user?.update({
+				unsafeMetadata: {
+					sort: value
+				}
+			})
+			setSort(value)
 		}
 	}
 
 	const loadMoreBoards = async () => {
-		const res = await getBoardsAction({ user_id: userId, title: search, page: page, pageSize: PAGE_SIZE_BOARDS })
+		const res = await getBoardsAction({ user_id: userId, title: search, page: page, pageSize: PAGE_SIZE_BOARDS, sort: userSort })
 		if (!isActionError(res)) {
 			setBoardsPreview([...boardsPreview, ...res])
 			setPage(page + 1)
@@ -71,11 +82,17 @@ export default function BoardPreviewList({
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start">
-						<DropdownMenuItem className="cursor-pointer" onClick={() => handleSort('created_at')}>
-							Created At
+						<DropdownMenuItem className="flex justify-between cursor-pointer" onClick={() => handleSort('title-asc')}>
+							A-Z
+							{sort === 'title-asc' && <Check className="h-4 w-4" />}
 						</DropdownMenuItem>
-						<DropdownMenuItem className="cursor-pointer" onClick={() => handleSort('pinCount')}>
+						<DropdownMenuItem className="flex justify-between cursor-pointer" onClick={() => handleSort('createdAt-desc')}>
+							Created At
+							{sort === 'createdAt-desc' && <Check className="h-4 w-4" />}
+						</DropdownMenuItem>
+						<DropdownMenuItem className="flex justify-between cursor-pointer" onClick={() => handleSort('pinCount-desc')}>
 							Pin Count
+							{sort === 'pinCount-desc' && <Check className="h-4 w-4" />}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

@@ -40,7 +40,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 	const [loginedUser, pins, boardsPreview, followers, following] = await Promise.all([
 		currentUser(),
 		getAllPinsUserAction({ user_id: user.id }),
-		getBoardsAction({ user_id: user.id }),
+		getBoardsAction({ user_id: user.id, sort: user.unsafeMetadata.sort as string }),
 		getAllFollowsAction({ followingId: user.id }),
 		getAllFollowsAction({ followerId: user.id })
 	])
@@ -103,7 +103,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 					</TabsContent>
 
 					<TabsContent forceMount value="saved" className="mt-2 data-[state=inactive]:hidden">
-						<BoardPreviewList initBoardsPreview={boardsPreview} userId={user.id} username={username} />
+						<BoardPreviewList initBoardsPreview={boardsPreview} userId={user.id} username={username} userSort={user.unsafeMetadata.sort as string}/>
 					</TabsContent>
 				</Tabs>
 			</div>

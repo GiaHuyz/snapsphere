@@ -35,6 +35,20 @@ export class BoardsService extends GenericService<BoardDocument> {
 		if (pinCountMin) filterConditions.pinCount = { $gte: pinCountMin }
 		if (pinCountMax) filterConditions.pinCount = { $lte: pinCountMax }
 
+		const sort: Record<string, 1 | -1> = {}
+		if (['title', 'pinCount', 'createdAt'].includes(query.sort.split('-')[0])) {
+			const order = query.sort.split('-')[1]
+			if (order !== 'asc' && order !== 'desc') throw new BadRequestException('Invalid order')
+			sort[query.sort.split('-')[0]] = order === 'asc' ? 1 : -1
+			console.log(query.sort)
+		}
+
+		if (Object.keys(sort).length === 0) {
+			sort.createdAt = -1
+		}
+
+		console.log(sort)
+
 		// only authenticated users can get their own boards
 		const currentUserId = userId
 		if (currentUserId !== user_id) {
@@ -44,7 +58,7 @@ export class BoardsService extends GenericService<BoardDocument> {
 		const result = await this.baseFindAll(query, filterConditions, {
 			path: 'coverImages',
 			select: 'url'
-		})
+		}, sort)
 
 		return result
 	}

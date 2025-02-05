@@ -1,8 +1,7 @@
 // boards/dto/filter-board.dto.ts
 import { BaseFilterDto } from '@/common/dto/filter-base.dto';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsOptional, IsMongoId, IsBoolean, IsString, MaxLength } from 'class-validator';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class FilterBoardDto extends BaseFilterDto {
   @ApiPropertyOptional({
@@ -39,4 +38,11 @@ export class FilterBoardDto extends BaseFilterDto {
   })
   @IsOptional()
   pinCountMax?: number;
+
+  @ApiPropertyOptional({
+    description: 'Sort the boards by title, pin count, or creation date',
+  })
+  @IsOptional()
+  @IsString()
+  sort?: string;
 }
