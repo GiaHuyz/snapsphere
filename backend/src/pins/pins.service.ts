@@ -277,7 +277,7 @@ export class PinsService extends GenericService<PinDocument> {
 		const excludePinIds = recentPins.map((p) => p._id)
 
 		// Get recommendations using a simpler scoring system
-		const recommendedPins = await this.pinModel.aggregate([
+		let recommendedPins = await this.pinModel.aggregate([
 			{
 				$match: {
 					_id: { $nin: excludePinIds },
@@ -316,13 +316,35 @@ export class PinsService extends GenericService<PinDocument> {
 			}
 		])
 
+		// If no recommendations found, return all public pins except user's own pins
+		if (recommendedPins.length === 0) {
+			recommendedPins = await this.pinModel.aggregate([
+				{
+					$match: {
+						user_id: { $ne: userId },
+						secret: false
+					}
+				},
+				{ $sort: { created_at: -1 } },
+				{ $skip: skip },
+				{ $limit: pageSize }
+			])
+		}
+
 		// Get total count for pagination
-		const totalItems = await this.pinModel.countDocuments({
-			_id: { $nin: excludePinIds },
-			user_id: { $ne: userId },
-			secret: false,
-			tags: { $in: recentTags }
-		})
+		const totalItems = await this.pinModel.countDocuments(
+			recommendedPins.length === 0
+				? {
+						user_id: { $ne: userId },
+						secret: false
+				  }
+				: {
+						_id: { $nin: excludePinIds },
+						user_id: { $ne: userId },
+						secret: false,
+						tags: { $in: recentTags }
+				  }
+		)
 
 		const result = {
 			data: recommendedPins,
