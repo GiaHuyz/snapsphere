@@ -111,7 +111,7 @@ export class PinsService extends GenericService<PinDocument> {
 
 		const generatedTags = await this.clarifaiService.generateTags(uploadedImageUrl)
 
-		const newTags = [...new Set(createPinDto.tags.concat(generatedTags))]
+		const newTags = [...new Set(createPinDto.tags?.concat(generatedTags))]
 
 		const [newPin] = await Promise.all([
 			this.pinModel.create({
