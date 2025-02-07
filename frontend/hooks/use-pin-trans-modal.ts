@@ -18,7 +18,7 @@ export const usePinTransModal = create<PinTransModalStore>((set) => ({
 	imagePreview: null,
 	currentImage: null,
 	onOpen: () => set({ isOpen: true }),
-	onClose: () => set({ isOpen: false, imageFile: null }),
+	onClose: () => set({ isOpen: false }),
     setImagePreview: (preview) => set({ imagePreview: preview }),
     setCurrentImage: (currentImage) => set({ currentImage }),
     setImageFile: (imageFile) => set({ imageFile })
