@@ -39,12 +39,12 @@ import { TagsModule } from './tags/tags.module'
 							socket: {
 								host: configService.get<string>('REDIS_HOST'),
 								port: configService.get<number>('REDIS_PORT'),
-								keepAlive: 30000
 							},
+							pingInterval: 1000,
 							database: 0
 						}),
 						namespace: 'snapsphere',
-						ttl: 30 * 60 * 1000
+						ttl: 10 * 60 * 1000
 					})
 				]
 			}),
