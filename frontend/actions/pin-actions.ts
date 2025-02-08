@@ -152,7 +152,7 @@ export const getPinDetailAction = createServerAction<string, Pin>(async (id) => 
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}
-})
+}, { requireAuth: false })
 
 export const getPinsByBoardIdAction = createServerAction<QueryParamsBoardPin, Pin[]>(async (data) => {
 	try {
@@ -179,7 +179,7 @@ export const getPinsByBoardIdAction = createServerAction<QueryParamsBoardPin, Pi
 	} catch (error) {
 		return { error: getErrorMessage(error) }
 	}
-})
+}, { requireAuth: false })
 
 export const getRecommendedPinsAction = createServerAction<QueryParams, PinPage>(async (queryParams) => {
     try {
@@ -210,4 +210,4 @@ export const getSimilarPinsAction = createServerAction<GetSimilarPinsParams, Pin
 	} catch (error) {
 		throw getErrorMessage(error)
 	}
-})
+}, { requireAuth: false })
