@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import UserList from '@/components/user-list'
 import { isActionError } from '@/lib/errors'
-import { Plus, Settings, Settings2 } from 'lucide-react'
+import { Settings2 } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
@@ -16,22 +16,24 @@ type SearchType = "pins" | "boards" | "profiles"
 export default async function SearchPage({
 	searchParams,
   }: {
-	searchParams: {
+	searchParams: Promise<{
 	  q: string
 	  type?: SearchType
-	}
+	}>
   }) {
-	if (!searchParams.q) {
+	const searchParamsString = await searchParams
+
+	if (!searchParamsString.q) {
 	  redirect("/")
 	}
   
-	const type = searchParams.type || "pins"
+	const type = searchParamsString.type || "pins"
   
 	let content
   
 	switch (type) {
 	  case "pins": {
-		const pins = await getAllPinsUserAction({ search: searchParams.q })
+		const pins = await getAllPinsUserAction({ search: searchParamsString.q })
 		if (isActionError(pins)) {
 		  content = (
 			<div className="text-center mt-8">
@@ -39,12 +41,12 @@ export default async function SearchPage({
 			</div>
 		  )
 		} else {
-		  content = <PinList pageName="Search" initialPins={pins.data} search={searchParams.q} />
+		  content = <PinList pageName="Search" initialPins={pins.data} search={searchParamsString.q} />
 		}
 		break
 	  }
 	  case "boards": {
-		const boards = await getBoardsAction({ title: searchParams.q })
+		const boards = await getBoardsAction({ title: searchParamsString.q })
 		if (isActionError(boards)) {
 		  content = (
 			<div className="text-center mt-8">
@@ -52,12 +54,12 @@ export default async function SearchPage({
 			</div>
 		  )
 		} else {
-		  content = <BoardPreviewList initBoardsPreview={boards} userId="" username="" search={searchParams.q} />
+		  content = <BoardPreviewList initBoardsPreview={boards} userId="" username="" search={searchParamsString.q} />
 		}
 		break
 	  }
 	  case "profiles": {
-		const users = await getUsers(1, searchParams.q)
+		const users = await getUsers(1, searchParamsString.q)
 		if (isActionError(users)) {
 		  content = (
 			<div className="text-center mt-8">
@@ -82,17 +84,17 @@ export default async function SearchPage({
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="start">
 			  <DropdownMenuItem asChild>
-				<Link href={`/search?q=${searchParams.q}&type=pins`} className="cursor-pointer">
+				<Link href={`/search?q=${searchParamsString.q}&type=pins`} className="cursor-pointer">
 				  All Pins
 				</Link>
 			  </DropdownMenuItem>
 			  <DropdownMenuItem asChild>
-				<Link href={`/search?q=${searchParams.q}&type=boards`} className="cursor-pointer">
+				<Link href={`/search?q=${searchParamsString.q}&type=boards`} className="cursor-pointer">
 				  Boards
 				</Link>
 			  </DropdownMenuItem>
 			  <DropdownMenuItem asChild>
-				<Link href={`/search?q=${searchParams.q}&type=profiles`} className="cursor-pointer">
+				<Link href={`/search?q=${searchParamsString.q}&type=profiles`} className="cursor-pointer">
 				  Profiles
 				</Link>
 			  </DropdownMenuItem>

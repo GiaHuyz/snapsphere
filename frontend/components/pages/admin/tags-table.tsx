@@ -95,7 +95,7 @@ export function TagsTable({ initialData }: { initialData: TagPage }) {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{tags.map((tag) => (
+						{tags?.map((tag) => (
 							<TableRow key={tag._id}>
 								<TableCell>{tag.name}</TableCell>
 								<TableCell>{formatTime(tag.createdAt)}</TableCell>

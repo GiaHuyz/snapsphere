@@ -3,28 +3,22 @@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { SignOutButton } from '@clerk/nextjs'
-import { BarChart, Flag, Image, LogOut, Settings, Tag, Users } from 'lucide-react'
+import { Flag, Image, LogOut, Settings, Tag, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const routes = [
 	{
 		href: '/admin',
-		label: 'Overview',
-		icon: BarChart,
-		color: 'text-sky-500'
+		label: 'Pins',
+		icon: Image,
+		color: 'text-pink-700'
 	},
 	{
 		href: '/admin/users',
 		label: 'Users',
 		icon: Users,
 		color: 'text-violet-500'
-	},
-	{
-		href: '/admin/pins',
-		label: 'Pins',
-		icon: Image,
-		color: 'text-pink-700'
 	},
 	{
 		href: '/admin/reports',

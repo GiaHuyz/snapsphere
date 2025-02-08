@@ -95,7 +95,7 @@ export function PinsTable({ initialPins }: { initialPins: PinPage }) {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{data.map((pin) => (
+						{data?.map((pin) => (
 							<TableRow key={pin._id}>
 								<TableCell className="font-medium">
 									<Link href={`/pin/${pin._id}`}>
