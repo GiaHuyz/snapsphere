@@ -16,10 +16,15 @@ import { LikesModule } from './likes/likes.module'
 import { PinsModule } from './pins/pins.module'
 import { ReportsModule } from './reports/reports.module'
 import { TagsModule } from './tags/tags.module'
+import { ThrottlerModule } from '@nestjs/throttler'
 
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
+		ThrottlerModule.forRoot([{
+			ttl: 60 * 1000,
+			limit: 100
+		}]),
 		MongooseModule.forRootAsync({
 			imports: [ConfigModule],
 			useFactory: (configService: ConfigService) => ({

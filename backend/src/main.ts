@@ -5,9 +5,11 @@ import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { log } from 'console'
 import * as cookieParser from 'cookie-parser'
+import helmet from 'helmet'
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule)
+	app.use(helmet())
 	// config global prefix
 	app.setGlobalPrefix('api')
 	// config swagger
