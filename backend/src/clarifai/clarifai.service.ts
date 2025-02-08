@@ -59,8 +59,9 @@ export class ClarifaiService {
 					}
 
 					const tags = response.outputs[0].data.concepts
-						.filter((concept) => concept.value > 0.3 && concept.name !== 'no person')
+						.filter((concept) => concept.name !== 'no person')
 						.map((concept) => concept.name)
+						.slice(0, 5)
 					resolve(tags)
 				}
 			)

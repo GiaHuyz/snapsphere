@@ -1,11 +1,12 @@
 import { getCommentsAction } from '@/actions/comment-action'
 import { checkFollowAction } from '@/actions/follow-actions'
-import { getPinDetailAction } from '@/actions/pin-actions'
+import { getPinDetailAction, getSimilarPinsAction } from '@/actions/pin-actions'
 import FollowButton from '@/components/follow-button'
 import FullScreenViewModal from '@/components/modals/full-screen-view-modal'
 import { CommentSection } from '@/components/pages/pin-detail/comment-section'
 import ExpandButton from '@/components/pages/pin-detail/expand-button'
 import PinDetailTopActions from '@/components/pages/pin-detail/pin-detail-top-actions'
+import PinList from '@/components/pin/pin-list'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { isActionError } from '@/lib/errors'
 import getCurrentUser from '@/lib/get-current-user'
@@ -13,6 +14,7 @@ import { clerkClient } from '@clerk/nextjs/server'
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { PAGE_SIZE_PINS } from '@/lib/constants'
 
 export const metadata: Metadata = {
 	title: 'Snapsphere | Pin'
@@ -20,10 +22,11 @@ export const metadata: Metadata = {
 
 export default async function PinDetails({ params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params
-	const [pin, currentUser, comments] = await Promise.all([
+	const [pin, currentUser, comments, similarPins] = await Promise.all([
 		getPinDetailAction(id),
 		getCurrentUser(),
-		getCommentsAction({ pin_id: id })
+		getCommentsAction({ pin_id: id }),
+		getSimilarPinsAction({ pinId: id, page: 1, pageSize: PAGE_SIZE_PINS })
 	])
 
 	if (isActionError(pin)) {
@@ -124,6 +127,13 @@ export default async function PinDetails({ params }: { params: Promise<{ id: str
 					</div>
 				</div>
 			</div>
+			{/* Similar Pins Section */}
+			{!isActionError(similarPins) && similarPins.length > 0 && (
+				<div className="mt-6">
+					<h2 className="text-2xl font-semibold mb-4 text-center">More like this</h2>
+					<PinList initialPins={similarPins} pageName="Similar" pinId={pin._id} />
+				</div>
+			)}
 			<FullScreenViewModal />
 		</div>
 	)

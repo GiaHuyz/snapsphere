@@ -1,6 +1,6 @@
 'use client'
 
-import { getAllPinsUserAction, getPinsByBoardIdAction, Pin as PinType } from '@/actions/pin-actions'
+import { getAllPinsUserAction, getPinsByBoardIdAction, getSimilarPinsAction, Pin as PinType } from '@/actions/pin-actions'
 import MansoryLayout from '@/components/mansory-layout'
 import Pin from '@/components/pin/pin'
 import { useMounted } from '@/hooks/use-mouted'
@@ -15,11 +15,12 @@ import { useInView } from 'react-intersection-observer'
 interface PinListProps {
 	initialPins: PinType[]
 	boardId?: string
-	pageName?: 'BoardDetail' | 'User' | 'Home' | 'Search' | 'Ideas'
+	pageName?: 'BoardDetail' | 'User' | 'Home' | 'Search' | 'Ideas' | 'Similar'
 	search?: string
+	pinId?: string
 }
 
-export default function PinList({ initialPins, boardId, pageName, search }: PinListProps) {
+export default function PinList({ initialPins, boardId, pageName, search, pinId }: PinListProps) {
 	const { pins, setPins } = usePinStore()
 	const [hasMore, setHasMore] = useState(true)
 	const [page, setPage] = useState(2)
@@ -62,6 +63,19 @@ export default function PinList({ initialPins, boardId, pageName, search }: PinL
 					setPins([...pins, ...res.data])
 					setPage((prevPage) => prevPage + 1)
 					if (res.data.length < PAGE_SIZE_PINS) {
+						setHasMore(false)
+					}
+				}
+			} else if (pageName === 'Similar') {
+				const res = await getSimilarPinsAction({ 
+					pinId: pinId!, 
+					page, 
+					pageSize: PAGE_SIZE_PINS 
+				})
+				if (!isActionError(res)) {
+					setPins([...pins, ...res])
+					setPage((prevPage) => prevPage + 1)
+					if (res.length < PAGE_SIZE_PINS) {
 						setHasMore(false)
 					}
 				}

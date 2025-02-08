@@ -60,6 +60,20 @@ export class PinsController {
 		return await this.pinsService.findOne(id, userId)
 	}
 
+	@ApiOperation({
+		summary: 'Get similar pins',
+		description: 'Get similar pins based on matching tags for a specific pin'
+	})
+	@Public()
+	@Get(':id/similar')
+	async getSimilarPins(
+		@Param('id') id: string,
+		@Query('page') page?: number,
+		@Query('pageSize') pageSize?: number
+	) {
+		return this.pinsService.getSimilarPins(id, page, pageSize)
+	}
+
 	@ApiBody({ type: CreatePinDto })
 	@ApiOperation({
 		summary: 'Create a new pin (image)',

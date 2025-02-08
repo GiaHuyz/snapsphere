@@ -356,4 +356,34 @@ export class PinsService extends GenericService<PinDocument> {
 
 		return result
 	}
+
+	/**
+	 * Get similar pins based on matching tags with pagination
+	 * @param pinId - ID of the pin to find similar pins for
+	 * @param page - Page number (default: 1)
+	 * @param pageSize - Number of items per page (default: 10)
+	 * @returns Similar pins with pagination info
+	 */
+	async getSimilarPins(pinId: string, page: number = 1, pageSize: number = 10) {
+		// Get the source pin and its tags
+		const sourcePin = await this.pinModel.findById(pinId)
+		if (!sourcePin) {
+			throw new NotFoundException('Pin not found')
+		}
+
+		// Build query conditions
+		const queryBuilder = {
+			_id: { $ne: sourcePin._id },
+			secret: false,
+			tags: { $in: sourcePin.tags }
+		}
+
+		// Get similar pins with pagination
+		const similarPins = await this.baseFindAll(
+			{ page, pageSize },
+			queryBuilder
+		)
+
+		return similarPins
+	}
 }

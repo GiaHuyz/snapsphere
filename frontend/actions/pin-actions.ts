@@ -52,6 +52,12 @@ interface QueryParamsBoardPin {
 	sort?: string
 }
 
+interface GetSimilarPinsParams {
+	pinId: string
+	page?: number
+	pageSize?: number
+}
+
 type EditPinData = Partial<Pick<Pin, '_id' | 'title' | 'description' | 'referenceLink' | 'isAllowedComment'>>
 
 export const savePinToBoardAction = createServerAction<SavePinDto, Pin>(async (data) => {
@@ -193,4 +199,15 @@ export const getRecommendedPinsAction = createServerAction<QueryParams, PinPage>
     } catch (error) {
         return { error: getErrorMessage(error) }
     }
+})
+
+export const getSimilarPinsAction = createServerAction<GetSimilarPinsParams, Pin[]>(async ({ pinId, page = 1, pageSize = PAGE_SIZE_PINS }) => {
+	try {
+		const res = await HttpRequest.get<Pin[]>(`/pins/${pinId}/similar?page=${page}&pageSize=${pageSize}`, {
+			cache: 'force-cache'
+		})
+		return res
+	} catch (error) {
+		throw getErrorMessage(error)
+	}
 })

@@ -79,6 +79,6 @@ export class CreatePinDto {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    @Transform(({ value }) => value?.map((name: string) => name.trim().toLowerCase()))
+    @Transform(({ value }) => Array.isArray(value) ? value.map((name: string) => name.trim().toLowerCase()) : [])
     tags?: string[]
 }
