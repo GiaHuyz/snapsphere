@@ -20,7 +20,7 @@ export default async function IdeasPage() {
 		<div className="min-h-screen bg-background">
 			<main className="container py-6 mx-auto max-w-6xl">
 				<section className="space-y-6">
-					<h2 className="text-2xl font-semibold tracking-tight">What&apos;s new on Snapsphere</h2>
+					<h2 className="ml-2 text-2xl font-semibold tracking-tight">What&apos;s new on Snapsphere</h2>
 					<PinList pageName="Ideas" initialPins={pins.data} />
 				</section>
 			</main>

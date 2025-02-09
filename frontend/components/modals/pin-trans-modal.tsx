@@ -3,19 +3,9 @@
 import { uploadToCloudinary } from '@/actions/cloudinary'
 import { LoaderButton } from '@/components/loading-button'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import {
-	Sidebar,
-	SidebarContent,
-	SidebarFooter,
-	SidebarGroup,
-	SidebarGroupContent,
-	SidebarHeader,
-	SidebarProvider,
-	SidebarRail
-} from '@/components/ui/sidebar'
 import { Slider } from '@/components/ui/slider'
 import { usePinTransModal } from '@/hooks/use-pin-trans-modal'
 import { getPublicId } from '@/lib/utils'
@@ -172,10 +162,13 @@ export default function PinTransModal() {
 						break
 					case 'sonnet':
 						imageCld = imageCld.effect(artisticFilter('sonnet'))
+						break
 					case 'ukulele':
 						imageCld = imageCld.effect(artisticFilter('ukulele'))
+						break
 					case 'zorro':
 						imageCld = imageCld.effect(artisticFilter('zorro'))
+						break
 					case 'cartoonify':
 						imageCld = imageCld.effect(cartoonify())
 						break
@@ -220,112 +213,123 @@ export default function PinTransModal() {
 	}
 
 	return (
-		<SidebarProvider className={isOpen ? 'min-h-svh' : 'min-h-0'}>
-			<Dialog open={isOpen} onOpenChange={onClose}>
-				<DialogContent className="h-screen max-w-screen grid w-full grid-cols-[280px_1fr] gap-4 bg-gray-200">
-					<Sidebar className="border-r">
-						<SidebarHeader>
-							<DialogTitle className="text-center text-2xl">Image Editor</DialogTitle>
-							<DialogDescription>Enhance and transform your images</DialogDescription>
-						</SidebarHeader>
-						<SidebarContent>
-							<SidebarGroup>
-								<SidebarGroupContent>
-									<div className="space-y-2">
-										<Label htmlFor="brightness">Brightness</Label>
-										<Slider
-											id="brightness"
-											defaultValue={[brightness]}
-											min={-99}
-											max={100}
-											step={1}
-											onValueChange={handleSliderChange(setBrightness)}
-										/>
-										<Label htmlFor="contrast">Contrast</Label>
-										<Slider
-											id="contrast"
-											defaultValue={[contrast]}
-											min={1}
-											max={200}
-											step={1}
-											onValueChange={handleSliderChange(setContrast)}
-										/>
-										<Label htmlFor="saturation">Saturation</Label>
-										<Slider
-											id="saturation"
-											defaultValue={[saturation]}
-											min={0}
-											max={200}
-											step={1}
-											onValueChange={handleSliderChange(setSaturation)}
-										/>
-										<Label htmlFor="blur">Blur</Label>
-										<Slider
-											id="blur"
-											defaultValue={[blur]}
-											min={0}
-											max={2000}
-											step={100}
-											onValueChange={handleSliderChange(setBlur)}
-										/>
-									</div>
-								</SidebarGroupContent>
-							</SidebarGroup>
-							<SidebarGroup>
-								<SidebarGroupContent>
-									<Select onValueChange={handleEffectChange}>
-										<SelectTrigger className="w-full">
-											<SelectValue placeholder="Select an effect" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="None">None</SelectItem>
-											<SelectItem value="sepia">Sepia</SelectItem>
-											<SelectItem value="grayscale">Grayscale</SelectItem>
-											<SelectItem value="blackwhite">Black & White</SelectItem>
-											<SelectItem value="vignette">Vignette</SelectItem>
-											<SelectItem value="vintage">Vintage</SelectItem>
-											<SelectItem value="art">Art</SelectItem>
-											<SelectItem value="cartoonify">Cartoonify</SelectItem>
-											<SelectItem value="oil_painting">Oil Painting</SelectItem>
-											<SelectItem value="pixelate">Pixelate</SelectItem>
-											<SelectItem value="blur_effect">Blur Effect</SelectItem>
-											<SelectItem value="sharpen">Sharpen</SelectItem>
-											<SelectItem value="negate">Negate</SelectItem>
-											<SelectItem value="colorize">Colorize</SelectItem>
-											<SelectItem value="improve">Auto Improve</SelectItem>
-										</SelectContent>
-									</Select>
-								</SidebarGroupContent>
-							</SidebarGroup>
-							<SidebarGroup>
-								<SidebarGroupContent className="flex justify-end">
-									<LoaderButton onClick={handleTransformation} isLoading={loading}>
-										Transform
-									</LoaderButton>
-								</SidebarGroupContent>
-							</SidebarGroup>
-							<SidebarFooter>
-								<Button onClick={onClose}>Close</Button>
-							</SidebarFooter>
-							<SidebarRail />
-						</SidebarContent>
-					</Sidebar>
-					<div className="flex items-center justify-center">
-						<div className="relative">
-							<ReactCompareSlider
-								itemOne={<ReactCompareSliderImage src={currentImage!} />}
-								itemTwo={<ReactCompareSliderImage src={imagePreview || currentImage!} />}
-								className="h-auto max-h-[685px] w-[500px] object-contain rounded-2xl"
-							/>
-							{loading && (
-								<div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 rounded-2xl">
-									<Loader2 className="h-10 w-10 animate-spin" color="#fff" />
-								</div>
-							)}
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="h-[100dvh] max-w-full overflow-y-auto p-4 md:p-6">
+				<DialogTitle className="text-center text-2xl font-semibold">Image Editor</DialogTitle>
+				<DialogDescription className="text-center">Enhance and transform your images</DialogDescription>
+
+				<div className="flex flex-col gap-6 md:flex-row md:gap-8">
+					{/* Editor Section */}
+					<div className="w-full md:w-1/3">
+						<div className="space-y-4">
+							<div className="space-y-2">
+								<Label htmlFor="brightness">Brightness</Label>
+								<Slider
+									id="brightness"
+									defaultValue={[brightness]}
+									min={-99}
+									max={100}
+									step={1}
+									onValueChange={handleSliderChange(setBrightness)}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="contrast">Contrast</Label>
+								<Slider
+									id="contrast"
+									defaultValue={[contrast]}
+									min={1}
+									max={200}
+									step={1}
+									onValueChange={handleSliderChange(setContrast)}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="saturation">Saturation</Label>
+								<Slider
+									id="saturation"
+									defaultValue={[saturation]}
+									min={0}
+									max={200}
+									step={1}
+									onValueChange={handleSliderChange(setSaturation)}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="blur">Blur</Label>
+								<Slider
+									id="blur"
+									defaultValue={[blur]}
+									min={0}
+									max={2000}
+									step={100}
+									onValueChange={handleSliderChange(setBlur)}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="effect">Effect</Label>
+								<Select onValueChange={handleEffectChange}>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder="Select an effect" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="None">None</SelectItem>
+										<SelectItem value="sepia">Sepia</SelectItem>
+										<SelectItem value="grayscale">Grayscale</SelectItem>
+										<SelectItem value="blackwhite">Black & White</SelectItem>
+										<SelectItem value="vignette">Vignette</SelectItem>
+										<SelectItem value="vintage">Vintage</SelectItem>
+										<SelectItem value="art">Art</SelectItem>
+										<SelectItem value="cartoonify">Cartoonify</SelectItem>
+										<SelectItem value="oil_painting">Oil Painting</SelectItem>
+										<SelectItem value="pixelate">Pixelate</SelectItem>
+										<SelectItem value="blur_effect">Blur Effect</SelectItem>
+										<SelectItem value="sharpen">Sharpen</SelectItem>
+										<SelectItem value="negate">Negate</SelectItem>
+										<SelectItem value="colorize">Colorize</SelectItem>
+										<SelectItem value="improve">Auto Improve</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+							<LoaderButton onClick={handleTransformation} isLoading={loading} className="w-full">
+								Transform
+							</LoaderButton>
 						</div>
 					</div>
-				</DialogContent>
-			</Dialog>
-		</SidebarProvider>
+
+					{/* Image Preview Section */}
+					<div className="relative flex-1">
+						<ReactCompareSlider
+							itemOne={
+								<ReactCompareSliderImage
+									src={currentImage!}
+									alt="Original"
+									className="object-contain"
+								/>
+							}
+							itemTwo={
+								<ReactCompareSliderImage
+									src={imagePreview || currentImage!}
+									alt="Transformed"
+									className="object-contain"
+								/>
+							}
+							className="mx-auto h-auto w-full max-w-3xl max-h-[600px] rounded-2xl"
+						/>
+						{loading && (
+							<div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
+								<Loader2 className="h-10 w-10 animate-spin text-white" />
+							</div>
+						)}
+					</div>
+				</div>
+
+				<div className="mt-4 flex justify-end">
+					<Button onClick={onClose} variant="outline">
+						Close
+					</Button>
+				</div>
+			</DialogContent>
+		</Dialog>
 	)
 }

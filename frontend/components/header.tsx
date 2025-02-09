@@ -18,52 +18,86 @@ export default function Header({ user }: { user: User }) {
 
 	return (
 		<div className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-			<div className="container flex h-[80px] items-center mx-auto p-5">
-				<div className="flex items-center space-x-4">
-					<Link href="/" className="flex items-center space-x-2 p-2 rounded-full hover:bg-slate-300">
-						<Image src="/logo.png" alt="logo" width={24} height={24} />
-					</Link>
-					{isSignedIn && (
-						<>
-							<div className="hidden md:flex space-x-4">
-								<Button
-									variant={pathname === '/' ? 'default' : 'ghost'}
-									className="text-sm font-medium"
-									asChild
-								>
-									<Link href="/">Home</Link>
-								</Button>
-								<Button
-									variant={pathname === '/create' ? 'default' : 'ghost'}
-									className="text-sm font-medium"
-									asChild
-								>
-									<Link href="/create">Create</Link>
-								</Button>
-							</div>
-							<div className="md:hidden">
-								<Select
-									defaultValue={
-										pathname === '/' ? 'home' : pathname === '/create' ? 'create' : 'home'
-									}
-									onValueChange={(value) => router.push(value === 'home' ? '/' : '/create')}
-								>
-									<SelectTrigger className="w-[90px]">
-										<SelectValue placeholder="Select" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="home">Home</SelectItem>
-										<SelectItem value="create">Create</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-						</>
-					)}
+			<div className="container flex flex-col sm:flex-row items-center mx-auto p-5 gap-4 sm:gap-0">
+				<div className="flex items-center justify-between w-full sm:w-auto">
+					<div className="flex items-center space-x-4">
+						<Link href="/" className="flex items-center space-x-2 p-2 rounded-full hover:bg-slate-300">
+							<Image src="/logo.png" alt="logo" width={24} height={24} />
+						</Link>
+						{isSignedIn && (
+							<>
+								<div className="hidden md:flex space-x-4">
+									<Button
+										variant={pathname === '/' ? 'default' : 'ghost'}
+										className="text-sm font-medium"
+										asChild
+									>
+										<Link href="/">Home</Link>
+									</Button>
+									<Button
+										variant={pathname === '/create' ? 'default' : 'ghost'}
+										className="text-sm font-medium"
+										asChild
+									>
+										<Link href="/create">Create</Link>
+									</Button>
+								</div>
+								<div className="md:hidden">
+									<Select
+										defaultValue={
+											pathname === '/' ? 'home' : pathname === '/create' ? 'create' : 'home'
+										}
+										onValueChange={(value) => router.push(value === 'home' ? '/' : '/create')}
+									>
+										<SelectTrigger className="w-[90px]">
+											<SelectValue placeholder="Select" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="home">Home</SelectItem>
+											<SelectItem value="create">Create</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</>
+						)}
+					</div>
+					<div className="flex items-center space-x-4 sm:hidden">
+						<ModeToggle />
+						{!isSignedIn ? (
+							<>
+								<SignInButton mode="modal">
+									<Button variant="ghost" size="sm">
+										Log in
+									</Button>
+								</SignInButton>
+								<SignUpButton mode="modal">
+									<Button size="sm">Sign up</Button>
+								</SignUpButton>
+							</>
+						) : (
+							<UserButton>
+								<UserButton.MenuItems>
+									<UserButton.Link
+										label="Board"
+										labelIcon={<LayoutDashboard size={16} />}
+										href={`/user/${user?.username}`}
+									/>
+									<UserButton.Link
+										label="Profile"
+										labelIcon={<UserRoundPen size={16} />}
+										href="/profile"
+									/>
+									<UserButton.Action label="manageAccount" />
+									<UserButton.Action label="signOut" />
+								</UserButton.MenuItems>
+							</UserButton>
+						)}
+					</div>
 				</div>
-				<div className="flex-1 px-4">
+				<div className="w-full sm:flex-1 px-0 sm:px-4">
 					<SearchBar />
 				</div>
-				<div className="flex items-center space-x-4">
+				<div className="hidden sm:flex items-center space-x-4">
 					<ModeToggle />
 					{!isSignedIn ? (
 						<>
