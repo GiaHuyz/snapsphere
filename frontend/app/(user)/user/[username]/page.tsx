@@ -103,7 +103,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 					</TabsContent>
 
 					<TabsContent forceMount value="saved" className="mt-2 data-[state=inactive]:hidden">
-						<BoardPreviewList initBoardsPreview={boardsPreview} userId={user.id} username={username} userSort={user.unsafeMetadata.sort as string}/>
+						<BoardPreviewList initBoardsPreview={boardsPreview.data} userId={user.id} username={username} userSort={user.unsafeMetadata.sort as string}/>
 					</TabsContent>
 				</Tabs>
 			</div>

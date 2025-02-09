@@ -54,7 +54,7 @@ export default async function SearchPage({
 			</div>
 		  )
 		} else {
-		  content = <BoardPreviewList initBoardsPreview={boards} userId="" username="" search={searchParamsString.q} />
+		  content = <BoardPreviewList initBoardsPreview={boards.data} userId="" username="" search={searchParamsString.q} />
 		}
 		break
 	  }

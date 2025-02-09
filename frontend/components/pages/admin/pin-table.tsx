@@ -20,9 +20,15 @@ export function PinsTable({ initialPins }: { initialPins: PinPage }) {
 	const [currentPage, setCurrentPage] = useState(1)
 	const [totalPages, setTotalPages] = useState(initialPins.totalPages)
     const [searchQuery, setSearchQuery] = useState('')
+    const [searchType, setSearchType] = useState<'id' | 'user_id' | 'search' | null>(null)
 
 	const fetchPins = async (page: number) => {
-		const res = await getAllPinsUserAction({ page })
+		const res = await getAllPinsUserAction({ 
+            page,
+            ...(searchType === 'id' ? { id: searchQuery } : {}),
+            ...(searchType === 'user_id' ? { user_id: searchQuery } : {}),
+            ...(searchType === 'search' ? { search: searchQuery } : {})
+        })
 		if (!isActionError(res)) {
 			setData(res.data)
 			setCurrentPage(page)
@@ -43,6 +49,7 @@ export function PinsTable({ initialPins }: { initialPins: PinPage }) {
         e.preventDefault()
         let res
         if (searchQuery.match(/^[a-f\d]{24}$/i)) {
+            setSearchType('id')
             res = await getPinDetailAction(searchQuery)
             if (!isActionError(res)) {
                 setData([res])
@@ -52,8 +59,10 @@ export function PinsTable({ initialPins }: { initialPins: PinPage }) {
             return
         } 
         if (searchQuery.startsWith('user_')) {
+            setSearchType('user_id')
             res = await getAllPinsUserAction({ page: 1, user_id: searchQuery })
         } else {
+            setSearchType('search')
             res = await getAllPinsUserAction({ page: 1, search: searchQuery })
         }
         if (!isActionError(res)) {
@@ -61,6 +70,12 @@ export function PinsTable({ initialPins }: { initialPins: PinPage }) {
             setCurrentPage(1)
             setTotalPages(res.totalPages)
         }
+    }
+
+    const handleClearSearch = () => {
+        setSearchQuery('')
+        setSearchType(null)
+        fetchPins(1)
     }
 
 	return (
@@ -76,6 +91,11 @@ export function PinsTable({ initialPins }: { initialPins: PinPage }) {
 				<Button type="submit" size="icon">
 					<Search className="h-4 w-4" />
 				</Button>
+                {searchQuery && (
+                    <Button type="button" variant="outline" onClick={handleClearSearch}>
+                        Clear
+                    </Button>
+                )}
 			</form>
 			<div className="rounded-md border">
 				<Table>

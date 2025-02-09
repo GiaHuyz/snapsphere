@@ -30,9 +30,9 @@ export function MergeBoardModal() {
 	const loadMoreBoards = async () => {
 		const boards = await getBoardsAction({ page: page + 1, user_id: currentBoard.user_id })
 		if (!isActionError(boards)) {
-			setAvailableBoards((prev) => [...prev, ...boards])
+			setAvailableBoards((prev) => [...prev, ...boards.data])
 			setPage((prevPage) => prevPage + 1)
-			if (boards.length < PAGE_SIZE_BOARDS) {
+			if (boards.data.length < PAGE_SIZE_BOARDS) {
 				setHasMore(false)
 			}
 		}

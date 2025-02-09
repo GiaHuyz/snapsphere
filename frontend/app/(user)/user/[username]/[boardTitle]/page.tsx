@@ -45,7 +45,7 @@ export default async function BoardPage({ params }: { params: Promise<{ username
 		)
 	}
 
-	if (boards.length === 0) {
+	if (boards.data.length === 0) {
 		return (
 			<div className="text-center mt-8">
 				<h2 className="text-2xl font-semibold">Board not found</h2>
@@ -55,7 +55,7 @@ export default async function BoardPage({ params }: { params: Promise<{ username
 
 	const { userId } = await auth()
 
-	const board = boards[0]
+	const board = boards.data[0]
 	const pins = await getPinsByBoardIdAction({ board_id: board._id })
 
 	if (isActionError(pins)) {

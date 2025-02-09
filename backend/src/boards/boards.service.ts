@@ -17,13 +17,12 @@ export class BoardsService extends GenericService<BoardDocument> {
 	constructor(
 		@InjectModel(Board.name) private readonly boardModel: Model<BoardDocument>,
 		@InjectModel(BoardPin.name) private readonly boardPinModel: Model<BoardPinDocument>,
-		private readonly pinService: PinsService,
-		@Inject(CACHE_MANAGER) private cacheManager: Cache
+		private readonly pinService: PinsService
 	) {
 		super(boardModel)
 	}
 
-	async findAll(query: FilterBoardDto, userId?: string): Promise<BoardDocument[]> {
+	async findAll(query: FilterBoardDto, userId?: string, isAdmin?: boolean): Promise<{ data: BoardDocument[], totalPages: number }> {
 		// extract query parameters
 		const { user_id, title, description, pinCountMin, pinCountMax } = query
 		// build filter conditions
@@ -48,7 +47,7 @@ export class BoardsService extends GenericService<BoardDocument> {
 
 		// only authenticated users can get their own boards
 		const currentUserId = userId
-		if (currentUserId !== user_id) {
+		if (currentUserId !== user_id && !isAdmin) {
 			filterConditions.secret = false // only public boards can be fetched
 		}
 
@@ -56,8 +55,9 @@ export class BoardsService extends GenericService<BoardDocument> {
 			path: 'coverImages',
 			select: 'url'
 		}, sort)
+		const totalItems = await this.boardModel.countDocuments(filterConditions)
 
-		return result
+		return { data: result, totalPages: Math.ceil(totalItems / query.pageSize || 10) }
 	}
 
 	async create(userId: string, createBoardDto: CreateBoardDto): Promise<BoardDocument> {

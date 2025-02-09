@@ -54,16 +54,16 @@ export default function BoardDropdown({ mode, onChange, pin, children }: BoardDr
 		setSearch(e.target.value)
 		const res = await getBoardsAction({ user_id: user?.id, title: deferredSearch })
 		if (!isActionError(res)) {
-			setFilteredBoards(res)
+			setFilteredBoards(res.data)
 		}
 	}
 
 	const loadMoreBoards = async () => {
 		const newBoards = await getBoardsAction({ user_id: user?.id, page: page, pageSize: PAGE_SIZE_BOARDS })
 		if (!isActionError(newBoards)) {
-			setBoardsDropdown([...boardsDropdown, ...newBoards])
+			setBoardsDropdown([...boardsDropdown, ...newBoards.data])
 			setPage((prevPage) => prevPage + 1)
-			if (newBoards.length < PAGE_SIZE_BOARDS) {
+			if (newBoards.data.length < PAGE_SIZE_BOARDS) {
 				setHasMore(false)
 			}
 		}

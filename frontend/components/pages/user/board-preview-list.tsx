@@ -40,7 +40,7 @@ export default function BoardPreviewList({
 	const handleSort = async (value: string) => {
 		const res = await getBoardsAction({ user_id: userId, sort: value })
 		if (!isActionError(res)) {
-			setBoardsPreview(res)
+			setBoardsPreview(res.data)
 			await user?.update({
 				unsafeMetadata: {
 					sort: value
@@ -53,9 +53,9 @@ export default function BoardPreviewList({
 	const loadMoreBoards = async () => {
 		const res = await getBoardsAction({ user_id: userId, title: search, page: page, pageSize: PAGE_SIZE_BOARDS, sort: userSort })
 		if (!isActionError(res)) {
-			setBoardsPreview([...boardsPreview, ...res])
+			setBoardsPreview([...boardsPreview, ...res.data])
 			setPage(page + 1)
-			if (res.length < PAGE_SIZE_BOARDS) {
+			if (res.data.length < PAGE_SIZE_BOARDS) {
 				setHasMore(false)
 			}
 		}

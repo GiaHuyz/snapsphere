@@ -7,6 +7,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { BoardsService } from './boards.service'
 import { FilterBoardDto } from './dto/filter-board.dto'
+import { IsAdmin } from '@/common/decorators/isAdmin'
 
 @ApiTags('boards')
 @ApiBearerAuth()
@@ -22,9 +23,10 @@ export class BoardsController {
 	@Get()
 	async findAll(
 		@Query() query: FilterBoardDto,
-		@UserId() userId?: string
-	): Promise<BoardDocument[]> {
-		return this.boardsService.findAll(query, userId)
+		@UserId() userId?: string,
+		@IsAdmin() isAdmin?: boolean
+	): Promise<{ data: BoardDocument[], totalPages: number }> {
+		return this.boardsService.findAll(query, userId, isAdmin)
 	}
 
 	@Post()

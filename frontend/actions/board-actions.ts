@@ -68,7 +68,12 @@ interface QueryParams {
 	sort?: string
 }
 
-export const getBoardsAction = createServerAction<QueryParams, Board[]>(
+export interface BoardPage {
+	data: Board[]
+	totalPages: number
+}
+
+export const getBoardsAction = createServerAction<QueryParams, BoardPage>(
 	async (queryParams) => {
 		try {
 			queryParams.page = queryParams.page || 1
@@ -79,14 +84,14 @@ export const getBoardsAction = createServerAction<QueryParams, Board[]>(
 				.map(([key, value]) => `${key}=${value}`)
 				.join('&')
 
-			const boards = await HttpRequest.get<Board[]>(`/boards?${queryString}`, {
+			const boards = await HttpRequest.get<BoardPage>(`/boards?${queryString}`, {
 				cache: 'force-cache',
 				next: { tags: ['boards'] }
 			})
 			return boards
 		} catch (error) {
 			if (error instanceof Error && error.message === 'Unauthorized') {
-				return []
+				return { data: [], totalPages: 0 }
 			}
 			return { error: getErrorMessage(error) }
 		}

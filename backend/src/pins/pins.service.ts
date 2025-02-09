@@ -194,21 +194,8 @@ export class PinsService extends GenericService<PinDocument> {
 		])
 	}
 
-	/**
-	 * Get recommended pins for a user based on their interactions
-	 * Optimized for large datasets by:
-	 * 1. Using limit in queries to reduce data load
-	 * 2. Combining queries using $lookup
-	 * 3. Using simpler scoring mechanism
-	 * 4. Implementing Redis caching for faster responses
-	 */
 	async getRecommendedPins(userId: string, query: GetRecommendedPinsDto) {
 		const { page = 1, pageSize = 10 } = query
-		const cacheKey = `recommendations:${userId}:${page}:${pageSize}`
-
-		// Try to get recommendations from cache
-		const cachedRecommendations = await this.cacheManager.get(cacheKey)
-		if (cachedRecommendations) return cachedRecommendations
 
 		const skip = (page - 1) * pageSize
 
@@ -350,9 +337,6 @@ export class PinsService extends GenericService<PinDocument> {
 			data: recommendedPins,
 			totalPages: Math.ceil(totalItems / pageSize)
 		}
-
-		// Cache recommendations 
-		await this.cacheManager.set(cacheKey, result)
 
 		return result
 	}

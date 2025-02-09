@@ -38,7 +38,7 @@ export default async function UserLayout({
 
 		const res = await getBoardsAction({ user_id: user.id })
 		if (!isActionError(res)) {
-			boardsDropdown = res
+			boardsDropdown = res.data
 		}
 	}
 

@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { SignOutButton } from '@clerk/nextjs'
-import { Flag, Image, LogOut, Settings, Tag, Users } from 'lucide-react'
+import { Flag, Image, LogOut, Settings, Tag, Users, LibraryBig } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -13,6 +13,12 @@ const routes = [
 		label: 'Pins',
 		icon: Image,
 		color: 'text-pink-700'
+	},
+	{
+		href: '/admin/boards',
+		label: 'Boards',
+		icon: LibraryBig,
+		color: 'text-violet-500'
 	},
 	{
 		href: '/admin/users',
