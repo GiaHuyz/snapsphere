@@ -85,7 +85,7 @@ export default function PinList({ initialPins, boardId, pageName, search, pinId 
 
 	useEffect(() => {
 		setPins(initialPins)
-	}, [initialPins, setPins])
+	}, [])
 
 	useEffect(() => {
 		if (isInView && hasMore) {

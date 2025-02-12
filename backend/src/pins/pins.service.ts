@@ -36,7 +36,7 @@ export class PinsService extends GenericService<PinDocument> {
 	async findAll(query: FilterPinDto, userId: string, isAdmin: boolean) {
 		// Only cache if there's a search query
 		const shouldCache = !!query.search;
-		const cacheKey = shouldCache ? `pins:search:${query.search}:${userId}:${isAdmin}` : null;
+		const cacheKey = shouldCache ? `pins:search:${query.search}:${query.page}:${query.pageSize}` : null;
 
 		// Try to get data from cache only if we should cache
 		if (shouldCache) {
