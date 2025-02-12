@@ -86,6 +86,7 @@ export default function PinList({ initialPins, boardId, pageName, search, pinId 
 	useEffect(() => {
 		setPins(initialPins)
 		setPage(2)
+		setHasMore(true)
 	}, [initialPins, search])
 
 	useEffect(() => {
