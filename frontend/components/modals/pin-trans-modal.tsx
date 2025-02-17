@@ -274,6 +274,7 @@ export default function PinTransModal() {
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="None">None</SelectItem>
+										<SelectItem value="improve">Auto Improve</SelectItem>
 										<SelectItem value="sepia">Sepia</SelectItem>
 										<SelectItem value="grayscale">Grayscale</SelectItem>
 										<SelectItem value="blackwhite">Black & White</SelectItem>
@@ -283,11 +284,9 @@ export default function PinTransModal() {
 										<SelectItem value="cartoonify">Cartoonify</SelectItem>
 										<SelectItem value="oil_painting">Oil Painting</SelectItem>
 										<SelectItem value="pixelate">Pixelate</SelectItem>
-										<SelectItem value="blur_effect">Blur Effect</SelectItem>
 										<SelectItem value="sharpen">Sharpen</SelectItem>
 										<SelectItem value="negate">Negate</SelectItem>
 										<SelectItem value="colorize">Colorize</SelectItem>
-										<SelectItem value="improve">Auto Improve</SelectItem>
 									</SelectContent>
 								</Select>
 							</div>
